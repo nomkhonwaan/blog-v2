@@ -4,7 +4,7 @@ jobs:
   server_install:
     docker:
       - image: circleci/golang:1.12
-    working_directory: ~/repo
+    working_directory: /go/src/github.com/nomkhonwaan/myblog
     steps:
       - checkout
       - run: make install
@@ -15,7 +15,7 @@ jobs:
   server_test:
     docker:
       - image: circleci/golang:1.12
-    working_directory: ~/repo
+    working_directory: /go/src/github.com/nomkhonwaan/myblog
     steps:
       - checkout
       - restore_cache:
@@ -23,7 +23,7 @@ jobs:
       - run: make test
   server_docker_build:
     machine: true
-    working_directory: ~/repo
+    working_directory: /go/src/github.com/nomkhonwaan/myblog
     steps:
       - checkout
       - restore_cache:
