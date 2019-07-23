@@ -24,7 +24,7 @@ jobs:
       - run: make test
   server_docker_build:
     machine: true
-    working_directory: /go/src/github.com/nomkhonwaan/myblog
+    working_directory: ~/repo
     steps:
       - checkout
       - restore_cache:
