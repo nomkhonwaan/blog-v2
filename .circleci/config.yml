@@ -30,7 +30,14 @@ jobs:
       - run: make docker-build
       - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run: docker push nomkhonwaan/myblog:latest
-
+  server_deploy_to_docker_deploy_webhook:
+    machine: true
+    steps:
+      - run: |
+          curl \
+            -H 'Content-Type: application/json' \
+            -d '{"repository": {"repo_name": "nomkhonwaan/myblog"}, "push_data": {"tag": "latest"}}' \
+            ${DOCKER_DEPLOY_WEBHOOK_URL}
 workflows:
   version: 2
   server_workflow:
@@ -42,3 +49,6 @@ workflows:
       - server_docker_build:
           requires:
             - server_test
+      - server_deploy_to_docker_deploy_webhook:
+          requires:
+            - server_docker_build
