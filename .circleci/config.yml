@@ -9,9 +9,9 @@ jobs:
       - checkout
       - run: make install
       - save_cache:
+          key: golang-{{ checksum "./Gopkg.toml" }}
           paths:
             - ./vendor
-          key: golang-{{ checksum "./Gopkg.toml" }}
   server_test:
     docker:
       - image: circleci/golang:1.12
@@ -19,7 +19,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: golang-{{ checksum "./Gopkg.toml" }}
+          keys: 
+            - golang-{{ checksum "./Gopkg.toml" }}
       - run: make test
   server_docker_build:
     machine: true
@@ -27,7 +28,8 @@ jobs:
     steps:
       - checkout
       - restore_cache:
-          keys: golang-{{ checksum "./Gopkg.toml" }}
+          keys: 
+            - golang-{{ checksum "./Gopkg.toml" }}
       - run: make docker-build
       - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run: docker push nomkhonwaan/myblog:latest
