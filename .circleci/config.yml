@@ -1,0 +1,45 @@
+version: 2
+
+jobs:
+  server_install:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: make install
+      - save_cache:
+          paths:
+            - ./vendor
+          key: golang-{{ checksum "./Gopkg.toml" }}
+  server_test:
+    docker:
+      - image: circleci/golang:1.12
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys: golang-{{ checksum "./Gopkg.toml" }}
+      - run: make test
+  server_docker_build:
+    machine: true
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys: golang-{{ checksum "./Gopkg.toml" }}
+      - run: make docker-build
+      - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+      - run: docker push nomkhonwaan/myblog:latest
+
+workflows:
+  version: 2
+  server_workflow:
+    jobs:
+      - server_install
+      - server_test:
+          requires:
+            - server_install
+      - server_docker_build:
+          requires:
+            - server_test

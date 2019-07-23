@@ -27,6 +27,10 @@ clean:
 install:
 	$(DEP) ensure
 
+.PHONY: test
+test:
+	$(GO) test ./...
+	
 .PHONY: build
 build:
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -tags '$(TAGS)' -ldflags '-X main.version=$(VERSION) -X main.revision=$(REVISION) $(LDFLAGS)' $(PKG)/cmd/myblog
@@ -34,7 +38,3 @@ build:
 .PHONY: docker-build
 docker-build:
 	docker build -f build/package/Dockerfile -t nomkhonwaan/myblog:latest .
-	
-.PHONY: test
-test:
-	$(GO) test ./...
