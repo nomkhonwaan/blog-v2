@@ -1,0 +1,58 @@
+version: 2
+
+jobs:
+  server_install:
+    docker:
+      - image: circleci/golang:1.12
+        environment:
+            GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: make install
+      - save_cache:
+          key: go-mod-v1-{{ checksum "go.sum" }}
+          paths:
+            - /go/pkg/mod
+  server_test:
+    docker:
+      - image: circleci/golang:1.12
+        environment:
+            GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-mod-v1-{{ checksum "go.sum" }}
+      - run: make test
+  server_docker_build:
+    machine: true
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: make docker-build
+      - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+      - run: docker push nomkhonwaan/myblog:latest
+  server_deploy_to_docker_deploy_webhook:
+    machine: true
+    steps:
+      - run: |
+          curl \
+            -H 'Content-Type: application/json' \
+            -d '{"repository": {"repo_name": "nomkhonwaan/myblog"}, "push_data": {"tag": "latest"}}' \
+            ${DOCKER_DEPLOY_WEBHOOK_URL}
+workflows:
+  version: 2
+  server_workflow:
+    jobs:
+      - server_install
+      - server_test:
+          requires:
+            - server_install
+      - server_docker_build:
+          requires:
+            - server_test
+      - server_deploy_to_docker_deploy_webhook:
+          requires:
+            - server_docker_build
