@@ -42,6 +42,7 @@ require (
 	github.com/moul/http2curl v1.0.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.8.1 // indirect
+	github.com/rakyll/statik v0.1.6 // indirect
 	github.com/ryanuber/columnize v2.1.0+incompatible // indirect
 	github.com/samsarahq/go v0.0.0-20190516185622-fbd7434ad75e // indirect
 	github.com/samsarahq/thunder v0.5.0
