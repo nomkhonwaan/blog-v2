@@ -21,7 +21,7 @@ func NewServer(service blog.Service) *Server {
 	return &Server{service: service}
 }
 
-// Schema builts the GraphQL schema
+// Schema builds the GraphQL schema
 func (s *Server) Schema() *graphql.Schema {
 	builder := schemabuilder.NewSchema()
 	s.registerQuery(builder)
