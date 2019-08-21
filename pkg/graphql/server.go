@@ -25,6 +25,7 @@ func NewServer(service blog.Service) *Server {
 func (s *Server) Schema() *graphql.Schema {
 	builder := schemabuilder.NewSchema()
 	s.registerQuery(builder)
+	s.registerMutation(builder)
 
 	return builder.MustBuild()
 }
@@ -35,4 +36,8 @@ func (s *Server) registerQuery(schema *schemabuilder.Schema) {
 	obj.FieldFunc("categories", func(ctx context.Context) ([]blog.Category, error) {
 		return s.service.Category().FindAll(ctx)
 	})
+}
+
+func (s *Server) registerMutation(schema *schemabuilder.Schema) {
+	_ = schema.Mutation()
 }
