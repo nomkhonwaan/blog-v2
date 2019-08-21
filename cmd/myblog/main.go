@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"github.com/nomkhonwaan/myblog/pkg/data"
+	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,7 +13,6 @@ import (
 
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
-	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/server"
 	"github.com/samsarahq/thunder/graphql/introspection"
@@ -70,10 +71,8 @@ func action(ctx *cli.Context) error {
 
 	r := mux.NewRouter()
 
-	r.Path("/").HandlerFunc(graphql.Graphiql(data.MustGzipAsset("data/graphql-playground.html")))
-	r.PathPrefix("/graphql").Handler(graphql.HTTPHandler(schema))
-	r.PathPrefix("/v1/categories").Handler(blog.MakeCategoriesHandler(service))
-	r.PathPrefix("/v1/posts").Handler(blog.MakePostsHandler(service))
+	r.PathPrefix("/").HandlerFunc(playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
+	r.PathPrefix("/graphql").Handler(graphql.Handler(schema))
 
 	s := server.InsecureServer{
 		Handler:         accessControl(r),

@@ -3,13 +3,8 @@ package blog
 import (
 	"context"
 	"encoding/json"
-	"net/http"
-	"strconv"
 	"time"
 
-	"github.com/go-kit/kit/endpoint"
-	kithttp "github.com/go-kit/kit/transport/http"
-	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -19,42 +14,42 @@ import (
 // Post is a piece of content in the blog platform
 type Post struct {
 	// Identifier of the post
-	ID primitive.ObjectID `bson:"_id" json:"id"`
+	ID primitive.ObjectID `bson:"_id" json:"id" graphql:"-"`
 
 	// Title of the post
-	Title string `bson:"title" json:"title"`
+	Title string `bson:"title" json:"title" graphql:"title"`
 
 	// Valid URL string composes with title and ID
-	Slug string `bson:"slug" json:"slug"`
+	Slug string `bson:"slug" json:"slug" graphql:"slug"`
 
 	// Status of the post which could be...
 	// - PUBLISHED
 	// - DRAFT
-	Status `bson:"status" json:"status"`
+	Status `bson:"status" json:"status" graphql:"status"`
 
 	// Original content of the post in markdown syntax
-	Markdown string `bson:"markdown" json:"markdown"`
+	Markdown string `bson:"markdown" json:"markdown" graphql:"markdown"`
 
 	// Content of the post in HTML format which will be translated from markdown
-	HTML string `bson:"html" json:"html"`
+	HTML string `bson:"html" json:"html" graphql:"html"`
 
 	// Date-time that the post was published
-	PublishedAt time.Time `bson:"publishedAt" json:"publishedAt"`
+	PublishedAt time.Time `bson:"publishedAt" json:"publishedAt" graphql:"publishedAt"`
 
 	// Identifier of the author
-	AuthorID string
+	AuthorID string `graphql:"-"`
 
 	// List of categories that the post belonging to
-	Categories []Category
+	Categories []Category `graphql:"-"`
 
 	// List of tags that the post belonging to
-	Tags []Tag
+	Tags []Tag `graphql:"-"`
 
 	// Date-time that the post was created
-	CreatedAt time.Time `bson:"createdAt" json:"createdAt"`
+	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
 
 	// Date-time that the post was updated
-	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt"`
+	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" graphql:"updatedAt"`
 }
 
 // MarshalJSON is a custom JSON marshaling function of post entity
@@ -127,72 +122,6 @@ func (repo postRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, er
 
 func (repo postRepository) FindByID(ctx context.Context, id string) (Post, error) {
 	return Post{}, nil
-}
-
-// MakePostsHandler creates a new HTTP handler for the "posts" resource
-func MakePostsHandler(service Service) http.Handler {
-	findAllPublishedPostsHandler := kithttp.NewServer(
-		makeFindAllPublishedPostsEndpoint(service),
-		decodeFindAllPublishedPostsRequest,
-		encodeResponse,
-	)
-
-	r := mux.NewRouter().PathPrefix("/v1/posts").Subrouter()
-
-	r.Handle("", findAllPublishedPostsHandler).Methods("GET")
-
-	return r
-}
-
-type findAllPublishedPosts struct {
-	limit  int64
-	offset int64
-}
-
-func decodeFindAllPublishedPostsRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	queryParams := r.URL.Query()
-	offset, limit := queryParams.Get("offset"), queryParams.Get("limit")
-
-	o, _ := strconv.Atoi(offset)
-	l, _ := strconv.Atoi(limit)
-
-	if l == 0 {
-		l = 5
-	}
-
-	return findAllPublishedPosts{
-		offset: int64(o),
-		limit:  int64(l),
-	}, nil
-}
-
-func makeFindAllPublishedPostsEndpoint(service Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		req := request.(findAllPublishedPosts)
-		q := NewPostQueryBuilder().
-			WithStatus(Published).
-			WithOffset(req.offset).
-			WithLimit(req.limit).
-			Build()
-
-		return service.Post().FindAll(ctx, q)
-	}
-}
-
-type findPostByIDRequest struct {
-	id string
-}
-
-func decodeFindPostByIDRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	return findPostByIDRequest{""}, nil
-}
-
-func makeFindPostByIDEndpoint(service service) endpoint.Endpoint {
-	return func(_ context.Context, request interface{}) (interface{}, error) {
-		//r := request.(findPostByIDRequest)
-
-		return nil, nil
-	}
 }
 
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts
