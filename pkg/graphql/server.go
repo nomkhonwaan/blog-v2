@@ -33,11 +33,18 @@ func (s *Server) Schema() *graphql.Schema {
 func (s *Server) registerQuery(schema *schemabuilder.Schema) {
 	obj := schema.Query()
 
-	obj.FieldFunc("categories", func(ctx context.Context) ([]blog.Category, error) {
-		return s.service.Category().FindAll(ctx)
-	})
+	obj.FieldFunc("categories", s.makeFieldFuncCategories)
+	obj.FieldFunc("latestPublishedPosts", s.makeFieldFuncLatestPublishedPosts)
 }
 
 func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 	_ = schema.Mutation()
+}
+
+func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, error) {
+	return s.service.Category().FindAll(ctx)
+}
+
+func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context) ([]blog.Post, error) {
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).Build())
 }
