@@ -7,6 +7,6 @@ import (
 )
 
 // Handler is a wrapper function to `graphql.HTTPHandler` for avoiding package name conflict
-func Handler(schema *graphql.Schema) http.Handler {
-	return graphql.Handler(schema)
+func Handler(schema *graphql.Schema, middlewares ...graphql.MiddlewareFunc) http.Handler {
+	return graphql.HTTPHandler(schema, middlewares...)
 }

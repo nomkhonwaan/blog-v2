@@ -71,8 +71,8 @@ func action(ctx *cli.Context) error {
 
 	r := mux.NewRouter()
 
-	r.PathPrefix("/").HandlerFunc(playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.PathPrefix("/graphql").Handler(graphql.Handler(schema))
+	r.HandleFunc("/", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
+	r.Handle("/graphql", graphql.Handler(schema))
 
 	s := server.InsecureServer{
 		Handler:         accessControl(r),
