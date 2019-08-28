@@ -6,6 +6,7 @@ REVISION := $(shell $(GIT) rev-parse HEAD)$(shell if ! $(GIT) diff --no-ext-diff
 # Golang options
 GO       ?= go
 BINDATA  ?= bindata
+MOCKGEN  ?= mockgen
 PKG	 := github.com/nomkhonwaan/myblog
 TAGS     :=
 LDFLAGS  :=
@@ -26,6 +27,12 @@ install:
 clean:
 	@rm -rf $(BINDIR)
 
+.PHONY: mockgen
+mockgen:
+	$(MOCKGEN) -package blog -destination ./pkg/blog/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
+	$(MOCKGEN) -package blog -destination ./pkg/blog/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
+	$(MOCKGEN) -package blog -destination ./pkg/blog/service_mock.go github.com/nomkhonwaan/myblog/pkg/blog Service
+	
 .PHONY: test
 test:
 	$(GO) test ./...
