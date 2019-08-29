@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"context"
+	"errors"
 
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
@@ -34,11 +35,13 @@ func (s *Server) registerQuery(schema *schemabuilder.Schema) {
 	obj := schema.Query()
 
 	obj.FieldFunc("categories", s.makeFieldFuncCategories)
-	obj.FieldFunc("latestPublishedPosts", s.makeFieldFuncLatestPublishedPosts)
+	obj.FieldFunc("latestPublished", s.makeFieldFuncLatestPublishedPosts)
 }
 
 func (s *Server) registerMutation(schema *schemabuilder.Schema) {
-	_ = schema.Mutation()
+	obj := schema.Mutation()
+
+	obj.FieldFunc("createPost", s.makeFieldFuncCreatePost)
 }
 
 func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, error) {
@@ -47,4 +50,9 @@ func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, 
 
 func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context) ([]blog.Post, error) {
 	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).Build())
+}
+
+// TODO: implement create new post mutation which requires nothing but returns an empty post with "DRAFT" status
+func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
+	return blog.Post{}, errors.New("not implement yet")
 }
