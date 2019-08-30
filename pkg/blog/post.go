@@ -3,12 +3,11 @@ package blog
 import (
 	"context"
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/bson/primitive"
-	"time"
-
+	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"time"
 )
 
 // Post is a piece of content in the blog platform
@@ -75,12 +74,12 @@ type PostRepository interface {
 }
 
 // NewPostRepository returns post repository which connects to MongoDB
-func NewPostRepository(col *mongo.Collection) PostRepository {
+func NewPostRepository(col mongo.Collection) PostRepository {
 	return postRepository{col}
 }
 
 type postRepository struct {
-	col *mongo.Collection
+	col mongo.Collection
 }
 
 func (repo postRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, error) {

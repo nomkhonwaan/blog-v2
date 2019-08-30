@@ -2,14 +2,9 @@ package blog
 
 import (
 	"context"
-	"net/http"
-
-	"github.com/go-kit/kit/endpoint"
-	kithttp "github.com/go-kit/kit/transport/http"
-	"github.com/gorilla/mux"
+	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"go.mongodb.org/mongo-driver/mongo"
 )
 
 // Category is a group of posts regarded as having particular shared characteristics
@@ -32,15 +27,16 @@ type CategoryRepository interface {
 }
 
 // NewCategoryRepository returns category repository which connects to MongoDB
-func NewCategoryRepository(col *mongo.Collection) CategoryRepository {
-	return categoryRepository{col}
+func NewCategoryRepository(col mongo.Collection) MongoCategoryRepository {
+	return MongoCategoryRepository{col}
 }
 
-type categoryRepository struct {
-	col *mongo.Collection
+// MongoCategoryRepository is a MongoDB specified repository for category
+type MongoCategoryRepository struct {
+	col mongo.Collection
 }
 
-func (repo categoryRepository) FindAll(ctx context.Context) ([]Category, error) {
+func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, error) {
 	cur, err := repo.col.Find(ctx, bson.D{})
 	if err != nil {
 		return nil, err
@@ -60,33 +56,4 @@ func (repo categoryRepository) FindAll(ctx context.Context) ([]Category, error) 
 	}
 
 	return categories, nil
-}
-
-// MakeCategoriesHandler creates a new HTTP handler for the "categories" resource
-func MakeCategoriesHandler(service Service) http.Handler {
-	findAllCategoriesHandler := kithttp.NewServer(
-		makeFindAllCategoriesEndpoint(service),
-		decodeFindAllCategoriesRequest,
-		encodeResponse,
-	)
-
-	r := mux.NewRouter().PathPrefix("/v1/categories").Subrouter()
-
-	r.Handle("", findAllCategoriesHandler).Methods("GET")
-
-	return r
-}
-
-type findAllCategoriesRequest struct{}
-
-func decodeFindAllCategoriesRequest(_ context.Context, _ *http.Request) (interface{}, error) {
-	return findAllCategoriesRequest{}, nil
-}
-
-func makeFindAllCategoriesEndpoint(service Service) endpoint.Endpoint {
-	return func(ctx context.Context, request interface{}) (interface{}, error) {
-		_ = request.(findAllCategoriesRequest)
-
-		return service.Category().FindAll(ctx)
-	}
 }

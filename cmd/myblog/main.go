@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"net/http"
@@ -73,7 +72,8 @@ func action(ctx *cli.Context) error {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", auth.Auth0MiddlewareFunc(graphql.Handler(schema)))
+	r.Handle("/graphql", graphql.Handler(schema))
+	//r.Handle("/graphql", auth.Auth0JWTMiddlewareFunc(graphql.Handler(schema)))
 
 	s := server.InsecureServer{
 		Handler:         accessControl(r),
