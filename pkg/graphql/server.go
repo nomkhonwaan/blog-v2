@@ -3,7 +3,6 @@ package graphql
 import (
 	"context"
 	"errors"
-
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
@@ -54,5 +53,11 @@ func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context) ([]blog.
 
 // TODO: implement create new post mutation which requires nothing but returns an empty post with "DRAFT" status
 func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
+	// NOTE: Auth0 will return user ID in the request context and can be retrieve like this
+	//
+	// ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
+	//
+	// Where `auth.UserProperty` is a string name of the context key which defines at auth package
+
 	return blog.Post{}, errors.New("not implement yet")
 }

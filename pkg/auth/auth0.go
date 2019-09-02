@@ -9,15 +9,22 @@ import (
 	"net/http"
 )
 
-// Auth0JWTMiddlewareFunc performs validation against an access_token in the incoming request
-func Auth0JWTMiddlewareFunc(audience, issuer, jwksURI string) {
-	jwtmiddleware.New(jwtmiddleware.Options{
+// The name of the property in the request where the user information
+// from the JWT will be stored.
+// Default value: "user"
+const UserProperty = "user"
+
+// NewJWTMiddleware creates new JWT middleware function from the given configuration.
+// The JWT middleware will looking for an access_token in the incoming request header (Authorization: Bearer),
+// then call to Auth0 service for checking the access_token.
+func NewJWTMiddleware(audience, issuer, jwksURI string) *jwtmiddleware.JWTMiddleware {
+	return jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
-			if ! token.Claims.(jwt.MapClaims).VerifyAudience(audience, false) {
+			if !token.Claims.(jwt.MapClaims).VerifyAudience(audience, false) {
 				return nil, errors.New("invalid audience")
 			}
 
-			if ! token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false) {
+			if !token.Claims.(jwt.MapClaims).VerifyIssuer(issuer, false) {
 				return nil, errors.New("invalid issuer")
 			}
 
@@ -29,7 +36,9 @@ func Auth0JWTMiddlewareFunc(audience, issuer, jwksURI string) {
 			result, _ := jwt.ParseRSAPublicKeyFromPEM([]byte(certificate))
 			return result, nil
 		},
-		SigningMethod: jwt.SigningMethodRS256,
+		UserProperty:        UserProperty,
+		CredentialsOptional: true,
+		SigningMethod:       jwt.SigningMethodRS256,
 	})
 }
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"net/http"
@@ -46,6 +47,21 @@ func main() {
 			EnvVar: "MONGODB_URI",
 			Value:  "mongodb://localhost/nomkhonwaan_com",
 		},
+		cli.StringFlag{
+			Name:   "auth0-audience",
+			EnvVar: "AUTH0_AUDIENCE",
+			Value:  "https://api.nomkhonwaan.com",
+		},
+		cli.StringFlag{
+			Name:   "auth0-issuer",
+			EnvVar: "AUTH0_ISSUER",
+			Value:  "https://nomkhonwaan.auth0.com/",
+		},
+		cli.StringFlag{
+			Name:   "auth0-jwks-uri",
+			EnvVar: "AUTH0_JWKS_URI",
+			Value:  "https://nomkhonwaan.auth0.com/.well-known/jwks.json",
+		},
 	}
 	app.Action = action
 
@@ -71,9 +87,14 @@ func action(ctx *cli.Context) error {
 
 	r := mux.NewRouter()
 
+	jwtMiddleware := auth.NewJWTMiddleware(
+		ctx.String("auth0-audience"),
+		ctx.String("auth0-issuer"),
+		ctx.String("auth0-jwks-uri"),
+	)
+
 	r.HandleFunc("/", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", graphql.Handler(schema))
-	//r.Handle("/graphql", auth.Auth0JWTMiddlewareFunc(graphql.Handler(schema)))
+	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
 
 	s := server.InsecureServer{
 		Handler:         accessControl(r),
