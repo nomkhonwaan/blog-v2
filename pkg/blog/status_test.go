@@ -19,7 +19,7 @@ func TestStatuses(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, string(test.status), test.expected)
+			assert.Equal(t, test.expected, string(test.status))
 		})
 	}
 

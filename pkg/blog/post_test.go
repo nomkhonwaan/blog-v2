@@ -61,7 +61,7 @@ func TestPostQueryBuilder(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			assert.Equal(t, test.qb.Build(), test.expected)
+			assert.Equal(t, test.expected, test.qb.Build())
 		})
 	}
 

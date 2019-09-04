@@ -14,6 +14,6 @@ func TestNewService(t *testing.T) {
 	service := NewService(categoryRepository, postRepository)
 
 	// Then
-	assert.Equal(t, service.Category(), categoryRepository)
-	assert.Equal(t, service.Post(), postRepository)
+	assert.Equal(t, categoryRepository, service.Category())
+	assert.Equal(t, postRepository, service.Post())
 }

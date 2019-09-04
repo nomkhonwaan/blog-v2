@@ -22,6 +22,6 @@ func TestEncodeResponse(t *testing.T) {
 
 	// Then
 	assert.Nil(t, err)
-	assert.Equal(t, recorder.Header().Get("Content-Type"), "application/json; charset=utf-8")
-	assert.Equal(t, recorder.Body.String(), "{\"hello\":\"world!\"}\n")
+	assert.Equal(t, "application/json; charset=utf-8", recorder.Header().Get("Content-Type"))
+	assert.Equal(t, "{\"hello\":\"world!\"}\n", recorder.Body.String())
 }

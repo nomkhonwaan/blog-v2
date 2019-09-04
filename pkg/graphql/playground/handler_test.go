@@ -15,7 +15,7 @@ func TestGraphiql(t *testing.T) {
 	HandlerFunc(gzipAsset)(recorder, nil)
 
 	// Then
-	assert.Equal(t, recorder.Header().Get("Content-Encoding"), "gzip")
-	assert.Equal(t, recorder.Header().Get("Content-Type"), "text/html")
-	assert.Equal(t, recorder.Body.Bytes(), gzipAsset)
+	assert.Equal(t, "gzip", recorder.Header().Get("Content-Encoding"))
+	assert.Equal(t, "text/html", recorder.Header().Get("Content-Type"))
+	assert.Equal(t, gzipAsset, recorder.Body.Bytes())
 }
