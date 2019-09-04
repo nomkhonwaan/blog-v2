@@ -9,8 +9,7 @@ import (
 	"net/http"
 )
 
-// The name of the property in the request where the user information
-// from the JWT will be stored.
+// The name of the property in the request where the user information from the JWT will be stored.
 // Default value: "user"
 const UserProperty = "user"
 
