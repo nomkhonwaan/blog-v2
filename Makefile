@@ -32,6 +32,7 @@ mockgen:
 	$(MOCKGEN) -package blog -destination ./pkg/blog/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
 	$(MOCKGEN) -package blog -destination ./pkg/blog/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
 	$(MOCKGEN) -package blog -destination ./pkg/blog/service_mock.go github.com/nomkhonwaan/myblog/pkg/blog Service
+	$(MOCKGEN) -package mongo -destination ./pkg/mongo/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
 	
 .PHONY: test
 test:
