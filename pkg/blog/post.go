@@ -24,7 +24,7 @@ type Post struct {
 	// Status of the post which could be...
 	// - PUBLISHED
 	// - DRAFT
-	Status `bson:"status" json:"status" graphql:"status"`
+	Status Status `bson:"status" json:"status" graphql:"status"`
 
 	// Original content of the post in markdown syntax
 	Markdown string `bson:"markdown" json:"markdown" graphql:"markdown"`
@@ -39,7 +39,7 @@ type Post struct {
 	AuthorID string `graphql:"-"`
 
 	// List of categories that the post belonging to
-	Categories []Category `graphql:"-"`
+	Categories []mongo.DBRef `bson:"categories" graphql:"-"`
 
 	// List of tags that the post belonging to
 	Tags []Tag `graphql:"-"`

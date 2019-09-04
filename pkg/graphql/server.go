@@ -47,8 +47,14 @@ func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, 
 	return s.service.Category().FindAll(ctx)
 }
 
-func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context) ([]blog.Post, error) {
-	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).Build())
+func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
+	return s.service.Post().FindAll(ctx,
+		blog.NewPostQueryBuilder().
+			WithStatus(blog.Published).
+			WithOffset(args.Offset).
+			WithLimit(args.Limit).
+			Build(),
+	)
 }
 
 // TODO: implement create new post mutation which requires nothing but returns an empty post with "DRAFT" status
