@@ -7,6 +7,7 @@ package blog
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
+	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 	reflect "reflect"
 )
 
@@ -46,4 +47,19 @@ func (m *MockCategoryRepository) FindAll(arg0 context.Context) ([]Category, erro
 func (mr *MockCategoryRepositoryMockRecorder) FindAll(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockCategoryRepository)(nil).FindAll), arg0)
+}
+
+// FindAllByIDs mocks base method
+func (m *MockCategoryRepository) FindAllByIDs(arg0 context.Context, arg1 []primitive.ObjectID) ([]Category, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllByIDs", arg0, arg1)
+	ret0, _ := ret[0].([]Category)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllByIDs indicates an expected call of FindAllByIDs
+func (mr *MockCategoryRepositoryMockRecorder) FindAllByIDs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllByIDs", reflect.TypeOf((*MockCategoryRepository)(nil).FindAllByIDs), arg0, arg1)
 }

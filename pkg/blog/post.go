@@ -6,6 +6,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	mgo "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
@@ -38,8 +39,8 @@ type Post struct {
 	// Identifier of the author
 	AuthorID string `graphql:"-"`
 
-	// List of categories that the post belonging to
-	Categories []mongo.DBRef `bson:"categories" graphql:"-"`
+	// List of categories (in reference to the category collection) that the post belonging to
+	DBRefCategories []mongo.DBRef `bson:"categories" json:"-" graphql:"-"`
 
 	// List of tags that the post belonging to
 	Tags []Tag `graphql:"-"`
@@ -52,15 +53,25 @@ type Post struct {
 }
 
 // MarshalJSON is a custom JSON marshaling function of post entity
-func (p *Post) MarshalJSON() ([]byte, error) {
+func (p Post) MarshalJSON() ([]byte, error) {
 	type Alias Post
 	return json.Marshal(&struct {
 		ID string `json:"id"`
 		*Alias
 	}{
 		ID:    p.ID.Hex(),
-		Alias: (*Alias)(p),
+		Alias: (*Alias)(&p),
 	})
+}
+
+func (Post) Categories(repository CategoryRepository) interface{} {
+	return func(ctx context.Context, p Post) ([]Category, error) {
+		ids := make([]primitive.ObjectID, len(p.DBRefCategories))
+		for i, dbRef := range p.DBRefCategories {
+			ids[i] = dbRef.ID
+		}
+		return repository.FindAllByIDs(ctx, ids)
+	}
 }
 
 // PostRepository is a repository interface of post
@@ -74,15 +85,15 @@ type PostRepository interface {
 }
 
 // NewPostRepository returns post repository which connects to MongoDB
-func NewPostRepository(col mongo.Collection) PostRepository {
-	return postRepository{col}
+func NewPostRepository(col mongo.Collection) MongoPostRepository {
+	return MongoPostRepository{col}
 }
 
-type postRepository struct {
+type MongoPostRepository struct {
 	col mongo.Collection
 }
 
-func (repo postRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, error) {
+func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, error) {
 	filter := bson.M{}
 	opts := &options.FindOptions{}
 
@@ -104,7 +115,16 @@ func (repo postRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, er
 	}
 	defer cur.Close(ctx)
 
+	return repo.scanAll(ctx, cur)
+}
+
+func (repo MongoPostRepository) FindByID(ctx context.Context, id string) (Post, error) {
+	return Post{}, nil
+}
+
+func (repo MongoPostRepository) scanAll(ctx context.Context, cur *mgo.Cursor) ([]Post, error) {
 	posts := make([]Post, 0)
+
 	for cur.Next(ctx) {
 		var p Post
 
@@ -117,10 +137,6 @@ func (repo postRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, er
 	}
 
 	return posts, nil
-}
-
-func (repo postRepository) FindByID(ctx context.Context, id string) (Post, error) {
-	return Post{}, nil
 }
 
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts

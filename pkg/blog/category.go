@@ -5,6 +5,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	mgo "go.mongodb.org/mongo-driver/mongo"
 )
 
 // Category is a group of posts regarded as having particular shared characteristics
@@ -24,6 +25,9 @@ type Category struct {
 type CategoryRepository interface {
 	// Returns list of categories
 	FindAll(ctx context.Context) ([]Category, error)
+
+	// Returns list of categories from list of IDs
+	FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Category, error)
 }
 
 // NewCategoryRepository returns category repository which connects to MongoDB
@@ -43,7 +47,26 @@ func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, er
 	}
 	defer cur.Close(ctx)
 
+	return repo.scanAll(ctx, cur)
+}
+
+func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Category, error) {
+	cur, err := repo.col.Find(ctx, bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	return repo.scanAll(ctx, cur)
+}
+
+func (repo MongoCategoryRepository) scanAll(ctx context.Context, cur *mgo.Cursor) ([]Category, error) {
 	categories := make([]Category, 0)
+
 	for cur.Next(ctx) {
 		var c Category
 

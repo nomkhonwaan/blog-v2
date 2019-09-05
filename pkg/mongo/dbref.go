@@ -2,7 +2,11 @@ package mongo
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+// DBRef represents a MongoDB DBRef type
 type DBRef struct {
-	Ref string             `bson:"$ref"`
-	ID  primitive.ObjectID `bson:"$id"`
+	// Reference collection name
+	Ref string `bson:"$ref"`
+
+	// Reference identifier
+	ID primitive.ObjectID `bson:"$id"`
 }
