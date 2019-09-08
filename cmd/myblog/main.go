@@ -5,6 +5,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
+	"github.com/nomkhonwaan/myblog/pkg/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -87,17 +88,13 @@ func action(ctx *cli.Context) error {
 
 	r := mux.NewRouter()
 
-	jwtMiddleware := auth.NewJWTMiddleware(
-		ctx.String("auth0-audience"),
-		ctx.String("auth0-issuer"),
-		ctx.String("auth0-jwks-uri"),
-	)
+	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"))
 
 	r.HandleFunc("/", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
 
 	s := server.InsecureServer{
-		Handler:         accessControl(r),
+		Handler:         allowCORS(logRequest(r)),
 		ShutdownTimeout: time.Minute * 5,
 	}
 
@@ -113,30 +110,11 @@ func action(ctx *cli.Context) error {
 	return nil
 }
 
-func accessControl(h http.Handler) http.Handler {
+func allowCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set(
-			"Access-Control-Allow-Methods",
-			strings.Join([]string{
-				"GET",
-				"POST",
-				"PUT",
-				"PATCH",
-				"DELETE",
-				"OPTIONS",
-			}, ","))
-		w.Header().Set(
-			"Access-Control-Allow-Headers",
-			strings.Join([]string{
-				"Accept",
-				"Accept-Encoding",
-				"Accept-Language",
-				"Authorization",
-				"Content-Length",
-				"Content-Type",
-			}, ","),
-		)
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS",}, ","))
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join([]string{"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Content-Length", "Content-Type"}, ","), )
 
 		if r.Method == "OPTIONS" {
 			return
@@ -144,6 +122,11 @@ func accessControl(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
+}
+
+func logRequest(h http.Handler) http.Handler {
+	loggingInterceptor := log.NewLoggingInterceptor(time.Now, logrus.Infof)
+	return loggingInterceptor.Handler(h)
 }
 
 func handleSignals() <-chan struct{} {
