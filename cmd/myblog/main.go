@@ -5,6 +5,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
+	"github.com/nomkhonwaan/myblog/pkg/log"
 	"net/http"
 	"os"
 	"os/signal"
@@ -93,7 +94,7 @@ func action(ctx *cli.Context) error {
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
 
 	s := server.InsecureServer{
-		Handler:         allowCORS(r),
+		Handler:         allowCORS(logRequest(r)),
 		ShutdownTimeout: time.Minute * 5,
 	}
 
@@ -121,6 +122,10 @@ func allowCORS(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
+}
+
+func logRequest(h http.Handler) http.Handler {
+	return log.NewLoggingInterceptor(log.NewDefaultTimer(), log.NewDefaultOutputer()).Handler(h)
 }
 
 func handleSignals() <-chan struct{} {
