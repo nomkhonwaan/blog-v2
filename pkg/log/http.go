@@ -5,20 +5,39 @@ import (
 	"time"
 )
 
-// LoggingInterceptor uses for logging an HTTP request with response status code and processing time
+// Timer is a compatible interface for retrieving current system date-time
+type Timer interface {
+	// Return current system date-time
+	Now() time.Time
+}
+
+// Outputer is a compatible interface for logging with format
+type Outputer interface {
+	// Log with format to the output
+	Printf(format string, args ...interface{})
+}
+
+// LoggingInterceptor is an HTTP logger which logs in similar format as NGINX
 type LoggingInterceptor struct {
-	now    func() time.Time
-	printf func(format string, args ...interface{})
+	Timer
+	Outputer
 }
 
 func (interceptor LoggingInterceptor) Handler(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		start := interceptor.now()
-		cw := &CustomResponseWriter{ResponseWriter: w}
+		start := interceptor.Timer.Now()
+		customResponseWriter := &CustomResponseWriter{ResponseWriter: w}
 
-		h.ServeHTTP(cw, r)
+		h.ServeHTTP(customResponseWriter, r)
 
-		interceptor.printf("\"%s %s\" %d %q %q \"%v\"", r.Method, r.RequestURI, cw.statusCode, r.UserAgent(), r.RemoteAddr, time.Since(start))
+		interceptor.Outputer.Printf("\"%s %s\" %d %q %q \"%v\"",
+			r.Method,
+			r.RequestURI,
+			customResponseWriter.statusCode,
+			r.UserAgent(),
+			r.RemoteAddr,
+			time.Since(start),
+		)
 	})
 }
 
@@ -34,7 +53,7 @@ func (w *CustomResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// NewLoggingInterceptor returns the LoggingInterceptor object
-func NewLoggingInterceptor(now func() time.Time, printf func(format string, args ...interface{})) LoggingInterceptor {
-	return LoggingInterceptor{now, printf}
+// NewLoggingInterceptor creates new logger for logging HTTP request
+func NewLoggingInterceptor(timer Timer, outputer Outputer) LoggingInterceptor {
+	return LoggingInterceptor{Timer: timer, Outputer: outputer}
 }
