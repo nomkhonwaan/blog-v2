@@ -18,7 +18,7 @@ func (interceptor LoggingInterceptor) Handler(h http.Handler) http.Handler {
 
 		h.ServeHTTP(customResponseWriter, r)
 
-		interceptor.Outputer.Printf("\"%s %s\" %d %q %q \"%v\"",
+		interceptor.Outputer.Printf(`"%s %s" %d %q %q "%v"`,
 			r.Method,
 			r.RequestURI,
 			customResponseWriter.statusCode,
