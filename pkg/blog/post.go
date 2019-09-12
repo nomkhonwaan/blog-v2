@@ -6,7 +6,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	mgo "go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
@@ -43,7 +42,7 @@ type Post struct {
 	DBRefCategories []mongo.DBRef `bson:"categories" json:"-" graphql:"-"`
 
 	// List of tags that the post belonging to
-	Tags []Tag `graphql:"-"`
+	DBRefTags []mongo.DBRef `bson:"tags" json:"-" graphql:"-"`
 
 	// Date-time that the post was created
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
@@ -64,14 +63,18 @@ func (p Post) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (Post) Categories(repository CategoryRepository) interface{} {
+func (Post) Categories(repo CategoryRepository) interface{} {
 	return func(ctx context.Context, p Post) ([]Category, error) {
 		ids := make([]primitive.ObjectID, len(p.DBRefCategories))
 		for i, dbRef := range p.DBRefCategories {
 			ids[i] = dbRef.ID
 		}
-		return repository.FindAllByIDs(ctx, ids)
+		return repo.FindAllByIDs(ctx, ids)
 	}
+}
+
+func (Post) Tags(repo TagRepository) interface{} {
+	return nil
 }
 
 // PostRepository is a repository interface of post
@@ -115,28 +118,14 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 	}
 	defer cur.Close(ctx)
 
-	return repo.scanAll(ctx, cur)
+	var posts []Post
+	err = mongo.ScanAll(ctx, cur, &posts)
+
+	return posts, err
 }
 
 func (repo MongoPostRepository) FindByID(ctx context.Context, id string) (Post, error) {
 	return Post{}, nil
-}
-
-func (repo MongoPostRepository) scanAll(ctx context.Context, cur *mgo.Cursor) ([]Post, error) {
-	posts := make([]Post, 0)
-
-	for cur.Next(ctx) {
-		var p Post
-
-		err := cur.Decode(&p)
-		if err != nil {
-			return nil, err
-		}
-
-		posts = append(posts, p)
-	}
-
-	return posts, nil
 }
 
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts

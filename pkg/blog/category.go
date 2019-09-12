@@ -5,7 +5,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	mgo "go.mongodb.org/mongo-driver/mongo"
 )
 
 // Category is a group of posts regarded as having particular shared characteristics
@@ -47,7 +46,10 @@ func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, er
 	}
 	defer cur.Close(ctx)
 
-	return repo.scanAll(ctx, cur)
+	var categories []Category
+	err = mongo.ScanAll(ctx, cur, &categories)
+
+	return categories, err
 }
 
 func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Category, error) {
@@ -61,22 +63,8 @@ func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids []prim
 	}
 	defer cur.Close(ctx)
 
-	return repo.scanAll(ctx, cur)
-}
+	var categories []Category
+	err = mongo.ScanAll(ctx, cur, &categories)
 
-func (repo MongoCategoryRepository) scanAll(ctx context.Context, cur *mgo.Cursor) ([]Category, error) {
-	categories := make([]Category, 0)
-
-	for cur.Next(ctx) {
-		var c Category
-
-		err := cur.Decode(&c)
-		if err != nil {
-			return nil, err
-		}
-
-		categories = append(categories, c)
-	}
-
-	return categories, nil
+	return categories, err
 }
