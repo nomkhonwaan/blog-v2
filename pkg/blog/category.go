@@ -47,7 +47,7 @@ func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, er
 	defer cur.Close(ctx)
 
 	var categories []Category
-	err = mongo.ScanAll(ctx, cur, &categories)
+	err = cur.Decode(&categories)
 
 	return categories, err
 }
@@ -64,7 +64,7 @@ func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids []prim
 	defer cur.Close(ctx)
 
 	var categories []Category
-	err = mongo.ScanAll(ctx, cur, &categories)
+	err = cur.Decode(&categories)
 
 	return categories, err
 }

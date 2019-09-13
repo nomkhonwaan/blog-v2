@@ -119,7 +119,7 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 	defer cur.Close(ctx)
 
 	var posts []Post
-	err = mongo.ScanAll(ctx, cur, &posts)
+	err = cur.Decode(&posts)
 
 	return posts, err
 }

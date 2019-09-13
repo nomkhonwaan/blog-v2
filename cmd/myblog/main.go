@@ -2,26 +2,25 @@ package main
 
 import (
 	"context"
+	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
+	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
+	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"github.com/nomkhonwaan/myblog/pkg/log"
+	"github.com/nomkhonwaan/myblog/pkg/mongo"
+	"github.com/nomkhonwaan/myblog/pkg/server"
+	"github.com/samsarahq/thunder/graphql/introspection"
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/gorilla/mux"
-	"github.com/nomkhonwaan/myblog/pkg/blog"
-	"github.com/nomkhonwaan/myblog/pkg/graphql"
-	"github.com/nomkhonwaan/myblog/pkg/server"
-	"github.com/samsarahq/thunder/graphql/introspection"
-	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var (
@@ -78,8 +77,8 @@ func action(ctx *cli.Context) error {
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	categoryRepository := blog.NewCategoryRepository(db.Collection("categories"))
-	postRepository := blog.NewPostRepository(db.Collection("posts"))
+	categoryRepository := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
+	postRepository := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 
 	service := blog.NewService(categoryRepository, postRepository)
 

@@ -5,7 +5,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	mgo "go.mongodb.org/mongo-driver/mongo"
 )
 
 // Tag is a label attached to the post for the purpose of identification
@@ -39,22 +38,8 @@ func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids []primitive
 	}
 	defer cur.Close(ctx)
 
-	return repo.scanAll(ctx, cur)
-}
+	var tags []Tag
+	err = cur.Decode(&tags)
 
-func (repo MongoTagRepository) scanAll(ctx context.Context, cur *mgo.Cursor) ([]Tag, error) {
-	tags := make([]Tag, 0)
-
-	for cur.Next(ctx) {
-		var t Tag
-
-		err := cur.Decode(&t)
-		if err != nil {
-			return nil, err
-		}
-
-		tags = append(tags, t)
-	}
-
-	return tags, nil
+	return tags, err
 }
