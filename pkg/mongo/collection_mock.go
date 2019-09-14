@@ -7,7 +7,6 @@ package mongo
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	mongo "go.mongodb.org/mongo-driver/mongo"
 	options "go.mongodb.org/mongo-driver/mongo/options"
 	reflect "reflect"
 )
@@ -36,14 +35,14 @@ func (m *MockCollection) EXPECT() *MockCollectionMockRecorder {
 }
 
 // Find mocks base method
-func (m *MockCollection) Find(arg0 context.Context, arg1 interface{}, arg2 ...*options.FindOptions) (*mongo.Cursor, error) {
+func (m *MockCollection) Find(arg0 context.Context, arg1 interface{}, arg2 ...*options.FindOptions) (Cursor, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Find", varargs...)
-	ret0, _ := ret[0].(*mongo.Cursor)
+	ret0, _ := ret[0].(Cursor)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

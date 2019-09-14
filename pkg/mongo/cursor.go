@@ -32,7 +32,7 @@ func (cur CustomCursor) Decode(val interface{}) error {
 		return errors.New("val argument must be a pointer")
 	}
 
-	// call the original decoding function for any non-slice variable
+	// call the original decoding function for non-slice variable
 	if v.Elem().Kind() != reflect.Slice {
 		return cur.Cursor.Decode(&val)
 	}
