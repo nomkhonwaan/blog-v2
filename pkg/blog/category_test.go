@@ -7,31 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
-	"net/http/httptest"
 	"testing"
 )
-
-func TestJSONMarshalingCategoryEntity(t *testing.T) {
-	// Given
-	id := primitive.NewObjectID()
-	category := Category{
-		ID:   id,
-		Name: "Web Development",
-		Slug: "web-development-" + id.Hex(),
-	}
-	recorder := httptest.NewRecorder()
-
-	// When
-	err := encodeResponse(
-		context.Background(),
-		recorder,
-		category,
-	)
-
-	// Then
-	assert.Nil(t, err)
-	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"name\":\"Web Development\",\"slug\":\"web-development-"+id.Hex()+"\"}\n", recorder.Body.String())
-}
 
 func TestMongoCategoryRepository_FindAll(t *testing.T) {
 	// Given
