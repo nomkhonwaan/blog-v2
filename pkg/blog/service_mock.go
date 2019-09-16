@@ -59,3 +59,17 @@ func (mr *MockServiceMockRecorder) Post() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Post", reflect.TypeOf((*MockService)(nil).Post))
 }
+
+// Tag mocks base method
+func (m *MockService) Tag() TagRepository {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Tag")
+	ret0, _ := ret[0].(TagRepository)
+	return ret0
+}
+
+// Tag indicates an expected call of Tag
+func (mr *MockServiceMockRecorder) Tag() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tag", reflect.TypeOf((*MockService)(nil).Tag))
+}

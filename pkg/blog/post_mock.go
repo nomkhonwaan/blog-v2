@@ -33,6 +33,21 @@ func (m *MockPostRepository) EXPECT() *MockPostRepositoryMockRecorder {
 	return m.recorder
 }
 
+// Create mocks base method
+func (m *MockPostRepository) Create(arg0 context.Context, arg1 string) (Post, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Create", arg0, arg1)
+	ret0, _ := ret[0].(Post)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Create indicates an expected call of Create
+func (mr *MockPostRepositoryMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockPostRepository)(nil).Create), arg0, arg1)
+}
+
 // FindAll mocks base method
 func (m *MockPostRepository) FindAll(arg0 context.Context, arg1 PostQuery) ([]Post, error) {
 	m.ctrl.T.Helper()
@@ -46,19 +61,4 @@ func (m *MockPostRepository) FindAll(arg0 context.Context, arg1 PostQuery) ([]Po
 func (mr *MockPostRepositoryMockRecorder) FindAll(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockPostRepository)(nil).FindAll), arg0, arg1)
-}
-
-// FindByID mocks base method
-func (m *MockPostRepository) FindByID(arg0 context.Context, arg1 string) (Post, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByID", arg0, arg1)
-	ret0, _ := ret[0].(Post)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindByID indicates an expected call of FindByID
-func (mr *MockPostRepositoryMockRecorder) FindByID(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockPostRepository)(nil).FindByID), arg0, arg1)
 }

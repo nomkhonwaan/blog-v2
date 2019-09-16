@@ -7,13 +7,14 @@ import (
 
 func TestNewService(t *testing.T) {
 	// Given
-	categoryRepository := &MockCategoryRepository{}
-	postRepository := &MockPostRepository{}
+	categoryRepo := &MockCategoryRepository{}
+	postRepo := &MockPostRepository{}
+	tagRepo := &MockTagRepository{}
 
 	// When
-	service := NewService(categoryRepository, postRepository)
+	service := NewService(categoryRepo, postRepo, tagRepo)
 
 	// Then
-	assert.Equal(t, categoryRepository, service.Category())
-	assert.Equal(t, postRepository, service.Post())
+	assert.Equal(t, categoryRepo, service.Category())
+	assert.Equal(t, postRepo, service.Post())
 }
