@@ -3,9 +3,12 @@ package graphql
 import (
 	"context"
 	"errors"
+	"github.com/dgrijalva/jwt-go"
+	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"net/http"
 )
 
 // Server is our GraphQL server
@@ -48,6 +51,7 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj := schema.Object("Post", blog.Post{})
 
 	obj.FieldFunc("categories", (blog.Post{}).Categories(s.service.Category()))
+	obj.FieldFunc("tags", (blog.Post{}).Tags(s.service.Tag()))
 }
 
 func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, error) {
@@ -64,13 +68,11 @@ func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args str
 	)
 }
 
-// TODO: implement create new post mutation which requires nothing but returns an empty post with "DRAFT" status
 func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
-	// NOTE: Auth0 will return user ID in the request context and can be retrieve like this
-	//
-	// ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
-	//
-	// Where `auth.UserProperty` is a string name of the context key which defines at auth package
+	if ctx.Value(auth.UserProperty) == nil {
+		return blog.Post{}, errors.New(http.StatusText(http.StatusUnauthorized))
+	}
 
-	return blog.Post{}, errors.New("not implement yet")
+	authorID := ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
+	return s.service.Post().Create(ctx, authorID.(string))
 }

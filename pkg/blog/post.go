@@ -3,6 +3,7 @@ package blog
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -36,7 +37,7 @@ type Post struct {
 	PublishedAt time.Time `bson:"publishedAt" json:"publishedAt" graphql:"publishedAt"`
 
 	// Identifier of the author
-	AuthorID string `graphql:"-"`
+	AuthorID string `bson:"authorId" json:"authorId" graphql:"authorId"`
 
 	// List of categories (in reference to the category collection) that the post belonging to
 	DBRefCategories []mongo.DBRef `bson:"categories" json:"-" graphql:"-"`
@@ -74,17 +75,22 @@ func (Post) Categories(repo CategoryRepository) interface{} {
 }
 
 func (Post) Tags(repo TagRepository) interface{} {
-	return nil
+	return func(ctx context.Context, p Post) ([]Tag, error) {
+		ids := make([]primitive.ObjectID, len(p.DBRefTags))
+		for i, dbRef := range p.DBRefTags {
+			ids[i] = dbRef.ID
+		}
+		return repo.FindAllByIDs(ctx, ids)
+	}
 }
 
-// PostRepository is a repository interface of post
-// which defines all post entity related functions
+// PostRepository is a repository interface of post which defines all post entity related functions
 type PostRepository interface {
-	// Returns list of posts
-	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
+	// Create new empty post which belongs to the author and "Draft" status
+	Create(context.Context, string) (Post, error)
 
-	// Returns a single post by its ID
-	FindByID(ctx context.Context, id string) (Post, error)
+	// Return list of posts filtered by post query
+	FindAll(context.Context, PostQuery) ([]Post, error)
 }
 
 // NewPostRepository returns post repository which connects to MongoDB
@@ -94,6 +100,29 @@ func NewPostRepository(col mongo.Collection) MongoPostRepository {
 
 type MongoPostRepository struct {
 	col mongo.Collection
+}
+
+func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Post, error) {
+	id := primitive.NewObjectID()
+	post := Post{
+		ID:        id,
+		Slug:      fmt.Sprintf("%s", id.Hex()),
+		Status:    Draft,
+		AuthorID:  authorID,
+		CreatedAt: time.Now(),
+	}
+
+	doc, err := bson.Marshal(post)
+	if err != nil {
+		return Post{}, err
+	}
+
+	_, err = repo.col.InsertOne(ctx, doc)
+	if err != nil {
+		return Post{}, err
+	}
+
+	return post, nil
 }
 
 func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, error) {

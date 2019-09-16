@@ -77,10 +77,11 @@ func action(ctx *cli.Context) error {
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	categoryRepository := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
-	postRepository := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
+	categoryRepo := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
+	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
+	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
-	service := blog.NewService(categoryRepository, postRepository)
+	service := blog.NewService(categoryRepo, postRepo, tagRepo)
 
 	schema := graphql.NewServer(service).Schema()
 	introspection.AddIntrospectionToSchema(schema)

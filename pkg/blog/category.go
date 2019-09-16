@@ -23,10 +23,10 @@ type Category struct {
 // which defines all category entity related functions
 type CategoryRepository interface {
 	// Returns list of categories
-	FindAll(ctx context.Context) ([]Category, error)
+	FindAll(context.Context) ([]Category, error)
 
 	// Returns list of categories from list of IDs
-	FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Category, error)
+	FindAllByIDs(context.Context, []primitive.ObjectID) ([]Category, error)
 }
 
 // NewCategoryRepository returns category repository which connects to MongoDB

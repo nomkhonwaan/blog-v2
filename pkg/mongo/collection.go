@@ -10,6 +10,9 @@ import (
 type Collection interface {
 	// Perform finding the documents matching a model
 	Find(context.Context, interface{}, ...*options.FindOptions) (Cursor, error)
+
+	// Insert a single document into the collection
+	InsertOne(context.Context, interface{}, ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 }
 
 // CustomCollection provides customized collection methods on top of the original `mongo.Collection`

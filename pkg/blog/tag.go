@@ -20,7 +20,7 @@ type Tag struct {
 }
 
 type TagRepository interface {
-	FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Tag, error)
+	FindAllByIDs(context.Context, []primitive.ObjectID) ([]Tag, error)
 }
 
 func NewTagRepository(col mongo.Collection) MongoTagRepository {
@@ -32,7 +32,11 @@ type MongoTagRepository struct {
 }
 
 func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Tag, error) {
-	cur, err := repo.col.Find(ctx, bson.D{})
+	cur, err := repo.col.Find(ctx, bson.M{
+		"_id": bson.M{
+			"$in": ids,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}
