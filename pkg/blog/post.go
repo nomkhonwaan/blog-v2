@@ -68,8 +68,8 @@ func (p Post) MarshalJSON() ([]byte, error) {
 func (Post) BelongToCategories(repo CategoryRepository) interface{} {
 	return func(ctx context.Context, p Post) ([]Category, error) {
 		ids := make([]primitive.ObjectID, len(p.Categories))
-		for i, dbRef := range p.Categories {
-			ids[i] = dbRef.ID
+		for i, category := range p.Categories {
+			ids[i] = category.ID
 		}
 		return repo.FindAllByIDs(ctx, ids)
 	}
@@ -79,8 +79,8 @@ func (Post) BelongToCategories(repo CategoryRepository) interface{} {
 func (Post) BelongToTags(repo TagRepository) interface{} {
 	return func(ctx context.Context, p Post) ([]Tag, error) {
 		ids := make([]primitive.ObjectID, len(p.Tags))
-		for i, dbRef := range p.Tags {
-			ids[i] = dbRef.ID
+		for i, tag := range p.Tags {
+			ids[i] = tag.ID
 		}
 		return repo.FindAllByIDs(ctx, ids)
 	}
