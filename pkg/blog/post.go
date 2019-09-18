@@ -40,10 +40,10 @@ type Post struct {
 	AuthorID string `bson:"authorId" json:"authorId" graphql:"authorId"`
 
 	// List of categories (in reference to the category collection) that the post belonging to
-	DBRefCategories []mongo.DBRef `bson:"categories" json:"-" graphql:"-"`
+	Categories []mongo.DBRef `bson:"categories" json:"-" graphql:"-"`
 
 	// List of tags that the post belonging to
-	DBRefTags []mongo.DBRef `bson:"tags" json:"-" graphql:"-"`
+	Tags []mongo.DBRef `bson:"tags" json:"-" graphql:"-"`
 
 	// Date-time that the post was created
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
@@ -64,20 +64,22 @@ func (p Post) MarshalJSON() ([]byte, error) {
 	})
 }
 
-func (Post) Categories(repo CategoryRepository) interface{} {
+// BelongToCategories returns list of categories that the post has belonging to
+func (Post) BelongToCategories(repo CategoryRepository) interface{} {
 	return func(ctx context.Context, p Post) ([]Category, error) {
-		ids := make([]primitive.ObjectID, len(p.DBRefCategories))
-		for i, dbRef := range p.DBRefCategories {
+		ids := make([]primitive.ObjectID, len(p.Categories))
+		for i, dbRef := range p.Categories {
 			ids[i] = dbRef.ID
 		}
 		return repo.FindAllByIDs(ctx, ids)
 	}
 }
 
-func (Post) Tags(repo TagRepository) interface{} {
+// BelongToTags returns list of tags that the post has belonging to
+func (Post) BelongToTags(repo TagRepository) interface{} {
 	return func(ctx context.Context, p Post) ([]Tag, error) {
-		ids := make([]primitive.ObjectID, len(p.DBRefTags))
-		for i, dbRef := range p.DBRefTags {
+		ids := make([]primitive.ObjectID, len(p.Tags))
+		for i, dbRef := range p.Tags {
 			ids[i] = dbRef.ID
 		}
 		return repo.FindAllByIDs(ctx, ids)

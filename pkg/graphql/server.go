@@ -50,8 +50,8 @@ func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj := schema.Object("Post", blog.Post{})
 
-	obj.FieldFunc("categories", (blog.Post{}).Categories(s.service.Category()))
-	obj.FieldFunc("tags", (blog.Post{}).Tags(s.service.Tag()))
+	obj.FieldFunc("categories", (blog.Post{}).BelongToCategories(s.service.Category()))
+	obj.FieldFunc("tags", (blog.Post{}).BelongToTags(s.service.Tag()))
 }
 
 func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, error) {
