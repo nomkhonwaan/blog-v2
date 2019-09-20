@@ -12,13 +12,10 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.0 // indirect
-	github.com/gosimple/slug v1.7.0
 	github.com/graphql-go/graphql v0.7.8 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/rainycape/unidecode v0.0.0-20150907023854-cb7f23ec59be // indirect
-	github.com/rakyll/statik v0.1.6 // indirect
 	github.com/samsarahq/go v0.0.0-20190516185622-fbd7434ad75e // indirect
 	github.com/samsarahq/thunder v0.5.0
 	github.com/satori/go.uuid v1.2.0 // indirect
