@@ -196,15 +196,39 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 }
 
 func TestMongoPostRepository_FindByID(t *testing.T) {
-
 }
 
 func TestNewPostQueryBuilder(t *testing.T) {
+	// Given
+	expected := &postQueryBuilder{
+		postQuery: &postQuery{
+			offset: 0,
+			limit:  5,
+		},
+	}
 
+	// When
+	qb := NewPostQueryBuilder()
+
+	// Then
+	assert.Equal(t, expected, qb)
 }
 
 func TestPostQueryBuilder_WithStatus(t *testing.T) {
+	// Given
+	expected := &postQueryBuilder{
+		postQuery: &postQuery{
+			status: Published,
+			offset: 0,
+			limit:  5,
+		},
+	}
 
+	// When
+	qb := NewPostQueryBuilder().WithStatus(Published)
+
+	// Then
+	assert.Equal(t, expected, qb)
 }
 
 func TestPostQueryBuilder_WithOffset(t *testing.T) {
