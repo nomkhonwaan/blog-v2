@@ -2,6 +2,7 @@ package blog
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
@@ -106,27 +107,52 @@ func TestNewPostRepository(t *testing.T) {
 }
 
 func TestMongoPostRepository_Create(t *testing.T) {
-	// Given
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+	t.Run("When insert into the collection successfully", func(t *testing.T) {
+		// Given
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
 
-	col := mongo.NewMockCollection(ctrl)
-	ctx := context.Background()
-	authorID := "github|303589"
+		col := mongo.NewMockCollection(ctrl)
+		ctx := context.Background()
+		authorID := "github|303589"
 
-	col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
+		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
-	postRepo := NewPostRepository(col)
+		postRepo := NewPostRepository(col)
 
-	// When
-	result, err := postRepo.Create(ctx, authorID)
+		// When
+		result, err := postRepo.Create(ctx, authorID)
 
-	// Then
-	assert.Nil(t, err)
-	assert.True(t, time.Since(result.CreatedAt) < time.Minute)
-	assert.Equal(t, fmt.Sprintf("%s", result.ID.Hex()), result.Slug)
-	assert.Equal(t, Draft, result.Status)
-	assert.Equal(t, authorID, result.AuthorID)
+		// Then
+		assert.Nil(t, err)
+		assert.True(t, time.Since(result.CreatedAt) < time.Minute)
+		assert.Equal(t, fmt.Sprintf("%s", result.ID.Hex()), result.Slug)
+		assert.Equal(t, Draft, result.Status)
+		assert.Equal(t, authorID, result.AuthorID)
+	})
+
+	t.Run("When insert into the collection un-successfully", func(t *testing.T) {
+		// Given
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		col := mongo.NewMockCollection(ctrl)
+		ctx := context.Background()
+		authorID := "github|303589"
+
+		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("something went wrong"))
+
+		postRepo := NewPostRepository(col)
+
+		expected := Post{}
+
+		//result When
+		result, err := postRepo.Create(ctx, authorID)
+
+		// Then
+		assert.EqualError(t, err, "something went wrong")
+		assert.Equal(t, expected, result)
+	})
 }
 
 func TestMongoPostRepository_FindAll(t *testing.T) {
@@ -144,6 +170,7 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 		q       PostQuery
 		filter  interface{}
 		options func() *options.FindOptions
+		err     error
 	}{
 		"With default query options": {
 			q:      &postQuery{},
@@ -177,18 +204,32 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 				return options
 			},
 		},
+		"When an error has occurred on finding the result": {
+			q:      &postQuery{},
+			filter: bson.M{},
+			options: func() *options.FindOptions {
+				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
+			},
+			err: errors.New("something went wrong"),
+		},
 	}
 
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			col.EXPECT().Find(ctx, test.filter, test.options()).Return(cur, nil)
-			cur.EXPECT().Close(ctx).Return(nil)
-			cur.EXPECT().Decode(gomock.Any()).Return(nil)
+			col.EXPECT().Find(ctx, test.filter, test.options()).Return(cur, test.err)
 
-			_, err := repo.FindAll(ctx, test.q)
+			if test.err == nil {
+				cur.EXPECT().Close(ctx).Return(nil)
+				cur.EXPECT().Decode(gomock.Any()).Return(nil)
+				_, err := repo.FindAll(ctx, test.q)
 
-			assert.Nil(t, err)
+				assert.Nil(t, err)
+			} else {
+				_, err := repo.FindAll(ctx, test.q)
+
+				assert.EqualError(t, err, test.err.Error())
+			}
 		})
 	}
 
@@ -232,11 +273,35 @@ func TestPostQueryBuilder_WithStatus(t *testing.T) {
 }
 
 func TestPostQueryBuilder_WithOffset(t *testing.T) {
+	// Given
+	expected := &postQueryBuilder{
+		postQuery: &postQuery{
+			offset: 99,
+			limit:  5,
+		},
+	}
 
+	// When
+	qb := NewPostQueryBuilder().WithOffset(99)
+
+	// Then
+	assert.Equal(t, expected, qb)
 }
 
 func TestPostQueryBuilder_WithLimit(t *testing.T) {
+	// Given
+	expected := &postQueryBuilder{
+		postQuery: &postQuery{
+			offset: 0,
+			limit:  99,
+		},
+	}
 
+	// When
+	qb := NewPostQueryBuilder().WithLimit(99)
+
+	// Then
+	assert.Equal(t, expected, qb)
 }
 
 func TestPostQueryBuilder_Build(t *testing.T) {

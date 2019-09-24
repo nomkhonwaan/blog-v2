@@ -114,12 +114,8 @@ func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Po
 		CreatedAt: time.Now(),
 	}
 
-	doc, err := bson.Marshal(post)
-	if err != nil {
-		return Post{}, err
-	}
-
-	_, err = repo.col.InsertOne(ctx, doc)
+	doc, _ := bson.Marshal(post)
+	_, err := repo.col.InsertOne(ctx, doc)
 	if err != nil {
 		return Post{}, err
 	}
