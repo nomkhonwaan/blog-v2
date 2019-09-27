@@ -1,9 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { Store, select } from '@ngrx/store';
-
-import { RecentPostsState } from './recent-posts.reducer';
-import { fetchRecentPosts } from './recent-posts.actions';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-recent-posts',
@@ -12,14 +7,10 @@ import { Observable } from 'rxjs';
 })
 export class RecentPostsComponent implements OnInit {
 
-  recentPosts$: Observable<RecentPostsState>;
-
-  constructor(private store: Store<RecentPostsState>) {
-    this.recentPosts$ = store.pipe(select('recentPosts'));
+  constructor() {
   }
 
   ngOnInit(): void {
-    this.store.dispatch(fetchRecentPosts());
   }
 
 }

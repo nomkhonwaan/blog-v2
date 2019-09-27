@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
 
-  myblog: {
-    url: 'https://api.nomkhonwaan.com',
+  graphql: {
+    endpoint: 'https://api.nomkhonwaan.com/graphql',
   },
 };

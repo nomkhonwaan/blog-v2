@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
 
-  myblog: {
-    url: 'http://localhost:8080',
+  graphql: {
+    endpoint: 'http://localhost:8080/graphql',
   },
 };
 

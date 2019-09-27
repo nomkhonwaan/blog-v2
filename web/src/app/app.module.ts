@@ -4,12 +4,13 @@ import { NgModule } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
+import { APOLLO_OPTIONS } from 'apollo-angular';
+import { HttpLink } from 'apollo-angular-link-http';
 
 import { environment } from 'src/environments/environment';
 
-import { AppHttpInterceptor } from './app-http.interceptor';
-
 import { AppRoutingModule } from './app-routing.module';
+import { GraphQLModule, createApollo } from './graphql.module';
 import { RecentPostsModule } from './recent-posts/recent-posts.module';
 
 import { AppComponent } from './app.component';
@@ -31,13 +32,14 @@ import { appReducer } from './app.reducer';
       logOnly: environment.production,
     }),
     RecentPostsModule,
+    GraphQLModule,
   ],
   providers: [
     {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AppHttpInterceptor,
-      multi: true,
-    },
+      provide: APOLLO_OPTIONS,
+      useFactory: createApollo,
+      deps: [HttpLink],
+    }
   ],
   bootstrap: [AppComponent]
 })
