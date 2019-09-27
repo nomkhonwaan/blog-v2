@@ -1,8 +1,5 @@
 // A piece of content in the blog platform
 interface Post {
-  // Identifier of the post
-  id: string
-
   // Title of the post
   title: string
 
