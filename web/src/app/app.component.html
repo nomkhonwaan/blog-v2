@@ -1,6 +1,12 @@
 <div class="sidebar">
   <header>
     <app-button
+      (click)="toggleSidebar()"
+      [style.margin-right]="'-1.6rem'"
+    >
+      {{'close' | uppercase}}
+    </app-button>
+    <app-button
       [icon]="faTimes"
       (click)="toggleSidebar()"
     ></app-button>
@@ -25,6 +31,12 @@
     [icon]="faBars"
     (click)="toggleSidebar()"
   ></app-button>
+
+  <app-button
+    [icon]="faSearch"
+    [style.margin-left]="'auto'"
+  >
+  </app-button>
 </div>
 
 <main class="main">

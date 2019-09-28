@@ -14,13 +14,13 @@ import { ApolloQueryResult } from 'apollo-client';
     trigger('slideInOut', [
       state('true', style({ transform: 'translateX(0)' })),
       transition('* => true', [
-        animate('.4s ease-in-out', style({ transform: 'translateX(0)' }))
+        animate('.4s ease-in-out', style({ transform: 'translateX(0)' })),
       ]),
       transition('true => false', [
         style({ transform: 'translateX(0)' }),
-        animate('.4s ease-in-out')
-      ])
-    ])
+        animate('.4s ease-in-out'),
+      ]),
+    ]),
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',
