@@ -1,37 +1,46 @@
 
-# Created by https://www.gitignore.io/api/go,node,macos,angular,intellij+all
-# Edit at https://www.gitignore.io/?templates=go,node,macos,angular,intellij+all
+# Created by https://www.gitignore.io/api/go,node,macos,angular,firebase,intellij+all
+# Edit at https://www.gitignore.io/?templates=go,node,macos,angular,firebase,intellij+all
 
 ### Angular ###
 ## Angular ##
 # compiled output
-/dist
-/tmp
-/app/**/*.js
-/app/**/*.js.map
+dist/
+tmp/
+app/**/*.js
+app/**/*.js.map
 
 # dependencies
-/node_modules
-/bower_components
+node_modules/
+bower_components/
 
 # IDEs and editors
-/.idea
+.idea/
 
 # misc
-/.sass-cache
-/connect.lock
-/coverage/*
-/libpeerconnection.log
+.sass-cache/
+connect.lock/
+coverage/
+libpeerconnection.log/
 npm-debug.log
 testem.log
-/typings
+typings/
 
 # e2e
-/e2e/*.js
-/e2e/*.map
+e2e/*.js
+e2e/*.map
 
 #System Files
-.DS_Store
+.DS_Store/
+
+### Firebase ###
+.idea
+**/node_modules/*
+**/.firebaserc
+
+### Firebase Patch ###
+.runtimeconfig.json
+.firebase/
 
 ### Go ###
 # Binaries for programs and plugins
@@ -128,7 +137,6 @@ fabric.properties
 # Ignores the whole .idea folder and all .iml files
 # See https://github.com/joeblau/gitignore.io/issues/186 and https://github.com/joeblau/gitignore.io/issues/360
 
-.idea/
 
 # Reason: https://github.com/joeblau/gitignore.io/issues/186#issuecomment-249601023
 
@@ -142,6 +150,7 @@ modules.xml
 
 ### macOS ###
 # General
+.DS_Store
 .AppleDouble
 .LSOverride
 
@@ -208,11 +217,9 @@ bower_components
 build/Release
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # TypeScript v1 declaration files
-typings/
 
 # TypeScript cache
 *.tsbuildinfo
@@ -245,6 +252,9 @@ typings/
 # nuxt.js build output
 .nuxt
 
+# react / gatsby 
+public/
+
 # vuepress build output
 .vuepress/dist
 
@@ -257,4 +267,4 @@ typings/
 # DynamoDB Local files
 .dynamodb/
 
-# End of https://www.gitignore.io/api/go,node,macos,angular,intellij+all
+# End of https://www.gitignore.io/api/go,node,macos,angular,firebase,intellij+all

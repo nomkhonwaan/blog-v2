@@ -13,6 +13,11 @@ LDFLAGS  :=
 GOFLAGS  :=
 BINDIR   := $(CURDIR)/bin
 
+# Node.js options
+NPM	 ?= npm
+NPX	 ?= npx
+NG	 ?= $(NPX) ng
+
 # Docker options
 DOCKER   := docker
 
@@ -48,6 +53,16 @@ bindata:
 build:
 	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -tags '$(TAGS)' -ldflags '-X main.version=$(VERSION) -X main.revision=$(REVISION) $(LDFLAGS)' $(PKG)/cmd/myblog
 
+.PHONY: build-web
+build-web:
+	cd web && $(NG) build --prod
+
 .PHONY: docker-build
 docker-build:
 	docker build -f build/package/Dockerfile -t nomkhonwaan/myblog:latest .
+
+.PHONY: deploy-web
+deploy-web:
+	cd web && \
+	$(NPX) firebase use www-nomkhonwaan-com --token=${FIREBASE_TOKEN} && \
+	$(NPX) firebase deploy --token=${FIREBASE_TOKEN}

@@ -18,7 +18,7 @@ import { SharedModule } from './shared/share.module';
 
 import { AppComponent } from './app.component';
 
-import { appReducer } from './app.reducer';
+import * as appReducer from './app.reducer';
 import { AppHttpInterceptor } from './app-http.interceptor';
 
 @NgModule({
@@ -29,7 +29,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    StoreModule.forRoot({ app: appReducer }, {
+    StoreModule.forRoot({ app: appReducer.reducer }, {
       runtimeChecks: {
         strictActionImmutability: true,
         strictStateImmutability: true,

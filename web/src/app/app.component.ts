@@ -7,7 +7,6 @@ import gql from 'graphql-tag';
 import { Observable } from 'rxjs';
 
 import { toggleSidebar } from './app.actions';
-import { AppState } from './app.reducer';
 import { ApolloQueryResult } from 'apollo-client';
 
 @Component({
@@ -29,7 +28,7 @@ import { ApolloQueryResult } from 'apollo-client';
 })
 export class AppComponent implements OnInit {
 
-  app$: Observable<AppState>;
+  app$: Observable<State>;
 
   faBars: IconDefinition = faBars;
   faSearch: IconDefinition = faSearch;
@@ -40,9 +39,9 @@ export class AppComponent implements OnInit {
 
   categories: Category[];
 
-  constructor(private apollo: Apollo, private store: Store<AppState>) {
+  constructor(private apollo: Apollo, private store: Store<State>) {
     this.app$ = store.pipe(select('app'));
-    this.app$.subscribe(({ sidebar }: AppState): void => { this.sidebarExpanded = !sidebar.collapsed; });
+    this.app$.subscribe(({ sidebar }: State): void => { this.sidebarExpanded = !sidebar.collapsed; });
   }
 
   ngOnInit(): void {

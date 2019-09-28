@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { ButtonComponent } from './button.component';
+import { OutlineButtonComponent } from './outline-button.component';
 
 @NgModule({
   imports: [
@@ -11,9 +12,11 @@ import { ButtonComponent } from './button.component';
   ],
   declarations: [
     ButtonComponent,
+    OutlineButtonComponent,
   ],
   exports: [
     ButtonComponent,
+    OutlineButtonComponent,
   ],
   bootstrap: []
 })
