@@ -14,7 +14,6 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
     `
       :host {
           align-items: center;
-          background: none;
           cursor: pointer;
           display: inline-flex;
           height: 100%;
@@ -23,9 +22,10 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
     `,
     `
       button {
+          background: none;
           border: none;
           color: #808080;
-          font: normal 400 1.3rem 'Lato' sans-serif;
+          font: normal 400 1.3rem 'Lato', sans-serif;
           padding: 0;
       }
     `,
