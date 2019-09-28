@@ -1,11 +1,16 @@
 import { NgModule } from '@angular/core';
-import { ButtonModule } from './components/button/button.module';
+
+import { ButtonModule } from './button/button.module';
+import { DialogModule } from './dialog/dialog.module';
+import { FormModule } from './form/form.module';
 
 @NgModule({
   imports: [],
   declarations: [],
   exports: [
-    ButtonModule
+    ButtonModule,
+    DialogModule,
+    FormModule,
   ],
   bootstrap: [],
 })
