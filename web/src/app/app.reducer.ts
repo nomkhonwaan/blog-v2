@@ -4,7 +4,6 @@ import update from 'immutability-helper';
 import { toggleSidebar } from './app.actions';
 
 export class AppState {
-  // Application sidebar specific state
   sidebar: {
     collapsed: boolean,
   };

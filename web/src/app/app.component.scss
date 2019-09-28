@@ -1,0 +1,42 @@
+:host {
+    display: grid;
+    grid-template: 6.4rem auto / 25.6rem auto;
+    transform: translateX(-25.6rem);
+    width: calc(100% + 25.6rem);
+}
+
+.sidebar {
+    grid-row: 1 / 3;
+
+    & > header {
+        border-bottom: .1rem solid #ececec;
+        display: flex;
+        height: 6.4rem;
+        justify-content: flex-end;
+    }
+
+    & > nav {
+        color: #333;
+        font: normal 400 1.6rem 'Lato', sans-serif;
+
+        > ul {
+            > li:first-child {
+                margin-top: 2.4rem;
+            }
+
+            > li > a {
+                display: block;
+                padding: 2.4rem 3.2rem;
+            }
+        }
+    }
+}
+
+.navbar {
+    border-bottom: .1rem solid #ececec;
+}
+
+.main {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+}

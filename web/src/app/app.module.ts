@@ -1,5 +1,6 @@
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
@@ -11,11 +12,14 @@ import { environment } from 'src/environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
 import { GraphQLModule, createApollo } from './graphql.module';
+import { CategoryModule } from './category/category.module';
 import { RecentPostsModule } from './recent-posts/recent-posts.module';
+import { SharedModule } from './shared/share.module';
 
 import { AppComponent } from './app.component';
 
 import { appReducer } from './app.reducer';
+import { AppHttpInterceptor } from './app-http.interceptor';
 
 @NgModule({
   declarations: [
@@ -25,12 +29,20 @@ import { appReducer } from './app.reducer';
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    StoreModule.forRoot({ app: appReducer }),
+    StoreModule.forRoot({ app: appReducer }, {
+      runtimeChecks: {
+        strictActionImmutability: true,
+        strictStateImmutability: true,
+      }
+    }),
     EffectsModule.forRoot([]),
     StoreDevtoolsModule.instrument({
       maxAge: 25,
       logOnly: environment.production,
     }),
+    BrowserAnimationsModule,
+    SharedModule,
+    CategoryModule,
     RecentPostsModule,
     GraphQLModule,
   ],
@@ -39,7 +51,12 @@ import { appReducer } from './app.reducer';
       provide: APOLLO_OPTIONS,
       useFactory: createApollo,
       deps: [HttpLink],
-    }
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AppHttpInterceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent]
 })

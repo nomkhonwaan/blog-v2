@@ -1,6 +1,9 @@
 <div class="sidebar">
   <header>
-
+    <app-button
+      [icon]="faTimes"
+      (click)="toggleSidebar()"
+    ></app-button>
   </header>
 
   <nav>
@@ -8,12 +11,20 @@
       <li>
         <a [routerLink]="['']" routerLinkActive="-actived">Home</a>
       </li>
+      <li *ngFor="let cat of categories">
+        <a [routerLink]="['category', cat.slug]">{{cat.name}}</a>
+      </li>
     </ul>
   </nav>
 </div>
 
 <div class="navbar">
-
+  <app-button
+    [icon]="faBars"
+    (click)="toggleSidebar()"
+  ></app-button>
 </div>
 
-<router-outlet></router-outlet>
+<main class="main">
+  <router-outlet></router-outlet>
+</main>
