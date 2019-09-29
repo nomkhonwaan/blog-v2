@@ -3,35 +3,38 @@ package graphql
 import (
 	"context"
 	"errors"
+	"net/http"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
-	"net/http"
 )
 
 // Server is our GraphQL server
 type Server struct {
 	service blog.Service
 
-	// Return list of categories
-	categories []blog.Category
+	// GraphQL schema schema object
+	schema *schemabuilder.Schema
 }
 
 // NewServer returns new GraphQL server
 func NewServer(service blog.Service) *Server {
-	return &Server{service: service}
+	return &Server{
+		service: service,
+		schema:  schemabuilder.NewSchema(),
+	}
 }
 
 // Schema builds the GraphQL schema
 func (s *Server) Schema() *graphql.Schema {
-	builder := schemabuilder.NewSchema()
-	s.registerQuery(builder)
-	s.registerMutation(builder)
-	s.registerPost(builder)
+	s.registerQuery(s.schema)
+	s.registerMutation(s.schema)
+	s.registerPost(s.schema)
 
-	return builder.MustBuild()
+	return s.schema.MustBuild()
 }
 
 func (s *Server) registerQuery(schema *schemabuilder.Schema) {
