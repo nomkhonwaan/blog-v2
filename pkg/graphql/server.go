@@ -3,13 +3,12 @@ package graphql
 import (
 	"context"
 	"errors"
-	"net/http"
-
 	"github.com/dgrijalva/jwt-go"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"net/http"
 )
 
 // Server is our GraphQL server
