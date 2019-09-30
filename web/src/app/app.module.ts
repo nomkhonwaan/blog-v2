@@ -11,6 +11,7 @@ import { HttpLink } from 'apollo-angular-link-http';
 import { environment } from 'src/environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
+import { AuthModule } from './auth/auth.module';
 import { GraphQLModule, createApollo } from './graphql.module';
 import { CategoryModule } from './category/category.module';
 import { RecentPostsModule } from './recent-posts/recent-posts.module';
@@ -41,6 +42,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
       logOnly: environment.production,
     }),
     BrowserAnimationsModule,
+    AuthModule,
     SharedModule,
     CategoryModule,
     RecentPostsModule,

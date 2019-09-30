@@ -1,15 +1,9 @@
 <div class="sidebar">
   <header>
-    <app-button
-      (click)="toggleSidebar()"
-      [style.margin-right]="'-1.6rem'"
-    >
+    <app-button (click)="toggleSidebar()" [style.margin-right]="'-1.6rem'">
       {{'close' | uppercase}}
     </app-button>
-    <app-button
-      [icon]="faTimes"
-      (click)="toggleSidebar()"
-    ></app-button>
+    <app-button [icon]="faTimes" (click)="toggleSidebar()"></app-button>
   </header>
 
   <nav>
@@ -17,8 +11,11 @@
       <li>
         <a [routerLink]="['']" routerLinkActive="-actived">Home</a>
       </li>
+      <!-- <li *ngIf="!auth.isAuthenticated()">
+        <a (click)="auth.login(router.url)">Login / Register</a>
+      </li> -->
       <li *ngFor="let cat of categories">
-        <a [routerLink]="['category', cat.slug]">{{cat.name}}</a>
+        <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>
       </li>
     </ul>
   </nav>
@@ -27,15 +24,9 @@
 <app-dialog *ngIf="sidebarExpanded"></app-dialog>
 
 <div class="navbar">
-  <app-button
-    [icon]="faBars"
-    (click)="toggleSidebar()"
-  ></app-button>
+  <app-button [icon]="faBars" (click)="toggleSidebar()"></app-button>
 
-  <app-button
-    [icon]="faSearch"
-    [style.margin-left]="'auto'"
-  >
+  <app-button [icon]="faSearch" [style.margin-left]="'auto'">
   </app-button>
 </div>
 

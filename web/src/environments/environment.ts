@@ -5,6 +5,11 @@
 export const environment = {
   production: false,
 
+  auth0: {
+    clientId: 'cSMgdzCX59n4TcL7H6RWRUYeRFGqCMbU',
+    redirectUri: 'http://localhost:4200/login',
+  },
+
   graphql: {
     endpoint: 'http://localhost:8080/graphql',
   },
