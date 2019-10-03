@@ -10,6 +10,8 @@ import { ApolloQueryResult } from 'apollo-client';
 })
 export class RecentPostsComponent implements OnInit {
 
+  latestPublishedPosts: Post[];
+
   constructor(private apollo: Apollo) { }
 
   ngOnInit(): void {
@@ -31,9 +33,7 @@ export class RecentPostsComponent implements OnInit {
         }
       `,
     }).valueChanges.subscribe((result: ApolloQueryResult<{latestPublishedPosts: Post[]}>): void => {
-      result.data.latestPublishedPosts.forEach((p: Post): void => {
-        console.log(p.title);
-      });
+      this.latestPublishedPosts = result.data.latestPublishedPosts;
     });
   }
 

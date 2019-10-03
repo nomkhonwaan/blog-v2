@@ -1,20 +1,15 @@
 import { NgModule } from '@angular/core';
 import { WebAuth } from 'auth0-js';
 
-import { AuthService } from './auth.service';
+import { StorageModule } from '../storage/storage.module';
 
 import { environment } from '../../environments/environment';
-import { LocalStorageModule } from '../storage/local-storage.module';
 
 @NgModule({
   imports: [
-    LocalStorageModule,
+    StorageModule,
   ],
   providers: [
-    {
-      provide: AuthService,
-      deps: [WebAuth],
-    },
     {
       provide: WebAuth,
       useFactory: () => new WebAuth({
@@ -25,6 +20,6 @@ import { LocalStorageModule } from '../storage/local-storage.module';
         scope: 'email openid profile'
       }),
     },
-  ],
+  ]
 })
 export class AuthModule { }

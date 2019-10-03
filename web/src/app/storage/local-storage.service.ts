@@ -1,6 +1,10 @@
 import { Injectable } from '@angular/core';
 
-@Injectable()
+import { StorageModule } from './storage.module';
+
+@Injectable({
+  providedIn: StorageModule,
+})
 export class LocalStorageService {
   /**
    * Empties the localStorage.

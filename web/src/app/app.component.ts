@@ -9,6 +9,7 @@ import { Observable } from 'rxjs';
 import { toggleSidebar } from './app.actions';
 import { ApolloQueryResult } from 'apollo-client';
 import { AuthService } from './auth/auth.service';
+import { Router } from '@angular/router';
 
 @Component({
   animations: [
@@ -42,17 +43,18 @@ export class AppComponent implements OnInit {
 
   constructor(
     private apollo: Apollo,
-    private auth: AuthService,
     private store: Store<State>,
+    private auth: AuthService,
+    private router: Router,
   ) {
     this.app$ = store.pipe(select('app'));
     this.app$.subscribe(({ sidebar }: State): void => { this.sidebarExpanded = !sidebar.collapsed; });
   }
 
   ngOnInit(): void {
-    // if (this.auth.isAuthenticated()) {
-    //   this.auth.renewTokens();
-    // }
+    if (this.auth.isAuthenticated()) {
+      this.auth.renewTokens();
+    }
 
     this.apollo.watchQuery({
       query: gql`

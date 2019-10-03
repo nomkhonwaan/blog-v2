@@ -2,9 +2,18 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { WebAuth } from 'auth0-js';
 
+import { AuthModule } from './auth.module';
+
 import { LocalStorageService } from '../storage/local-storage.service';
 
-@Injectable()
+@Injectable({
+  providedIn: AuthModule,
+  deps: [
+    LocalStorageService,
+    Router,
+    WebAuth,
+  ],
+})
 export class AuthService {
   private accessToken?: string;
   private idToken?: string;
@@ -15,9 +24,9 @@ export class AuthService {
     private router: Router,
     private webAuth: WebAuth,
   ) {
-    this.accessToken = this.localStorage.get('accessToken');
-    this.idToken = this.localStorage.get('idToken');
-    this.expiresAt = this.localStorage.getNumber('expiresAt');
+    // this.accessToken = this.localStorage.get('accessToken');
+    // this.idToken = this.localStorage.get('idToken');
+    // this.expiresAt = this.localStorage.getNumber('expiresAt');
   }
 
   /**
@@ -63,9 +72,9 @@ export class AuthService {
     this.expiresAt = authResult.expiresIn * 1000 + Date.now();
 
     this.localStorage.setAll({
-      'accessToken': this.accessToken,
-      'idToken': this.idToken,
-      'expiresAt': this.expiresAt.toString()
+      accessToken: this.accessToken,
+      idToken: this.idToken,
+      expiresAt: this.expiresAt.toString()
     });
   }
 
