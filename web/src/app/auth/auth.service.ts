@@ -8,11 +8,7 @@ import { LocalStorageService } from '../storage/local-storage.service';
 
 @Injectable({
   providedIn: AuthModule,
-  deps: [
-    LocalStorageService,
-    Router,
-    WebAuth,
-  ],
+  deps: [LocalStorageService, Router, WebAuth],
 })
 export class AuthService {
   private accessToken?: string;
@@ -24,9 +20,9 @@ export class AuthService {
     private router: Router,
     private webAuth: WebAuth,
   ) {
-    // this.accessToken = this.localStorage.get('accessToken');
-    // this.idToken = this.localStorage.get('idToken');
-    // this.expiresAt = this.localStorage.getNumber('expiresAt');
+    this.accessToken = this.localStorage.get('accessToken');
+    this.idToken = this.localStorage.get('idToken');
+    this.expiresAt = this.localStorage.getNumber('expiresAt');
   }
 
   /**

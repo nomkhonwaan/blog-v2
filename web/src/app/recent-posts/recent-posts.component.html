@@ -1,11 +1,11 @@
 <div class="_narrow">
-  <h2>
+  <h2 class="section-title">
     Recent Posts
   </h2>
 
-  <ul class="latest-published-posts lpp">
+  <ul class="latest-published-posts lpp _list-unstyled">
     <li *ngFor="let p of latestPublishedPosts">
-
+      <h3>{{p.title}}</h3>
     </li>
   </ul>
 </div>
