@@ -18,6 +18,5 @@ import { OutlineButtonComponent } from './outline-button.component';
     ButtonComponent,
     OutlineButtonComponent,
   ],
-  bootstrap: []
 })
 export class ButtonModule { }

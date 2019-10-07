@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 
 import { RecentPostsComponent } from './recent-posts.component';
 
+import { SharedModule } from '../shared/share.module';
+
 @NgModule({
   declarations: [
     RecentPostsComponent,
@@ -11,6 +13,7 @@ import { RecentPostsComponent } from './recent-posts.component';
   imports: [
     BrowserModule,
     RouterModule,
+    SharedModule,
   ],
   providers: [],
   bootstrap: [],
