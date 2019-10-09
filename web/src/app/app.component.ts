@@ -30,7 +30,7 @@ import { Router } from '@angular/router';
 })
 export class AppComponent implements OnInit {
 
-  app$: Observable<State>;
+  app$: Observable<AppState>;
 
   faBars: IconDefinition = faBars;
   faSearch: IconDefinition = faSearch;
@@ -43,12 +43,12 @@ export class AppComponent implements OnInit {
 
   constructor(
     private apollo: Apollo,
-    private store: Store<State>,
+    private store: Store<AppState>,
     private auth: AuthService,
     private router: Router,
   ) {
     this.app$ = store.pipe(select('app'));
-    this.app$.subscribe(({ sidebar }: State): void => { this.sidebarExpanded = !sidebar.collapsed; });
+    this.app$.subscribe(({ sidebar }: AppState): void => { this.sidebarExpanded = !sidebar.collapsed; });
   }
 
   ngOnInit(): void {

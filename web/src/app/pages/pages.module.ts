@@ -1,19 +1,21 @@
+import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
-import { BrowserModule } from '@angular/platform-browser';
 import { RouterModule } from '@angular/router';
 
 import { RecentPostsComponent } from './recent-posts.component';
 
+import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
 
 @NgModule({
-  declarations: [
-    RecentPostsComponent,
-  ],
   imports: [
-    BrowserModule,
+    CommonModule,
+    GraphQLModule,
     RouterModule,
     SharedModule,
   ],
+  declarations: [
+    RecentPostsComponent,
+  ],
 })
-export class RecentPostsModule { }
+export class PagesModule { }

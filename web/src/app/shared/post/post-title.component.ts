@@ -5,39 +5,7 @@ import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-title',
-  template: `
-    <a [routerLink]="link" [ngSwitch]="type">
-      <h1 *ngSwitchCase="single">{{post.title}}</h1>
-
-      <h2 *ngSwitchCase="medium">{{post.title}}</h2>
-
-      <h3 *ngSwitchCase="thumbnail">{{post.title}}</h3>
-    </a>
-  `,
-  styles: [
-    `
-      :host {
-          color: #333;
-          font-family: Athiti, sans-serif;
-          font-weight: 500;
-      }
-    `,
-    `
-      h1 {
-          /* font-size: rem; */
-      }
-    `,
-    `
-      h2 {
-          font-size: 3.6rem;
-      }
-    `,
-    `
-      h3 {
-          /* font-size: rem; */
-      }
-    `,
-  ],
+  template: `test`,
 })
 export class PostTitleComponent extends PostComponent implements OnInit {
 

@@ -1,7 +1,7 @@
 /**
  * A shape of the application state
  */
-interface State {
+interface AppState {
   sidebar: {
     collapsed: boolean,
   },

@@ -3,9 +3,9 @@
     Recent Posts
   </div>
 
-  <ul class="latest-published-posts lpp _list-unstyled">
+  <ul class="latest-published-posts _list-unstyled">
     <li *ngFor="let post of latestPublishedPosts">
-      <app-medium-post [post]="post"></app-medium-post>
+      <post-title></post-title>
     </li>
   </ul>
 </div>

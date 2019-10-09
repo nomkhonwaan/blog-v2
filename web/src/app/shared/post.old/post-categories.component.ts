@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
 
+import { PostComponent } from './post.component';
+
 @Component({
   selector: 'app-post-categories',
   template: ``,
   styles: [],
 })
-export class PostCategoriesComponent { }
+export class PostCategoriesComponent extends PostComponent { }
