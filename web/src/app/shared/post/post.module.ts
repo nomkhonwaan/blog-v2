@@ -1,9 +1,10 @@
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { PostAuthorComponent } from '../post.old/post-author.component';
+import { PostAuthorComponent } from './post-author.component';
 import { PostCategoriesComponent } from './post-categories.component';
 import { PostExcerptComponent } from './post-excerpt.component';
+import { PostMetadataComponent } from './post-metadata.component';
 import { PostTitleComponent } from './post-title.component';
 
 @NgModule({
@@ -14,12 +15,14 @@ import { PostTitleComponent } from './post-title.component';
     PostAuthorComponent,
     PostCategoriesComponent,
     PostExcerptComponent,
+    PostMetadataComponent,
     PostTitleComponent,
   ],
   exports: [
     PostAuthorComponent,
     PostCategoriesComponent,
     PostExcerptComponent,
+    PostMetadataComponent,
     PostTitleComponent,
   ],
 })
