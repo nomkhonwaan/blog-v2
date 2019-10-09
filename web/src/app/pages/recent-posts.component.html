@@ -10,6 +10,11 @@
       </app-post-title>
 
       <app-post-excerpt [post]="p"></app-post-excerpt>
+
+      <app-post-metadata>
+        <app-post-author [post]="p"></app-post-author>
+        <app-post-categories [post]="p"></app-post-categories>
+      </app-post-metadata>
     </li>
   </ul>
 </div>
