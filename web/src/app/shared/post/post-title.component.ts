@@ -17,7 +17,7 @@ import { PostComponent } from './post.component';
   styles: [
     `
       :host {
-          /* color: ; */
+          color: #333;
           font-family: Athiti, sans-serif;
           font-weight: 500;
       }

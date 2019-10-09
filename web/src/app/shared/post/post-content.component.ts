@@ -7,7 +7,11 @@ import { OnInit, Component } from '@angular/core';
     <article [innerHTML]="content"></article>
   `,
   styles: [
-
+    `
+      :host {
+         font: normal 300 1.6rem Pridi, sans-serif;
+      }
+    `
   ],
 })
 export class PostContentComponent extends PostComponent implements OnInit {

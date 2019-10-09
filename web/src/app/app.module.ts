@@ -16,6 +16,7 @@ import { GraphQLModule, createApollo } from './graphql.module';
 import { CategoryModule } from './category/category.module';
 import { RecentPostsModule } from './recent-posts/recent-posts.module';
 import { SharedModule } from './shared/share.module';
+import { SingleModule } from './single/single.module';
 
 import { AppComponent } from './app.component';
 
@@ -46,6 +47,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
     SharedModule,
     CategoryModule,
     RecentPostsModule,
+    SingleModule,
     GraphQLModule,
   ],
   providers: [
