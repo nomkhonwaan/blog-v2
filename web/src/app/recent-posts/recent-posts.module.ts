@@ -15,7 +15,5 @@ import { SharedModule } from '../shared/share.module';
     RouterModule,
     SharedModule,
   ],
-  providers: [],
-  bootstrap: [],
 })
 export class RecentPostsModule { }
