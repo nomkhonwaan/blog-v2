@@ -20,7 +20,9 @@ export class RecentPostsComponent implements OnInit {
         {
           latestPublishedPosts(offset: 0, limit: 5) {
             title
+            slug
             html
+            publishedAt
             categories {
               name
               slug

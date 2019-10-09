@@ -1,19 +1,11 @@
 <div class="_narrow">
-  <h2 class="section-title">
+  <div class="section-title">
     Recent Posts
-  </h2>
+  </div>
 
   <ul class="latest-published-posts lpp _list-unstyled">
     <li *ngFor="let post of latestPublishedPosts">
-      <h3><a href="">{{post.title}}</a></h3>
-      <ul class="tags _list-unstyled">
-        <!-- <li *ngFor="let tag of post.tags"><a href="">{{tag.name}}</a></li> -->
-        <li><a href="">#Donec</a></li>
-        <li><a href="">#Lorem</a></li>
-        <li><a href="">#Curabitur</a></li>
-      </ul>
-
-      <article [innerHTML]="(post.html | split: '</p>')[0]"></article>
+      <app-medium-post [post]="post"></app-medium-post>
     </li>
   </ul>
 </div>
