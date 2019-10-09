@@ -1,10 +1,11 @@
-import { PostComponent } from './post.component';
 import { OnInit, Component } from '@angular/core';
 
+import { PostComponent } from './post.component';
+
 @Component({
-  selector: 'app-post-content',
+  selector: 'app-post-excerpt',
   template: `
-    <article [innerHTML]="content"></article>
+    <article [innerHTML]="summary"></article>
   `,
   styles: [
     `
@@ -14,14 +15,14 @@ import { OnInit, Component } from '@angular/core';
     `
   ],
 })
-export class PostContentComponent extends PostComponent implements OnInit {
+export class PostExcerptComponent extends PostComponent implements OnInit {
 
-  content: string;
+  summary: string;
 
   ngOnInit(): void {
     const paragraphs: string[] = this.post.html.split('</p>');
 
-    this.content = paragraphs[0] + '</p>';
+    this.summary = paragraphs[0] + '</p>';
   }
 
 }
