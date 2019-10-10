@@ -3,7 +3,7 @@ import update from 'immutability-helper';
 
 import { toggleSidebar } from './app.actions';
 
-const initialState: State = {
+const initialState: AppState = {
   sidebar: {
     collapsed: true,
   },
@@ -14,6 +14,6 @@ const appReducer = createReducer(
   on(toggleSidebar, (state) => update(state, { sidebar: { $toggle: ['collapsed'] } })),
 );
 
-export function reducer(state: State | undefined, action: Action) {
+export function reducer(state: AppState | undefined, action: Action) {
   return appReducer(state, action);
 }
