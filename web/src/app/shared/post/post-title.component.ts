@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import * as moment from 'moment';
 
 import { PostComponent } from './post.component';
 
@@ -21,6 +20,7 @@ import { PostComponent } from './post.component';
     `
       ::ng-deep h2 {
           font-size: 3.6rem;
+          font-weight: inherit;
       }
     `,
   ],
@@ -30,10 +30,12 @@ export class PostTitleComponent extends PostComponent implements OnInit {
   link: string[];
 
   ngOnInit(): void {
-    const publishedAt: moment.Moment = moment(this.post.publishedAt);
+    const publishedAt: Date = new Date(this.post.publishedAt);
 
     this.link = [
-      publishedAt.format('/YYYY/MM/DD'),
+      publishedAt.getFullYear().toString(),
+      publishedAt.getMonth().toString(),
+      publishedAt.getDate().toString(),
       this.post.slug,
     ];
   }

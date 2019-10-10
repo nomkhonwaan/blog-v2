@@ -12,7 +12,12 @@ import { PostComponent } from './post.component';
       :host {
           font: normal 300 1.6rem Pridi, sans-serif;
       }
+    `,
     `
+      ::ng-deep p {
+          margin: 2.4rem 0;
+      }
+    `,
   ],
 })
 export class PostExcerptComponent extends PostComponent implements OnInit {

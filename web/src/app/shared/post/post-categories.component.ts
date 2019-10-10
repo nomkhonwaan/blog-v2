@@ -1,6 +1,6 @@
 import { OnInit, Component } from '@angular/core';
 
-import { PostComponent } from '../post.old/post.component';
+import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-categories',
