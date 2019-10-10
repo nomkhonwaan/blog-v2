@@ -1,13 +1,16 @@
 import { NgModule } from '@angular/core';
 
-import { StringSplit } from './string-split.pipe';
+import { DateFormatPipe } from './date-format.pipe';
+import { StringSplitPipe } from './string-split.pipe';
 
 @NgModule({
   declarations: [
-    StringSplit,
+    DateFormatPipe,
+    StringSplitPipe,
   ],
   exports: [
-    StringSplit,
+    DateFormatPipe,
+    StringSplitPipe
   ],
 })
 export class TemplateModule { }

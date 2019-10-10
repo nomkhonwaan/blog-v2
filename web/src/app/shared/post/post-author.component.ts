@@ -6,9 +6,15 @@ import { PostComponent } from './post.component';
   selector: 'app-post-author',
   template: `
     <img src="assets/images/303589.png" class="avatar" />
-    <div class="display-name">Natcha Luangaroonchai</div>
+    <span class="display-name">Natcha Luangaroonchai</span>
   `,
   styles: [
+    `
+      :host {
+          display: flex;
+          justify-content: flex-start;
+      }
+    `,
     `
       .avatar {
           border-radius: 50%;
@@ -19,7 +25,9 @@ import { PostComponent } from './post.component';
     `
       .display-name {
           color: #333;
+          display: inline-block;
           font: normal 400 1.6rem Lato, sans-serif;
+          margin: .8rem 0 0 1.6rem;
       }
     `,
   ],

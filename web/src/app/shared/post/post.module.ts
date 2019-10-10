@@ -4,19 +4,24 @@ import { RouterModule } from '@angular/router';
 
 import { PostAuthorComponent } from './post-author.component';
 import { PostCategoriesComponent } from './post-categories.component';
+import { PostContentComponent } from './post-content.component';
 import { PostExcerptComponent } from './post-excerpt.component';
 import { PostMetadataComponent } from './post-metadata.component';
 import { PostTagsComponent } from './post-tags.component';
 import { PostTitleComponent } from './post-title.component';
 
+import { TemplateModule } from '../template/template.module';
+
 @NgModule({
   imports: [
     CommonModule,
     RouterModule,
+    TemplateModule,
   ],
   declarations: [
     PostAuthorComponent,
     PostCategoriesComponent,
+    PostContentComponent,
     PostExcerptComponent,
     PostMetadataComponent,
     PostTagsComponent,
@@ -25,6 +30,7 @@ import { PostTitleComponent } from './post-title.component';
   exports: [
     PostAuthorComponent,
     PostCategoriesComponent,
+    PostContentComponent,
     PostExcerptComponent,
     PostMetadataComponent,
     PostTagsComponent,
