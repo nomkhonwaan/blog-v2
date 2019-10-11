@@ -40,6 +40,16 @@ interface Post {
   authorId: string
 
   /**
+   * List of categories that the post belongging to
+   */
+  categories: Category[]
+
+  /**
+   * List of tags that the post belongging to
+   */
+  tags: Tag[]
+
+  /**
    * Date-time that the post was created
    */
   createdAt: Date
