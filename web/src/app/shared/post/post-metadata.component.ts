@@ -38,10 +38,4 @@ import { PostComponent } from './post.component';
     `,
   ],
 })
-export class PostMetadataComponent extends PostComponent implements OnInit {
-
-  ngOnInit(): void {
-
-  }
-
-}
+export class PostMetadataComponent extends PostComponent { }
