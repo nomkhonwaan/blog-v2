@@ -10,7 +10,8 @@ import { Component, EventEmitter, Output } from '@angular/core';
   styles: [
     `
       :host {
-          height: 100vh;
+          height: 100%;
+          min-height: 100vh;
           position: absolute;
           left: 25.6rem;
           width: 100%;
