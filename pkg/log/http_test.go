@@ -57,3 +57,14 @@ func TestHandler(t *testing.T) {
 	assert.Equal(t, `[{"name":"Web Development","slug":"web-development-1"}]`, w.Body.String())
 	assert.Regexp(t, regexp.MustCompile(fmt.Sprintf(`"%s %s" %d %q %q "(\d+|\.)(.*)"`, r.Method, r.RequestURI, http.StatusOK, r.UserAgent(), r.RemoteAddr)), string(*outputer))
 }
+
+func TestDefault(t *testing.T) {
+	// Given
+
+	// When
+	l := Default()
+
+	// Then
+	assert.IsType(t, &DefaultTimer{}, l.Timer)
+	assert.IsType(t, DefaultOutputer{}, l.Outputer)
+}
