@@ -5,7 +5,7 @@ import { PostComponent } from './post.component';
 @Component({
   selector: 'app-post-author',
   template: `
-    <img src="assets/images/303589.png" class="avatar" />
+    <img src="assets/images/303589.webp" class="avatar" />
     <span class="display-name">Natcha Luangaroonchai</span>
   `,
   styles: [

@@ -2,6 +2,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Component, HostBinding, OnInit } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import { Observable } from 'rxjs';
@@ -35,11 +36,21 @@ export class AppComponent implements OnInit {
   faBars: IconDefinition = faBars;
   faSearch: IconDefinition = faSearch;
   faTimes: IconDefinition = faTimes;
+  faGithubSquare: BrandIconDefinition = faGithubSquare;
+  faMedium: BrandIconDefinition = faMedium;
 
   @HostBinding('@slideInOut')
   sidebarExpanded = false;
 
+  /**
+   * Use to display at sidebar as a sub-menu to the group of posts
+   */
   categories: Category[];
+
+  /**
+   * Use to display at footer section as a current year of the copyright
+   */
+  fullYear: string;
 
   constructor(
     private apollo: Apollo,
@@ -68,6 +79,8 @@ export class AppComponent implements OnInit {
     }).valueChanges.subscribe((result: ApolloQueryResult<{ categories: Category[] }>): void => {
       this.categories = result.data.categories;
     });
+
+    this.fullYear = new Date().getFullYear().toString();
   }
 
   toggleSidebar() {

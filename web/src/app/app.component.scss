@@ -1,3 +1,5 @@
+@import "../styles.scss";
+
 :host {
     display: grid;
     grid-template: 6.4rem auto / 25.6rem auto;
@@ -40,4 +42,94 @@
 .main {
     grid-column: 2 / 3;
     grid-row: 2 / 3;
+}
+
+.landscape {
+    background: right (bottom / auto) 100% no-repeat url("../assets/images/london.svg");
+    grid-column: 2 / 3;
+    grid-row: 3 / 4;
+    margin-top: 8rem;
+    opacity: .16;
+    height: 15.4rem;
+
+    @include md {
+        background-size: 100% 15.4rem;
+        background-position: left top;
+    }
+}
+
+.footer {
+    background: #4d4d4d;
+    color: #e6e6e6;
+    font: normal 300 1.6rem Lato, sans-serif;
+    grid-column: 2 / 3;
+    grid-row: 4 / 5;
+
+    > ._wide {
+        display: flex;
+        flex-direction: column;
+
+        @include md {
+            flex-direction: row;
+        }
+
+        > .cvar,
+        > .links {
+            color: #e6e6e6;
+            flex: .3;
+            padding: 3.2rem 0;
+        }
+
+        > .subscription {
+            background: #333;
+            flex: .4;
+            padding: 3.2rem;
+        }
+
+        > .cvar,
+        > .subscription,
+        > .links {
+            > .section-title {
+                font-size: 1.8rem;
+                font-weight: 400;
+                margin-bottom: 2.4rem;
+                text-transform: uppercase;
+            }
+        }
+
+        > .cvar {
+            > .var,
+            > .copyright,
+            > .social-networks {
+                margin-top: 2rem;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+
+            > .social-networks > a {
+                display: inline-block;
+                font-size: 2.4rem;
+                margin-left: 1.6rem;
+
+                &:first-child {
+                    margin-left: 0;
+                }
+            }
+        }
+
+        > .links {
+            padding-left: 3.2rem;
+
+            > ul > li {
+                display: block;
+                margin-top: 2rem;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+        }
+    }
 }
