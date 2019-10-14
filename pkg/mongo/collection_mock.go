@@ -55,6 +55,25 @@ func (mr *MockCollectionMockRecorder) Find(arg0, arg1 interface{}, arg2 ...inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Find", reflect.TypeOf((*MockCollection)(nil).Find), varargs...)
 }
 
+// FindOne mocks base method
+func (m *MockCollection) FindOne(arg0 context.Context, arg1 interface{}, arg2 ...*options.FindOneOptions) SingleResult {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "FindOne", varargs...)
+	ret0, _ := ret[0].(SingleResult)
+	return ret0
+}
+
+// FindOne indicates an expected call of FindOne
+func (mr *MockCollectionMockRecorder) FindOne(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindOne", reflect.TypeOf((*MockCollection)(nil).FindOne), varargs...)
+}
+
 // InsertOne mocks base method
 func (m *MockCollection) InsertOne(arg0 context.Context, arg1 interface{}, arg2 ...*options.InsertOneOptions) (*mongo0.InsertOneResult, error) {
 	m.ctrl.T.Helper()

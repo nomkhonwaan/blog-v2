@@ -40,6 +40,7 @@ mockgen:
 	$(MOCKGEN) -package blog -destination ./pkg/blog/service_mock.go github.com/nomkhonwaan/myblog/pkg/blog Service
 	$(MOCKGEN) -package mongo -destination ./pkg/mongo/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
 	$(MOCKGEN) -package mongo -destination ./pkg/mongo/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
+	$(MOCKGEN) -package mongo -destination ./pkg/mongo/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult
 	
 .PHONY: test
 test:

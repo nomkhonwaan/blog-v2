@@ -11,6 +11,9 @@ type Collection interface {
 	// Perform finding the documents matching a model
 	Find(context.Context, interface{}, ...*options.FindOptions) (Cursor, error)
 
+	// Perform finding up to one document that matches the model
+	FindOne(context.Context, interface{}, ...*options.FindOneOptions) SingleResult
+
 	// Insert a single document into the collection
 	InsertOne(context.Context, interface{}, ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
 }
@@ -32,4 +35,8 @@ func (col CustomCollection) Find(ctx context.Context, filter interface{}, opts .
 	}
 
 	return CustomCursor{Context: ctx, Cursor: cur}, nil
+}
+
+func (col CustomCollection) FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) SingleResult {
+	return col.Collection.FindOne(ctx, filter, opts...)
 }

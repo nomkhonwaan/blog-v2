@@ -125,7 +125,7 @@ func allowCORS(h http.Handler) http.Handler {
 }
 
 func logRequest(h http.Handler) http.Handler {
-	return log.NewDefaultLoggingInterceptor().Handler(h)
+	return log.Default().Handler(h)
 }
 
 func handleSignals() <-chan struct{} {

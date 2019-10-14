@@ -26,7 +26,7 @@ type CategoryRepository interface {
 	FindAll(context.Context) ([]Category, error)
 
 	// Returns list of categories from list of IDs
-	FindAllByIDs(context.Context, []primitive.ObjectID) ([]Category, error)
+	FindAllByIDs(context.Context, interface{}) ([]Category, error)
 }
 
 // NewCategoryRepository returns category repository which connects to MongoDB
@@ -52,10 +52,10 @@ func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, er
 	return categories, err
 }
 
-func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Category, error) {
+func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]Category, error) {
 	cur, err := repo.col.Find(ctx, bson.M{
 		"_id": bson.M{
-			"$in": ids,
+			"$in": ids.([]primitive.ObjectID),
 		},
 	})
 	if err != nil {
