@@ -7,18 +7,7 @@ import { PostComponent } from './post.component';
   template: `
     <article [innerHTML]="summary"></article>
   `,
-  styles: [
-    `
-      :host {
-          font: normal 300 1.6rem Pridi, sans-serif;
-      }
-    `,
-    `
-      ::ng-deep p {
-          margin: 2.4rem 0;
-      }
-    `,
-  ],
+  styleUrls: ['./post-content.component.scss'],
 })
 export class PostExcerptComponent extends PostComponent implements OnInit {
 
