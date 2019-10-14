@@ -97,8 +97,39 @@
             }
         }
 
+        > .cvar {
+            > .var,
+            > .copyright,
+            > .social-networks {
+                margin-top: 2rem;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
+
+            > .social-networks > a {
+                display: inline-block;
+                font-size: 2.4rem;
+                margin-left: 1.6rem;
+
+                &:first-child {
+                    margin-left: 0;
+                }
+            }
+        }
+
         > .links {
             padding-left: 3.2rem;
+
+            > ul > li {
+                display: block;
+                margin-top: 2rem;
+
+                &:first-child {
+                    margin-top: 0;
+                }
+            }
         }
     }
 }
