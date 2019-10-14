@@ -2,6 +2,7 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
@@ -22,6 +23,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
+    FontAwesomeModule,
     HttpClientModule,
     StoreModule.forRoot({ app: appReducer.reducer }, {
       runtimeChecks: {
