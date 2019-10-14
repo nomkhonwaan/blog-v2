@@ -25,7 +25,7 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
           background: none;
           border: none;
           color: #808080;
-          font: normal 400 1.3rem 'Lato', sans-serif;
+          font: normal 400 1.3rem Lato, sans-serif;
           padding: 0;
       }
     `,
