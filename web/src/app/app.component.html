@@ -8,13 +8,13 @@
 
   <nav>
     <ul class="_list-unstyled">
-      <li>
+      <li (click)="toggleSidebar()">
         <a [routerLink]="['']" routerLinkActive="-actived">Home</a>
       </li>
       <!-- <li *ngIf="!auth.isAuthenticated()">
         <a (click)="auth.login(router.url)">Login / Register</a>
       </li> -->
-      <li *ngFor="let cat of categories">
+      <li *ngFor="let cat of categories" (click)="toggleSidebar()">
         <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>
       </li>
     </ul>

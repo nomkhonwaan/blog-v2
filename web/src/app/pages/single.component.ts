@@ -11,20 +11,34 @@ import { ApolloQueryResult } from 'apollo-client';
 })
 export class SingleComponent implements OnInit {
 
-  slug: string;
+  p: Post;
 
   constructor(private apollo: Apollo, private route: ActivatedRoute) { }
 
   ngOnInit(): void {
-    // this.apollo.watchQuery({
-    //   query: gql`
-    //     {
-
-    //     }
-    //   `,
-    // })
-    this.slug = this.route.snapshot.paramMap.get('slug');
-    console.log(this.slug);
+    this.apollo.watchQuery({
+      query: gql`
+        {
+          post(idOrSlug: $idOrSlug) {
+            title
+            slug
+            html
+            publishedAt
+            categories {
+              name slug
+            }
+            tags {
+              name slug
+            }
+          }
+        }
+      `,
+      variables: {
+        idOrSlug: this.route.snapshot.paramMap.get('slug'),
+      }
+    }).valueChanges.subscribe((result: ApolloQueryResult<{ post: Post }>): void => {
+      this.p = result.data.post;
+    });
   }
 
 }

@@ -18,6 +18,12 @@ import { PostComponent } from './post.component';
       }
     `,
     `
+      ::ng-deep h1 {
+          font-size: 4.8rem;
+          font-weight: inherit;
+      }
+    `,
+    `
       ::ng-deep h2 {
           font-size: 3.6rem;
           font-weight: inherit;
