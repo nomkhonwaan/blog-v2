@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
 import { RecentPostsComponent } from './recent-posts.component';
+import { SingleComponent } from './single.component';
 
 import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
@@ -16,6 +17,7 @@ import { SharedModule } from '../shared/share.module';
   ],
   declarations: [
     RecentPostsComponent,
+    SingleComponent,
   ],
 })
 export class PagesModule { }
