@@ -75,20 +75,19 @@
 
         > .cvar,
         > .links {
-            color: #e6e6e6;
             flex: .3;
-            padding: 3.2rem 0;
-        }
-
-        > .subscription {
-            background: #333;
-            flex: .4;
-            padding: 3.2rem;
         }
 
         > .cvar,
         > .subscription,
         > .links {
+            margin: 0 -3.2rem;
+            padding: 3.2rem;
+
+            @include md {
+                margin: 0;
+            }
+
             > .section-title {
                 font-size: 1.8rem;
                 font-weight: 400;
@@ -119,9 +118,12 @@
             }
         }
 
-        > .links {
-            padding-left: 3.2rem;
+        > .subscription {
+            background: #333;
+            flex: .4;
+        }
 
+        > .links {
             > ul > li {
                 display: block;
                 margin-top: 2rem;
