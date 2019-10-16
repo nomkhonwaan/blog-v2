@@ -93,6 +93,9 @@ type PostRepository interface {
 
 	// Return list of posts filtered by post query
 	FindAll(context.Context, PostQuery) ([]Post, error)
+
+	// Return a single post by its ID
+	FindByID(context.Context, interface{}) (Post, error)
 }
 
 // NewPostRepository returns post repository which connects to MongoDB
@@ -151,8 +154,13 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 	return posts, err
 }
 
-func (repo MongoPostRepository) FindByID(ctx context.Context, id string) (Post, error) {
-	return Post{}, nil
+func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (Post, error) {
+	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
+
+	var p Post
+	err := r.Decode(&p)
+
+	return p, err
 }
 
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts

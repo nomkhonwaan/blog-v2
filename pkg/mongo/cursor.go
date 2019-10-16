@@ -34,7 +34,7 @@ func (cur CustomCursor) Decode(val interface{}) error {
 
 	// call the original decoding function for non-slice variable
 	if v.Elem().Kind() != reflect.Slice {
-		return cur.Cursor.Decode(&val)
+		return cur.Cursor.Decode(val)
 	}
 
 	v = v.Elem()

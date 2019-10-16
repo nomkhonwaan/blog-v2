@@ -8,7 +8,9 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
+	"strings"
 )
 
 // Server is our GraphQL server
@@ -41,6 +43,7 @@ func (s *Server) registerQuery(schema *schemabuilder.Schema) {
 
 	obj.FieldFunc("categories", s.makeFieldFuncCategories)
 	obj.FieldFunc("latestPublishedPosts", s.makeFieldFuncLatestPublishedPosts)
+	obj.FieldFunc("post", s.makeFieldFuncPost)
 }
 
 func (s *Server) registerMutation(schema *schemabuilder.Schema) {
@@ -68,6 +71,39 @@ func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args str
 			WithLimit(args.Limit).
 			Build(),
 	)
+}
+
+func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
+	IDOrSlug string `graphql:"idOrSlug"`
+}) (blog.Post, error) {
+	sl := strings.Split(args.IDOrSlug, "-")
+
+	id, err := primitive.ObjectIDFromHex(sl[len(sl)-1])
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	p, err := s.service.Post().FindByID(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	// do not check authority if the post had published
+	if p.Status == blog.Published {
+		return p, nil
+	}
+
+	if ctx.Value(auth.UserProperty) == nil {
+		return blog.Post{}, errors.New(http.StatusText(http.StatusUnauthorized))
+	}
+
+	// only author can get their own post
+	authorID := ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
+	if p.AuthorID == authorID {
+		return p, nil
+	}
+
+	return blog.Post{}, errors.New(http.StatusText(http.StatusForbidden))
 }
 
 func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {

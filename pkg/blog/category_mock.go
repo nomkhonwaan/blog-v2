@@ -7,7 +7,6 @@ package blog
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	primitive "go.mongodb.org/mongo-driver/bson/primitive"
 	reflect "reflect"
 )
 
@@ -50,7 +49,7 @@ func (mr *MockCategoryRepositoryMockRecorder) FindAll(arg0 interface{}) *gomock.
 }
 
 // FindAllByIDs mocks base method
-func (m *MockCategoryRepository) FindAllByIDs(arg0 context.Context, arg1 []primitive.ObjectID) ([]Category, error) {
+func (m *MockCategoryRepository) FindAllByIDs(arg0 context.Context, arg1 interface{}) ([]Category, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "FindAllByIDs", arg0, arg1)
 	ret0, _ := ret[0].([]Category)

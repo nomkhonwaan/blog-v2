@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// InsecureServer is a wrapper of net/http.Server 
+// InsecureServer is a wrapper of net/http.Server
 // which embeds net/http.Handler for handling incoming HTTP requests.
 type InsecureServer struct {
 	Handler         http.Handler

@@ -41,8 +41,8 @@ func (w *CustomResponseWriter) WriteHeader(statusCode int) {
 	w.ResponseWriter.WriteHeader(statusCode)
 }
 
-// NewDefaultLoggingInterceptor returns HTTP logging interceptor with default timer and default outputer
-func NewDefaultLoggingInterceptor() LoggingInterceptor {
+// Default returns HTTP logging interceptor with default timer and default outputer
+func Default() LoggingInterceptor {
 	return NewLoggingInterceptor(NewDefaultTimer(), NewDefaultOutputer())
 }
 

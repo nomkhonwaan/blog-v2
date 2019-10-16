@@ -24,12 +24,10 @@ export class RecentPostsComponent implements OnInit {
             html
             publishedAt
             categories {
-              name
-              slug
+              name slug
             }
             tags {
-              name
-              slug
+              name slug
             }
           }
         }
