@@ -1,11 +1,14 @@
 package storage
 
 import (
+	"context"
+	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"io"
+	"path/filepath"
 )
 
 // AmazonS3 is a storage manager which talks to Amazon S3 service for uploading and listing uploaded files
@@ -34,15 +37,15 @@ func NewAmazonS3(accessKey, secretKey string, repo FileRepository) (AmazonS3, er
 	return AmazonS3{repo: repo, sess: sess, defaultBucketName: "nomkhonwaan-com"}, nil
 }
 
-// SetDefaultBucketName allows to override the default bucket name with another bucket name
+// SetDefaultBucketName allows to override the default bucket name
 func (s AmazonS3) SetDefaultBucketName(newBucketName string) {
 	s.defaultBucketName = newBucketName
 }
 
-func (s AmazonS3) Upload(path string, body io.Reader) (File, error) {
+func (s AmazonS3) Upload(ctx context.Context, path string, body io.Reader) (File, error) {
 	u := s3manager.NewUploader(s.sess)
 
-	_, err := u.Upload(&s3manager.UploadInput{
+	result, err := u.Upload(&s3manager.UploadInput{
 		Bucket: aws.String(s.defaultBucketName),
 		Key:    aws.String(path),
 		Body:   body,
@@ -51,6 +54,16 @@ func (s AmazonS3) Upload(path string, body io.Reader) (File, error) {
 		return File{}, err
 	}
 
-	return File{}, nil
-	//return result, nil
+	file, err := s.repo.Create(ctx, File{
+		Path:           path,
+		FileName:       filepath.Base(path),
+		OptionalField1: fmt.Sprintf("%T", s),
+		OptionalField2: result.UploadID,
+		OptionalField3: result.Location,
+	})
+	if err != nil {
+		return File{}, err
+	}
+
+	return file, nil
 }

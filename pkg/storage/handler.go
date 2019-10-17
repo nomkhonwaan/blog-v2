@@ -18,23 +18,23 @@ func Handler(u Uploader) http.Handler {
 		}
 		authorID := r.Context().Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
 
-		file, header, err := r.FormFile("file")
+		f, header, err := r.FormFile("file")
 		if err != nil {
 			responseError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer file.Close()
+		defer f.Close()
 
 		path := authorID.(string) + "/" + header.Filename
 		logrus.Infof("uploading file %s with size %d to the storage server...", path, header.Size)
 
-		_, err = u.Upload(path, file)
+		file, err := u.Upload(r.Context(), path, f)
 		if err != nil {
 			responseError(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		v, _ := json.Marshal(map[string]string{"message": "OK"})
+		v, _ := json.Marshal(file)
 		_, _ = w.Write(v)
 	})
 }

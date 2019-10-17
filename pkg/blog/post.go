@@ -88,21 +88,22 @@ func (Post) BelongToTags(repo TagRepository) interface{} {
 
 // PostRepository is a repository interface of post which defines all post entity related functions
 type PostRepository interface {
-	// Create new empty post which belongs to the author and "Draft" status
-	Create(context.Context, string) (Post, error)
+	// Create new empty post which belongs to the author with "Draft" status
+	Create(ctx context.Context, authorID string) (Post, error)
 
 	// Return list of posts filtered by post query
-	FindAll(context.Context, PostQuery) ([]Post, error)
+	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
 
 	// Return a single post by its ID
-	FindByID(context.Context, interface{}) (Post, error)
+	FindByID(ctx context.Context, id interface{}) (Post, error)
 }
 
-// NewPostRepository returns post repository which connects to MongoDB
+// NewPostRepository returns post repository
 func NewPostRepository(col mongo.Collection) MongoPostRepository {
 	return MongoPostRepository{col}
 }
 
+// MongoPostRepository is a MongoDB specified repository for post
 type MongoPostRepository struct {
 	col mongo.Collection
 }
