@@ -173,28 +173,28 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 		err     error
 	}{
 		"With default query options": {
-			q:      &postQuery{},
+			q:      &MongoPostQuery{},
 			filter: bson.M{},
 			options: func() *options.FindOptions {
 				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
 			},
 		},
 		"With specified offset and limit": {
-			q:      &postQuery{offset: 10, limit: 5},
+			q:      &MongoPostQuery{offset: 10, limit: 5},
 			filter: bson.M{},
 			options: func() *options.FindOptions {
 				return (&options.FindOptions{}).SetSkip(10).SetLimit(5)
 			},
 		},
 		"With status draft": {
-			q:      &postQuery{status: Draft},
+			q:      &MongoPostQuery{status: Draft},
 			filter: bson.M{"status": Draft},
 			options: func() *options.FindOptions {
 				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
 			},
 		},
 		"With status published": {
-			q:      &postQuery{status: Published},
+			q:      &MongoPostQuery{status: Published},
 			filter: bson.M{"status": Published},
 			options: func() *options.FindOptions {
 				options := (&options.FindOptions{}).SetSkip(0).SetLimit(0)
@@ -205,7 +205,7 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 			},
 		},
 		"When an error has occurred on finding the result": {
-			q:      &postQuery{},
+			q:      &MongoPostQuery{},
 			filter: bson.M{},
 			options: func() *options.FindOptions {
 				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
@@ -241,8 +241,8 @@ func TestMongoPostRepository_FindByID(t *testing.T) {
 
 func TestNewPostQueryBuilder(t *testing.T) {
 	// Given
-	expected := &postQueryBuilder{
-		postQuery: &postQuery{
+	expected := &MongoPostQueryBuilder{
+		MongoPostQuery: &MongoPostQuery{
 			offset: 0,
 			limit:  5,
 		},
@@ -257,8 +257,8 @@ func TestNewPostQueryBuilder(t *testing.T) {
 
 func TestPostQueryBuilder_WithStatus(t *testing.T) {
 	// Given
-	expected := &postQueryBuilder{
-		postQuery: &postQuery{
+	expected := &MongoPostQueryBuilder{
+		MongoPostQuery: &MongoPostQuery{
 			status: Published,
 			offset: 0,
 			limit:  5,
@@ -274,8 +274,8 @@ func TestPostQueryBuilder_WithStatus(t *testing.T) {
 
 func TestPostQueryBuilder_WithOffset(t *testing.T) {
 	// Given
-	expected := &postQueryBuilder{
-		postQuery: &postQuery{
+	expected := &MongoPostQueryBuilder{
+		MongoPostQuery: &MongoPostQuery{
 			offset: 99,
 			limit:  5,
 		},
@@ -290,8 +290,8 @@ func TestPostQueryBuilder_WithOffset(t *testing.T) {
 
 func TestPostQueryBuilder_WithLimit(t *testing.T) {
 	// Given
-	expected := &postQueryBuilder{
-		postQuery: &postQuery{
+	expected := &MongoPostQueryBuilder{
+		MongoPostQuery: &MongoPostQuery{
 			offset: 0,
 			limit:  99,
 		},
@@ -312,11 +312,11 @@ func TestPostQueryBuilder_Build(t *testing.T) {
 	}{
 		"With default query builder": {
 			qb:       NewPostQueryBuilder(),
-			expected: &postQuery{offset: 0, limit: 5},
+			expected: &MongoPostQuery{offset: 0, limit: 5},
 		},
 		"With specific status query builder": {
 			qb:       NewPostQueryBuilder().WithStatus(Draft),
-			expected: &postQuery{status: Draft, offset: 0, limit: 5},
+			expected: &MongoPostQuery{status: Draft, offset: 0, limit: 5},
 		},
 	}
 
