@@ -19,17 +19,16 @@ type Category struct {
 	Slug string `bson:"slug" json:"slug" graphql:"slug"`
 }
 
-// CategoryRepository is a repository interface of category
-// which defines all category entity related functions
+// CategoryRepository is a repository interface of category which defines all category entity related functions
 type CategoryRepository interface {
 	// Returns list of categories
-	FindAll(context.Context) ([]Category, error)
+	FindAll(ctx context.Context) ([]Category, error)
 
 	// Returns list of categories from list of IDs
-	FindAllByIDs(context.Context, interface{}) ([]Category, error)
+	FindAllByIDs(ctx context.Context, ids interface{}) ([]Category, error)
 }
 
-// NewCategoryRepository returns category repository which connects to MongoDB
+// NewCategoryRepository returns category repository
 func NewCategoryRepository(col mongo.Collection) MongoCategoryRepository {
 	return MongoCategoryRepository{col}
 }

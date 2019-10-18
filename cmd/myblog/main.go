@@ -11,6 +11,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
+	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -62,6 +63,14 @@ func main() {
 			EnvVar: "AUTH0_JWKS_URI",
 			Value:  "https://nomkhonwaan.auth0.com/.well-known/jwks.json",
 		},
+		cli.StringFlag{
+			Name:   "amazon-s3-access-key",
+			EnvVar: "AMAZON_S3_ACCESS_KEY",
+		},
+		cli.StringFlag{
+			Name:   "amazon-s3-secret-key",
+			EnvVar: "AMAZON_S3_SECRET_KEY",
+		},
 	}
 	app.Action = action
 
@@ -78,6 +87,7 @@ func action(ctx *cli.Context) error {
 	db := client.Database("nomkhonwaan_com")
 
 	categoryRepo := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
+	fileRepo := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
 	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
@@ -92,6 +102,12 @@ func action(ctx *cli.Context) error {
 
 	r.HandleFunc("/", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
+
+	uploader, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
+	if err != nil {
+		return err
+	}
+	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 
 	s := server.InsecureServer{
 		Handler:         allowCORS(logRequest(r)),
@@ -125,7 +141,7 @@ func allowCORS(h http.Handler) http.Handler {
 }
 
 func logRequest(h http.Handler) http.Handler {
-	return log.Default().Handler(h)
+	return log.NewLoggingInterceptor(log.NewDefaultTimer(), logrus.New()).Handler(h)
 }
 
 func handleSignals() <-chan struct{} {

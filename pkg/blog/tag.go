@@ -20,22 +20,25 @@ type Tag struct {
 	Slug string `bson:"slug" json:"slug" graphql:"slug"`
 }
 
+// TagRepository is a repository interface of category which defines all category entity related functions
 type TagRepository interface {
-	FindAllByIDs(context.Context, []primitive.ObjectID) ([]Tag, error)
+	FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error)
 }
 
+// NewTagRepository returns tag repository
 func NewTagRepository(col mongo.Collection) MongoTagRepository {
 	return MongoTagRepository{col}
 }
 
+// MongoTagRepository is a MongoDB specified repository for tag
 type MongoTagRepository struct {
 	col mongo.Collection
 }
 
-func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids []primitive.ObjectID) ([]Tag, error) {
+func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error) {
 	cur, err := repo.col.Find(ctx, bson.M{
 		"_id": bson.M{
-			"$in": ids,
+			"$in": ids.([]primitive.ObjectID),
 		},
 	})
 	if err != nil {

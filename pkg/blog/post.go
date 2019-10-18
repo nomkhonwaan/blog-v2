@@ -88,21 +88,22 @@ func (Post) BelongToTags(repo TagRepository) interface{} {
 
 // PostRepository is a repository interface of post which defines all post entity related functions
 type PostRepository interface {
-	// Create new empty post which belongs to the author and "Draft" status
-	Create(context.Context, string) (Post, error)
+	// Create new empty post which belongs to the author with "Draft" status
+	Create(ctx context.Context, authorID string) (Post, error)
 
 	// Return list of posts filtered by post query
-	FindAll(context.Context, PostQuery) ([]Post, error)
+	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
 
 	// Return a single post by its ID
-	FindByID(context.Context, interface{}) (Post, error)
+	FindByID(ctx context.Context, id interface{}) (Post, error)
 }
 
-// NewPostRepository returns post repository which connects to MongoDB
+// NewPostRepository returns post repository
 func NewPostRepository(col mongo.Collection) MongoPostRepository {
 	return MongoPostRepository{col}
 }
 
+// MongoPostRepository is a MongoDB specified repository for post
 type MongoPostRepository struct {
 	col mongo.Collection
 }
@@ -179,36 +180,36 @@ type PostQueryBuilder interface {
 }
 
 // NewPostQueryBuilder returns a query builder for building post query object
-func NewPostQueryBuilder() PostQueryBuilder {
-	return &postQueryBuilder{
-		postQuery: &postQuery{
+func NewPostQueryBuilder() *MongoPostQueryBuilder {
+	return &MongoPostQueryBuilder{
+		MongoPostQuery: &MongoPostQuery{
 			offset: 0,
 			limit:  5,
 		},
 	}
 }
 
-type postQueryBuilder struct {
-	*postQuery
+type MongoPostQueryBuilder struct {
+	*MongoPostQuery
 }
 
-func (qb *postQueryBuilder) WithStatus(status Status) PostQueryBuilder {
-	qb.postQuery.status = status
+func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
+	qb.MongoPostQuery.status = status
 	return qb
 }
 
-func (qb *postQueryBuilder) WithOffset(offset int64) PostQueryBuilder {
-	qb.postQuery.offset = offset
+func (qb *MongoPostQueryBuilder) WithOffset(offset int64) PostQueryBuilder {
+	qb.MongoPostQuery.offset = offset
 	return qb
 }
 
-func (qb *postQueryBuilder) WithLimit(limit int64) PostQueryBuilder {
-	qb.postQuery.limit = limit
+func (qb *MongoPostQueryBuilder) WithLimit(limit int64) PostQueryBuilder {
+	qb.MongoPostQuery.limit = limit
 	return qb
 }
 
-func (qb *postQueryBuilder) Build() PostQuery {
-	return qb.postQuery
+func (qb *MongoPostQueryBuilder) Build() PostQuery {
+	return qb.MongoPostQuery
 }
 
 // PostQuery is a query object which will be used for filtering list of posts
@@ -223,20 +224,20 @@ type PostQuery interface {
 	Limit() int64
 }
 
-type postQuery struct {
+type MongoPostQuery struct {
 	status Status
 	offset int64
 	limit  int64
 }
 
-func (q *postQuery) Status() Status {
+func (q *MongoPostQuery) Status() Status {
 	return q.status
 }
 
-func (q *postQuery) Offset() int64 {
+func (q *MongoPostQuery) Offset() int64 {
 	return q.offset
 }
 
-func (q *postQuery) Limit() int64 {
+func (q *MongoPostQuery) Limit() int64 {
 	return q.limit
 }
