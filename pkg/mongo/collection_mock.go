@@ -93,3 +93,23 @@ func (mr *MockCollectionMockRecorder) InsertOne(arg0, arg1 interface{}, arg2 ...
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InsertOne", reflect.TypeOf((*MockCollection)(nil).InsertOne), varargs...)
 }
+
+// UpdateOne mocks base method
+func (m *MockCollection) UpdateOne(arg0 context.Context, arg1, arg2 interface{}, arg3 ...*options.UpdateOptions) (*mongo0.UpdateResult, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "UpdateOne", varargs...)
+	ret0, _ := ret[0].(*mongo0.UpdateResult)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateOne indicates an expected call of UpdateOne
+func (mr *MockCollectionMockRecorder) UpdateOne(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateOne", reflect.TypeOf((*MockCollection)(nil).UpdateOne), varargs...)
+}

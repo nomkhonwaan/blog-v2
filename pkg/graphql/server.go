@@ -50,6 +50,7 @@ func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 	obj := schema.Mutation()
 
 	obj.FieldFunc("createPost", s.makeFieldFuncCreatePost)
+	obj.FieldFunc("updatePostTitle", s.makeFieldFuncUpdatePostTitle)
 }
 
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
@@ -93,13 +94,12 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 		return p, nil
 	}
 
-	if ctx.Value(auth.UserProperty) == nil {
-		return blog.Post{}, errors.New(http.StatusText(http.StatusUnauthorized))
+	authorID, err := s.getAuthorizedUserID(ctx)
+	if err != nil {
+		return blog.Post{}, err
 	}
 
-	// only author can get their own post
-	authorID := ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
-	if p.AuthorID == authorID {
+	if p.AuthorID == authorID.(string) {
 		return p, nil
 	}
 
@@ -107,10 +107,52 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 }
 
 func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
-	if ctx.Value(auth.UserProperty) == nil {
-		return blog.Post{}, errors.New(http.StatusText(http.StatusUnauthorized))
+	authorID, err := s.getAuthorizedUserID(ctx)
+	if err != nil {
+		return blog.Post{}, err
 	}
 
-	authorID := ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
 	return s.service.Post().Create(ctx, authorID.(string))
+}
+
+func (s *Server) makeFieldFuncUpdatePostTitle(ctx context.Context, args struct {
+	IDOrSlug string `graphql:"idOrSlug"`
+	Title    string `graphql:"title"`
+}) (blog.Post, error) {
+	authorID, err := s.getAuthorizedUserID(ctx)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	sl := strings.Split(args.IDOrSlug, "-")
+
+	id, err := primitive.ObjectIDFromHex(sl[len(sl)-1])
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	p, err := s.service.Post().FindByID(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	if p.AuthorID != authorID.(string) {
+		return blog.Post{}, errors.New(http.StatusText(http.StatusForbidden))
+	}
+
+	return s.service.Post().Save(ctx, id,
+		blog.NewPostQueryBuilder().
+			WithTitle(args.Title).
+			Build(),
+	)
+}
+
+// getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
+// an error unauthorized will be returned if the context is nil
+func (s *Server) getAuthorizedUserID(ctx context.Context) (interface{}, error) {
+	if ctx.Value(auth.UserProperty) == nil {
+		return nil, errors.New(http.StatusText(http.StatusUnauthorized))
+	}
+
+	return ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"], nil
 }

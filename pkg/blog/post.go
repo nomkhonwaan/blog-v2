@@ -96,6 +96,9 @@ type PostRepository interface {
 
 	// Return a single post by its ID
 	FindByID(ctx context.Context, id interface{}) (Post, error)
+
+	// Save a single post
+	Save(ctx context.Context, id interface{}, q PostQuery) (Post, error)
 }
 
 // NewPostRepository returns post repository
@@ -164,6 +167,21 @@ func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (P
 	return p, err
 }
 
+func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q PostQuery) (Post, error) {
+	update := bson.M{"$set": bson.M{}}
+
+	if q.Title() != "" {
+		update["$set"].(bson.M)["title"] = q.Title()
+	}
+
+	_, err := repo.col.UpdateOne(ctx, bson.M{"_id": id.(primitive.ObjectID)}, update)
+	if err != nil {
+		return Post{}, err
+	}
+
+	return repo.FindByID(ctx, id.(primitive.ObjectID))
+}
+
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts
 type PostQueryBuilder interface {
 	// Allow to filter post by status
@@ -193,6 +211,11 @@ type MongoPostQueryBuilder struct {
 	*MongoPostQuery
 }
 
+func (qb *MongoPostQueryBuilder) WithTitle(title string) PostQueryBuilder {
+	qb.MongoPostQuery.title = title
+	return qb
+}
+
 func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
 	qb.MongoPostQuery.status = status
 	return qb
@@ -214,6 +237,9 @@ func (qb *MongoPostQueryBuilder) Build() PostQuery {
 
 // PostQuery is a query object which will be used for filtering list of posts
 type PostQuery interface {
+	// Return title to be filtered with
+	Title() string
+
 	// Return status to be filtered with
 	Status() Status
 
@@ -225,9 +251,14 @@ type PostQuery interface {
 }
 
 type MongoPostQuery struct {
+	title  string
 	status Status
 	offset int64
 	limit  int64
+}
+
+func (q *MongoPostQuery) Title() string {
+	return q.title
 }
 
 func (q *MongoPostQuery) Status() Status {

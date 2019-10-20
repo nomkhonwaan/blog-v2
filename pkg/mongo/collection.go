@@ -9,13 +9,16 @@ import (
 // Collection is a wrapped interface to the `mongo.Collection` for testing purpose
 type Collection interface {
 	// Perform finding the documents matching a model
-	Find(context.Context, interface{}, ...*options.FindOptions) (Cursor, error)
+	Find(ctxc context.Context, filter interface{}, opts ...*options.FindOptions) (Cursor, error)
 
 	// Perform finding up to one document that matches the model
-	FindOne(context.Context, interface{}, ...*options.FindOneOptions) SingleResult
+	FindOne(ctxc context.Context, filter interface{}, opts ...*options.FindOneOptions) SingleResult
 
 	// Insert a single document into the collection
-	InsertOne(context.Context, interface{}, ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
+	InsertOne(ctxc context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
+
+	// Update a single document int the collection
+	UpdateOne(ctxc context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 }
 
 // CustomCollection provides customized collection methods on top of the original `mongo.Collection`
