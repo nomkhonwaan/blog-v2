@@ -184,6 +184,12 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts
 type PostQueryBuilder interface {
+	// Allow to filter post by title
+	WithTitle(title string) PostQueryBuilder
+
+	// Allow to filter post by markdown
+	WithMarkdown(markdown string) PostQueryBuilder
+
 	// Allow to filter post by status
 	WithStatus(status Status) PostQueryBuilder
 
@@ -216,6 +222,11 @@ func (qb *MongoPostQueryBuilder) WithTitle(title string) PostQueryBuilder {
 	return qb
 }
 
+func (qb *MongoPostQueryBuilder) WithMarkdown(markdown string) PostQueryBuilder {
+	qb.MongoPostQuery.markdown = markdown
+	return qb
+}
+
 func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
 	qb.MongoPostQuery.status = status
 	return qb
@@ -240,6 +251,9 @@ type PostQuery interface {
 	// Return title to be filtered with
 	Title() string
 
+	// Return markdown to be filtered with
+	Markdown() string
+
 	// Return status to be filtered with
 	Status() Status
 
@@ -251,14 +265,20 @@ type PostQuery interface {
 }
 
 type MongoPostQuery struct {
-	title  string
-	status Status
+	title    string
+	markdown string
+	status   Status
+
 	offset int64
 	limit  int64
 }
 
 func (q *MongoPostQuery) Title() string {
 	return q.title
+}
+
+func (q *MongoPostQuery) Markdown() string {
+	return q.markdown
 }
 
 func (q *MongoPostQuery) Status() Status {
