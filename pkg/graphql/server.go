@@ -3,7 +3,6 @@ package graphql
 import (
 	"context"
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/samsarahq/thunder/graphql"
@@ -83,13 +82,7 @@ func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, 
 }
 
 func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
-	return s.service.Post().FindAll(ctx,
-		blog.NewPostQueryBuilder().
-			WithStatus(blog.Published).
-			WithOffset(args.Offset).
-			WithLimit(args.Limit).
-			Build(),
-	)
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).WithOffset(args.Offset).WithLimit(args.Limit).Build())
 }
 
 func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
@@ -107,7 +100,7 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 		return p, nil
 	}
 
-	authorizedID, err := s.getAuthorizedUserID(ctx)
+	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
 		return blog.Post{}, err
 	}
@@ -120,7 +113,7 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 }
 
 func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
-	authorizedID, err := s.getAuthorizedUserID(ctx)
+	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
 		return blog.Post{}, err
 	}
@@ -158,17 +151,18 @@ func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
 // an error unauthorized will be returned if the context is nil
-func (s *Server) getAuthorizedUserID(ctx context.Context) (interface{}, error) {
-	if ctx.Value(auth.UserProperty) == nil {
+func (s *Server) getAuthorizedIDOrFailed(ctx context.Context) (interface{}, error) {
+	authorizedID := auth.GetAuthorizedUserID(ctx)
+	if authorizedID == nil {
 		return nil, errors.New(http.StatusText(http.StatusUnauthorized))
 	}
 
-	return ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"], nil
+	return authorizedID, nil
 }
 
 // validateAuthority performs validation against the authorized ID and post's author ID
 func (s *Server) validateAuthority(ctx context.Context, id interface{}) error {
-	authorizedID, err := s.getAuthorizedUserID(ctx)
+	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
 		return err
 	}
