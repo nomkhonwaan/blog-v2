@@ -3,15 +3,32 @@ package graphql
 import (
 	"context"
 	"errors"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/russross/blackfriday/v2"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"strings"
 )
+
+// Slug is a valid URL string composes with title and ID
+type Slug string
+
+// GetID returns an ID from the slug string
+func (s Slug) GetID() (interface{}, error) {
+	sl := strings.Split(string(s), "-")
+	return primitive.ObjectIDFromHex(sl[len(sl)-1])
+}
+
+// MustGetID always return ID from the slug string
+func (s Slug) MustGetID() interface{} {
+	if id, err := s.GetID(); err == nil {
+		return id
+	}
+	return primitive.NewObjectID()
+}
 
 // Server is our GraphQL server
 type Server struct {
@@ -51,6 +68,7 @@ func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 
 	obj.FieldFunc("createPost", s.makeFieldFuncCreatePost)
 	obj.FieldFunc("updatePostTitle", s.makeFieldFuncUpdatePostTitle)
+	obj.FieldFunc("updatePostContent", s.makeFieldFuncUpdatePostContent)
 }
 
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
@@ -65,24 +83,13 @@ func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, 
 }
 
 func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
-	return s.service.Post().FindAll(ctx,
-		blog.NewPostQueryBuilder().
-			WithStatus(blog.Published).
-			WithOffset(args.Offset).
-			WithLimit(args.Limit).
-			Build(),
-	)
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).WithOffset(args.Offset).WithLimit(args.Limit).Build())
 }
 
 func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
-	IDOrSlug string `graphql:"idOrSlug"`
+	Slug Slug `graphql:"slug"`
 }) (blog.Post, error) {
-	sl := strings.Split(args.IDOrSlug, "-")
-
-	id, err := primitive.ObjectIDFromHex(sl[len(sl)-1])
-	if err != nil {
-		return blog.Post{}, err
-	}
+	id := args.Slug.MustGetID()
 
 	p, err := s.service.Post().FindByID(ctx, id)
 	if err != nil {
@@ -94,12 +101,12 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 		return p, nil
 	}
 
-	authorID, err := s.getAuthorizedUserID(ctx)
+	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
 		return blog.Post{}, err
 	}
 
-	if p.AuthorID == authorID.(string) {
+	if p.AuthorID == authorizedID.(string) {
 		return p, nil
 	}
 
@@ -107,52 +114,69 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 }
 
 func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
-	authorID, err := s.getAuthorizedUserID(ctx)
+	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
 		return blog.Post{}, err
 	}
 
-	return s.service.Post().Create(ctx, authorID.(string))
+	return s.service.Post().Create(ctx, authorizedID.(string))
 }
 
 func (s *Server) makeFieldFuncUpdatePostTitle(ctx context.Context, args struct {
-	IDOrSlug string `graphql:"idOrSlug"`
-	Title    string `graphql:"title"`
+	Slug  Slug   `graphql:"slug"`
+	Title string `graphql:"title"`
 }) (blog.Post, error) {
-	authorID, err := s.getAuthorizedUserID(ctx)
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
 	if err != nil {
 		return blog.Post{}, err
 	}
 
-	sl := strings.Split(args.IDOrSlug, "-")
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).Build())
+}
 
-	id, err := primitive.ObjectIDFromHex(sl[len(sl)-1])
+func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct {
+	Slug     Slug   `graphql:"slug"`
+	Markdown string `graphql:"markdown"`
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
 	if err != nil {
 		return blog.Post{}, err
 	}
 
-	p, err := s.service.Post().FindByID(ctx, id)
-	if err != nil {
-		return blog.Post{}, err
-	}
+	html := blackfriday.Run([]byte(args.Markdown))
 
-	if p.AuthorID != authorID.(string) {
-		return blog.Post{}, errors.New(http.StatusText(http.StatusForbidden))
-	}
-
-	return s.service.Post().Save(ctx, id,
-		blog.NewPostQueryBuilder().
-			WithTitle(args.Title).
-			Build(),
-	)
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
 // an error unauthorized will be returned if the context is nil
-func (s *Server) getAuthorizedUserID(ctx context.Context) (interface{}, error) {
-	if ctx.Value(auth.UserProperty) == nil {
+func (s *Server) getAuthorizedIDOrFailed(ctx context.Context) (interface{}, error) {
+	authorizedID := auth.GetAuthorizedUserID(ctx)
+	if authorizedID == nil {
 		return nil, errors.New(http.StatusText(http.StatusUnauthorized))
 	}
 
-	return ctx.Value(auth.UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"], nil
+	return authorizedID, nil
+}
+
+// validateAuthority performs validation against the authorized ID and post's author ID
+func (s *Server) validateAuthority(ctx context.Context, id interface{}) error {
+	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
+	if err != nil {
+		return err
+	}
+
+	p, err := s.service.Post().FindByID(ctx, id)
+	if err != nil {
+		return err
+	}
+	if p.AuthorID != authorizedID.(string) {
+		return errors.New(http.StatusText(http.StatusForbidden))
+	}
+
+	return nil
 }

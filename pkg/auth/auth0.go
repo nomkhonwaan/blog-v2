@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -74,4 +75,13 @@ func getPEMCertificate(token *jwt.Token, jwksURI string) (string, error) {
 	}
 
 	return certificate, nil
+}
+
+// GetAuthorizedUserID returns an authorized user ID (which is generated from the authentication server)
+func GetAuthorizedUserID(ctx context.Context) interface{} {
+	if ctx.Value(UserProperty) == nil {
+		return nil
+	}
+
+	return ctx.Value(UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
 }
