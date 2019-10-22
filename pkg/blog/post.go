@@ -170,8 +170,14 @@ func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (P
 func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q PostQuery) (Post, error) {
 	update := bson.M{"$set": bson.M{}}
 
-	if q.Title() != "" {
-		update["$set"].(bson.M)["title"] = q.Title()
+	if title := q.Title(); title != "" {
+		update["$set"].(bson.M)["title"] = title
+	}
+	if markdown := q.Markdown(); markdown != "" {
+		update["$set"].(bson.M)["markdown"] = markdown
+	}
+	if html := q.HTML(); html != "" {
+		update["$set"].(bson.M)["html"] = html
 	}
 
 	_, err := repo.col.UpdateOne(ctx, bson.M{"_id": id.(primitive.ObjectID)}, update)
@@ -189,6 +195,9 @@ type PostQueryBuilder interface {
 
 	// Allow to filter post by markdown
 	WithMarkdown(markdown string) PostQueryBuilder
+
+	// Allow to filter post by HTML
+	WithHTML(html string) PostQueryBuilder
 
 	// Allow to filter post by status
 	WithStatus(status Status) PostQueryBuilder
@@ -227,6 +236,11 @@ func (qb *MongoPostQueryBuilder) WithMarkdown(markdown string) PostQueryBuilder 
 	return qb
 }
 
+func (qb *MongoPostQueryBuilder) WithHTML(html string) PostQueryBuilder {
+	qb.MongoPostQuery.html = html
+	return qb
+}
+
 func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
 	qb.MongoPostQuery.status = status
 	return qb
@@ -254,6 +268,9 @@ type PostQuery interface {
 	// Return markdown to be filtered with
 	Markdown() string
 
+	// Return HTML to be filtered with
+	HTML() string
+
 	// Return status to be filtered with
 	Status() Status
 
@@ -267,6 +284,7 @@ type PostQuery interface {
 type MongoPostQuery struct {
 	title    string
 	markdown string
+	html     string
 	status   Status
 
 	offset int64
@@ -279,6 +297,10 @@ func (q *MongoPostQuery) Title() string {
 
 func (q *MongoPostQuery) Markdown() string {
 	return q.markdown
+}
+
+func (q *MongoPostQuery) HTML() string {
+	return q.html
 }
 
 func (q *MongoPostQuery) Status() Status {

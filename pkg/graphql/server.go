@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/russross/blackfriday/v2"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -146,7 +147,9 @@ func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct
 		return blog.Post{}, err
 	}
 
-	return blog.Post{}, nil
+	html := blackfriday.Run([]byte(args.Markdown))
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
