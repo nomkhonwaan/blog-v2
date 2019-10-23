@@ -34,6 +34,7 @@ clean:
 
 .PHONY: mockgen
 mockgen:
+	$(MOCKGEN) -destination ./pkg/auth/mock/client_mock.go net/http RoundTripper
 	$(MOCKGEN) -package blog -destination ./pkg/blog/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
 	$(MOCKGEN) -package blog -destination ./pkg/blog/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
 	$(MOCKGEN) -package blog -destination ./pkg/blog/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
