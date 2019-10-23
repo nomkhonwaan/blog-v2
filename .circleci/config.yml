@@ -1,4 +1,7 @@
-version: 2
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.2
 
 jobs:
   server_install:
@@ -26,6 +29,8 @@ jobs:
           keys:
             - go-mod-v1-{{ checksum "go.sum" }}
       - run: make test
+      - codecov/upload:
+          file: {{ coverage_report_filepath }}
   server_docker_build:
     machine: true
     working_directory: ~/repo
