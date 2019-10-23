@@ -44,7 +44,7 @@ mockgen:
 	
 .PHONY: test
 test:
-	$(GO) test -v ./... -race -coverprofile=coverage.txt -covermode=atomic
+	$(GO) test -v ./... -race -coverprofile=coverage.out -covermode=atomic
 	
 .PHONY: bindata
 bindata:
