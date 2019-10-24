@@ -115,7 +115,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	stopCh := handleSignals()
-	
+
 	err = s.ListenAndServe(ctx.String("listen-address"), stopCh)
 	if err != nil {
 		return err
@@ -149,11 +149,11 @@ func handleSignals() <-chan struct{} {
 	sigsCh := make(chan os.Signal, 2)
 
 	signal.Notify(sigsCh, os.Interrupt, syscall.SIGTERM)
-	
+
 	go func() {
 		<-sigsCh
 		close(stopCh)
-		
+
 		<-sigsCh
 		os.Exit(1)
 	}()

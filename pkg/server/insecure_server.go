@@ -30,24 +30,22 @@ func (s *InsecureServer) ListenAndServe(addr string, stopCh <-chan struct{}) err
 	}
 
 	go func() {
-		<-stopCh
+		logrus.Infof("server is listening on address: %s", l.Addr().String())
 
-		logrus.Info("server is shutting down...")
-		ctx, cancel := context.WithTimeout(context.Background(), s.ShutdownTimeout)
-		defer cancel()
-
-		if err := httpServer.Shutdown(ctx); err != nil {
-			logrus.Fatalf("an error has occurred while shutting-down the server: %v", err)
-		}
-
-		// A server has been stopped gracefully
-		logrus.Info("server has been stopped")
-	}()
-
-	go func() {
+		// Unable to caught an error here,
+		// I'm using a simple HTTP server an validate TCP listener before.
 		_ = httpServer.Serve(l)
 	}()
 
-	logrus.Infof("server is listening on address: %s", l.Addr().String())
+	<-stopCh
+
+	logrus.Info("server is shutting down...")
+	ctx, cancel := context.WithTimeout(context.Background(), s.ShutdownTimeout)
+	defer cancel()
+
+	// I have no idea which case the shutdown function will return an error :p
+	_ = httpServer.Shutdown(ctx)
+
+	logrus.Info("server has been stopped gracefully")
 	return nil
 }
