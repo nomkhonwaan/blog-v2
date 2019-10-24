@@ -35,13 +35,13 @@ clean:
 .PHONY: mockgen
 mockgen:
 	$(MOCKGEN) -destination ./pkg/auth/mock/client_mock.go net/http RoundTripper
-	$(MOCKGEN) -package blog -destination ./pkg/blog/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
-	$(MOCKGEN) -package blog -destination ./pkg/blog/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
-	$(MOCKGEN) -package blog -destination ./pkg/blog/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
-	$(MOCKGEN) -package blog -destination ./pkg/blog/service_mock.go github.com/nomkhonwaan/myblog/pkg/blog Service
-	$(MOCKGEN) -package mongo -destination ./pkg/mongo/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
-	$(MOCKGEN) -package mongo -destination ./pkg/mongo/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
-	$(MOCKGEN) -package mongo -destination ./pkg/mongo/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult
+	$(MOCKGEN) -destination ./pkg/blog/mock/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
+	$(MOCKGEN) -destination ./pkg/blog/mock/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
+	$(MOCKGEN) -destination ./pkg/blog/mock/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
+	$(MOCKGEN) -destination ./pkg/blog/mock/service_mock.go github.com/nomkhonwaan/myblog/pkg/blog Service
+	$(MOCKGEN) -destination ./pkg/mongo/mock/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
+	$(MOCKGEN) -destination ./pkg/mongo/mock/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
+	$(MOCKGEN) -destination ./pkg/mongo/mock/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult
 	
 .PHONY: test
 test:
