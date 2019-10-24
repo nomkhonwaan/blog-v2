@@ -11,7 +11,10 @@ import (
 // InsecureServer is a wrapper of net/http.Server
 // which embeds net/http.Handler for handling incoming HTTP requests.
 type InsecureServer struct {
-	Handler         http.Handler
+	// An HTTP handler
+	Handler http.Handler
+
+	// Timeout to be waited on shutting-down the server, default is: 5 minutes
 	ShutdownTimeout time.Duration
 }
 
@@ -27,34 +30,22 @@ func (s *InsecureServer) ListenAndServe(addr string, stopCh <-chan struct{}) err
 	}
 
 	go func() {
-		<-stopCh
+		logrus.Infof("server is listening on address: %s", l.Addr().String())
 
-		logrus.Info("server is shutting down...")
-		ctx, cancel := context.WithTimeout(context.Background(), s.ShutdownTimeout)
-		defer cancel()
-
-		if err := httpServer.Shutdown(ctx); err != nil {
-			logrus.Fatalf("error: %v", err)
-		}
+		// Unable to caught an error here,
+		// I'm using a simple HTTP server an validate TCP listener before.
+		_ = httpServer.Serve(l)
 	}()
 
-	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorf("recover: %v", r)
-			}
-		}()
+	<-stopCh
 
-		err := httpServer.Serve(l)
+	logrus.Info("server is shutting down...")
+	ctx, cancel := context.WithTimeout(context.Background(), s.ShutdownTimeout)
+	defer cancel()
 
-		select {
-		case <-stopCh:
-			logrus.Info("server has been stopped")
-		default:
-			logrus.Errorf("error: %v", err)
-		}
-	}()
+	// I have no idea which case the shutdown function will return an error :p
+	_ = httpServer.Shutdown(ctx)
 
-	logrus.Infof("server is listening on address: %s", l.Addr().String())
+	logrus.Info("server has been stopped gracefully")
 	return nil
 }

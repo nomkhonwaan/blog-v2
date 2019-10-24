@@ -157,10 +157,10 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 		err     error
 	}{
 		"With default query options": {
-			q:      &MongoPostQuery{},
+			q:      NewPostQueryBuilder().Build(),
 			filter: bson.M{},
 			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
+				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
 			},
 		},
 		"With specified offset and limit": {
@@ -188,7 +188,7 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 				return options
 			},
 		},
-		"When an error has occurred on finding the result": {
+		"When an error has occurred while finding the result": {
 			q:      &MongoPostQuery{},
 			filter: bson.M{},
 			options: func() *options.FindOptions {
@@ -206,12 +206,11 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 			if test.err == nil {
 				cur.EXPECT().Close(ctx).Return(nil)
 				cur.EXPECT().Decode(gomock.Any()).Return(nil)
-				_, err := repo.FindAll(ctx, test.q)
 
+				_, err := repo.FindAll(ctx, test.q)
 				assert.Nil(t, err)
 			} else {
 				_, err := repo.FindAll(ctx, test.q)
-
 				assert.EqualError(t, err, test.err.Error())
 			}
 		})
@@ -220,8 +219,107 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	// Then
 }
 
-//func TestMongoPostRepository_FindByID(t *testing.T) {
-//}
+func TestMongoPostRepository_FindByID(t *testing.T) {
+	// Given
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	singleResult := mock_mongo.NewMockSingleResult(ctrl)
+	col := mock_mongo.NewMockCollection(ctrl)
+	ctx := context.Background()
+
+	repo := NewPostRepository(col)
+
+	tests := map[string]struct {
+		id  interface{}
+		err error
+	}{
+		"With existing post ID": {
+			id: primitive.NewObjectID(),
+		},
+		"When an error has occurred while finding the result": {
+			id:  primitive.NewObjectID(),
+			err: errors.New("something went wrong"),
+		},
+	}
+
+	// When
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			col.EXPECT().FindOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}, gomock.Any()).Return(singleResult)
+			singleResult.EXPECT().Decode(gomock.Any()).Return(test.err)
+
+			if test.err == nil {
+				_, err := repo.FindByID(ctx, test.id)
+				assert.Nil(t, err)
+			} else {
+				_, err := repo.FindByID(ctx, test.id)
+				assert.EqualError(t, err, test.err.Error())
+			}
+		})
+	}
+
+	// Then
+}
+
+func TestMongoPostRepository_Save(t *testing.T) {
+	// Given
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	singleResult := mock_mongo.NewMockSingleResult(ctrl)
+	col := mock_mongo.NewMockCollection(ctrl)
+	ctx := context.Background()
+
+	repo := NewPostRepository(col)
+
+	tests := map[string]struct {
+		q      PostQuery
+		id     interface{}
+		update interface{}
+		err    error
+	}{
+		"With default query options": {
+			q:      NewPostQueryBuilder().Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{}},
+		},
+		"With updated title": {
+			q:      NewPostQueryBuilder().WithTitle("Test update post title").Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"title": "Test update post title"}},
+		},
+		"With updated post content": {
+			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>"}},
+		},
+		"When an error has occurred while updating the post": {
+			q:      NewPostQueryBuilder().Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{}},
+			err:    errors.New("something went wrong"),
+		},
+	}
+
+	// When
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			col.EXPECT().UpdateOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}, test.update).Return(nil, test.err)
+
+			if test.err == nil {
+				col.EXPECT().FindOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}).Return(singleResult)
+				singleResult.EXPECT().Decode(gomock.Any()).Return(nil)
+
+				_, err := repo.Save(ctx, test.id, test.q)
+				assert.Nil(t, err)
+			} else {
+				_, err := repo.Save(ctx, test.id, test.q)
+				assert.EqualError(t, err, test.err.Error())
+			}
+		})
+	}
+}
 
 func TestNewPostQueryBuilder(t *testing.T) {
 	// Given
