@@ -1,6 +1,7 @@
-package log
+package log_test
 
 import (
+	. "github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"

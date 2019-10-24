@@ -1,10 +1,11 @@
-package blog
+package blog_test
 
 import (
 	"context"
 	"errors"
 	"github.com/golang/mock/gomock"
-	"github.com/nomkhonwaan/myblog/pkg/mongo"
+	. "github.com/nomkhonwaan/myblog/pkg/blog"
+	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,8 +18,8 @@ func TestMongoCategoryRepository_FindAll(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		cur := mongo.NewMockCursor(ctrl)
-		col := mongo.NewMockCollection(ctrl)
+		cur := mock_mongo.NewMockCursor(ctrl)
+		col := mock_mongo.NewMockCollection(ctrl)
 		ctx := context.Background()
 
 		col.EXPECT().Find(ctx, bson.D{}).Return(cur, nil)
@@ -39,7 +40,7 @@ func TestMongoCategoryRepository_FindAll(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		col := mongo.NewMockCollection(ctrl)
+		col := mock_mongo.NewMockCollection(ctrl)
 		ctx := context.Background()
 
 		col.EXPECT().Find(ctx, bson.D{}).Return(nil, errors.New("something went wrong"))
@@ -60,8 +61,8 @@ func TestMongoCategoryRepository_FindAllByIDs(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		cur := mongo.NewMockCursor(ctrl)
-		col := mongo.NewMockCollection(ctrl)
+		cur := mock_mongo.NewMockCursor(ctrl)
+		col := mock_mongo.NewMockCollection(ctrl)
 		ctx := context.Background()
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
@@ -80,5 +81,25 @@ func TestMongoCategoryRepository_FindAllByIDs(t *testing.T) {
 
 		// Then
 		assert.Nil(t, err)
+	})
+
+	t.Run("When unable to find all categories by list of IDs", func(t *testing.T) {
+		// Given
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		col := mock_mongo.NewMockCollection(ctrl)
+		ctx := context.Background()
+		ids := []primitive.ObjectID{primitive.NewObjectID()}
+
+		col.EXPECT().Find(gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all categories by list of IDs"))
+
+		repo := NewCategoryRepository(col)
+
+		// When
+		_, err := repo.FindAllByIDs(ctx, ids)
+
+		// Then
+		assert.EqualError(t, err, "test unable to find all categories by list of IDs")
 	})
 }

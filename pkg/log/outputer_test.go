@@ -1,7 +1,8 @@
-package log
+package log_test
 
 import (
 	"bytes"
+	. "github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"log"
 	"testing"
