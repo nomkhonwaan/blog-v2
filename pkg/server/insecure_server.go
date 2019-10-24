@@ -11,7 +11,10 @@ import (
 // InsecureServer is a wrapper of net/http.Server
 // which embeds net/http.Handler for handling incoming HTTP requests.
 type InsecureServer struct {
-	Handler         http.Handler
+	// An HTTP handler
+	Handler http.Handler
+
+	// Timeout to be waited on shutting-down the server, default is: 5 minutes
 	ShutdownTimeout time.Duration
 }
 
@@ -34,25 +37,15 @@ func (s *InsecureServer) ListenAndServe(addr string, stopCh <-chan struct{}) err
 		defer cancel()
 
 		if err := httpServer.Shutdown(ctx); err != nil {
-			logrus.Fatalf("error: %v", err)
+			logrus.Fatalf("an error has occurred while shutting-down the server: %v", err)
 		}
+
+		// A server has been stopped gracefully
+		logrus.Info("server has been stopped")
 	}()
 
 	go func() {
-		defer func() {
-			if r := recover(); r != nil {
-				logrus.Errorf("recover: %v", r)
-			}
-		}()
-
-		err := httpServer.Serve(l)
-
-		select {
-		case <-stopCh:
-			logrus.Info("server has been stopped")
-		default:
-			logrus.Errorf("error: %v", err)
-		}
+		_ = httpServer.Serve(l)
 	}()
 
 	logrus.Infof("server is listening on address: %s", l.Addr().String())
