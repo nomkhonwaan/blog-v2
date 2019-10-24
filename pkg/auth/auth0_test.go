@@ -1,4 +1,4 @@
-package auth
+package auth_test
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
+	. "github.com/nomkhonwaan/myblog/pkg/auth"
 	mock_http "github.com/nomkhonwaan/myblog/pkg/auth/mock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"

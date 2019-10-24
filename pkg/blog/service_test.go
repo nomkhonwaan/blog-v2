@@ -1,15 +1,17 @@
-package blog
+package blog_test
 
 import (
+	. "github.com/nomkhonwaan/myblog/pkg/blog"
+	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestNewService(t *testing.T) {
 	// Given
-	categoryRepo := &MockCategoryRepository{}
-	postRepo := &MockPostRepository{}
-	tagRepo := &MockTagRepository{}
+	categoryRepo := &mock_blog.MockCategoryRepository{}
+	postRepo := &mock_blog.MockPostRepository{}
+	tagRepo := &mock_blog.MockTagRepository{}
 
 	// When
 	service := NewService(categoryRepo, postRepo, tagRepo)

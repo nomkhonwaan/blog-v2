@@ -1,9 +1,10 @@
-package log
+package log_test
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	. "github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
