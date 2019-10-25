@@ -12,22 +12,22 @@ import (
 // File is an uploaded file on the storage server
 type File struct {
 	// Identifier of the file
-	ID primitive.ObjectID `bson:"_id" json:"id"`
+	ID primitive.ObjectID `bson:"_id" json:"id" graphql:"-"`
 
 	// An uploaded file path
-	Path string `bson:"path" json:"path"`
+	Path string `bson:"path" json:"path" graphql:"path"`
 
 	// An original file name
-	FileName string `bson:"fileName" json:"fileName"`
+	FileName string `bson:"fileName" json:"fileName" graphql:"fileName"`
 
 	// An optional field #1 for using in some storage server
-	OptionalField1 string `bson:"optionalField1" json:"optionalField1,omitempty"`
+	OptionalField1 string `bson:"optionalField1" json:"optionalField1,omitempty" graphql:"optionalField1"`
 
 	// An optional field #2 for using in some storage server
-	OptionalField2 string `bson:"optionalField2" json:"optionalField2,omitempty"`
+	OptionalField2 string `bson:"optionalField2" json:"optionalField2,omitempty" graphql:"optionalField2"`
 
 	// An optional field #3 for using in some storage server
-	OptionalField3 string `bson:"optionalField3" json:"optionalField3,omitempty"`
+	OptionalField3 string `bson:"optionalField3" json:"optionalField3,omitempty" graphql:"optionalField3"`
 
 	// Date-time that the file was created
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
