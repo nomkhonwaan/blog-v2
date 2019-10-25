@@ -2,6 +2,7 @@ package blog
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -18,6 +19,18 @@ type Tag struct {
 
 	// Valid URL string composes with name and ID
 	Slug string `bson:"slug" json:"slug" graphql:"slug"`
+}
+
+// MarshalJSON is a custom JSON marshaling function of tag entity
+func (tag Tag) MarshalJSON() ([]byte, error) {
+	type Alias Tag
+	return json.Marshal(&struct {
+		ID string `json:"id"`
+		*Alias
+	}{
+		ID:    tag.ID.Hex(),
+		Alias: (*Alias)(&tag),
+	})
 }
 
 // TagRepository is a repository interface of category which defines all category entity related functions

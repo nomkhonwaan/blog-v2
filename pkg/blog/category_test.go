@@ -2,6 +2,7 @@ package blog_test
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"github.com/golang/mock/gomock"
 	. "github.com/nomkhonwaan/myblog/pkg/blog"
@@ -11,6 +12,23 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
 )
+
+func TestCategory_MarshalJSON(t *testing.T) {
+	// Given
+	id := primitive.NewObjectID()
+	cat := Category{
+		ID:   id,
+		Name: "Test",
+		Slug: "test-" + id.Hex(),
+	}
+
+	// When
+	result, err := json.Marshal(cat)
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"name\":\"Test\",\"slug\":\"test-"+id.Hex()+"\"}", string(result))
+}
 
 func TestMongoCategoryRepository_FindAll(t *testing.T) {
 	t.Run("With successful finding all categories", func(t *testing.T) {

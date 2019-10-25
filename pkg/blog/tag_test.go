@@ -13,13 +13,13 @@ import (
 	"testing"
 )
 
-func TestMarshalTagJSON(t *testing.T) {
+func TestTag_MarshalJSON(t *testing.T) {
 	// Given
 	id := primitive.NewObjectID()
 	tag := Tag{
 		ID:   id,
-		Name: "GraphQL",
-		Slug: "graphql-" + id.Hex(),
+		Name: "Golang",
+		Slug: "golang-" + id.Hex(),
 	}
 
 	// When
@@ -27,9 +27,9 @@ func TestMarshalTagJSON(t *testing.T) {
 
 	// Then
 	assert.Nil(t, err)
-	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"name\":\"GraphQL\",\"slug\":\"graphql-"+id.Hex()+"\"}", string(result))
-
+	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"name\":\"Golang\",\"slug\":\"golang-"+id.Hex()+"\"}", string(result))
 }
+
 func TestMongoTagRepository_FindAllByIDs(t *testing.T) {
 	t.Run("With successful finding all tags by list of IDs", func(t *testing.T) {
 		// Given

@@ -2,6 +2,7 @@ package blog
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,6 +18,18 @@ type Category struct {
 
 	// Valid URL string composes with name and ID
 	Slug string `bson:"slug" json:"slug" graphql:"slug"`
+}
+
+// MarshalJSON is a custom JSON marshaling function of category entity
+func (cat Category) MarshalJSON() ([]byte, error) {
+	type Alias Category
+	return json.Marshal(&struct {
+		ID string `json:"id"`
+		*Alias
+	}{
+		ID:    cat.ID.Hex(),
+		Alias: (*Alias)(&cat),
+	})
 }
 
 // CategoryRepository is a repository interface of category which defines all category entity related functions
