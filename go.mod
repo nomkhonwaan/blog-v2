@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/auth0/go-jwt-middleware v0.0.0-20190805220309-36081240882b
-	github.com/aws/aws-sdk-go v1.25.17
+	github.com/aws/aws-sdk-go v1.25.19
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-stack/stack v1.8.0 // indirect
@@ -32,6 +32,6 @@ require (
 	go.mongodb.org/mongo-driver v1.1.2
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/sys v0.0.0-20191022100944-742c48ecaeb7 // indirect
+	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect
 	golang.org/x/text v0.3.2 // indirect
 )
