@@ -17,20 +17,30 @@ BINDIR   := $(CURDIR)/bin
 NPM	 ?= npm
 NPX	 ?= npx
 NG	 ?= $(NPX) ng
+WEBDIR   := $(CURDIR)/web
 
 # Docker options
 DOCKER   := docker
 
 .PHONY: all
 all: clean install build
-
+	
 .PHONY: install
 install:
 	$(GO) mod download
 
+.PHONY: install-web
+install-web:
+	cd web && $(NPM) install --silent
+
 .PHONY: clean
 clean:
-	@rm -rf $(BINDIR)
+	@rm -rf $(BINDIR) && \
+	@rm -rf $(CURDIR)/coverage.out && \
+	@rm -rf $(CURDIR)/vendor && \
+	@rm -rf $(WEBDIR)/dist && \
+	@rm -rf $(WEBDIR)/.firebase && \
+	@rm -rf $(WEBDIR)/node_modules
 
 .PHONY: mockgen
 mockgen:
@@ -62,9 +72,9 @@ build-web:
 
 .PHONY: docker-build
 docker-build:
-	docker build -f build/package/Dockerfile -t nomkhonwaan/myblog:latest .
+	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog:latest .
 
-.PHONY: deploy-web
+.PHONY: deploy-web-firebase
 deploy-web:
 	cd web && \
 	$(NPX) firebase use www-nomkhonwaan-com --token=${FIREBASE_TOKEN} && \
