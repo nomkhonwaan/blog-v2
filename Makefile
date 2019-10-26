@@ -70,9 +70,13 @@ build:
 build-web:
 	cd web && $(NG) build --prod
 
-.PHONY: docker-build
-docker-build:
-	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog:latest .
+.PHONY: build-docker
+build-docker:
+	$(DOCKER) build --file build/package/Dockerfile --tag nomkhonwaan/myblog:latest .
+
+.PHONY: build-docker-all-in-one
+build-docker-all-in-one:
+	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog-all-in-one:latest .
 
 .PHONY: deploy-web-firebase
 deploy-web:
