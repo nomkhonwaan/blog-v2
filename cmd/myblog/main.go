@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
@@ -30,7 +31,7 @@ var (
 
 func init() {
 	cli.VersionPrinter = func(ctx *cli.Context) {
-		logrus.Println(ctx.App.Name, ctx.App.Version, revision)
+		fmt.Println(ctx.App.Name, ctx.App.Version, revision)
 	}
 }
 
