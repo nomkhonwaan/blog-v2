@@ -44,6 +44,11 @@ func main() {
 			Value:  "0.0.0.0:8080",
 		},
 		cli.StringFlag{
+			Name:   "static-files-path",
+			EnvVar: "STATIC_FILES_PATH",
+			Value:  "./dist/web",
+		},
+		cli.StringFlag{
 			Name:   "mongodb-uri",
 			EnvVar: "MONGODB_URI",
 			Value:  "mongodb://localhost/nomkhonwaan_com",
@@ -100,8 +105,9 @@ func action(ctx *cli.Context) error {
 
 	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
-	r.HandleFunc("/", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
+	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(ctx.String("static-files-path"))))
 
 	uploader, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
 	if err != nil {
