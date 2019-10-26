@@ -42,6 +42,7 @@ mockgen:
 	$(MOCKGEN) -destination ./pkg/mongo/mock/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
 	$(MOCKGEN) -destination ./pkg/mongo/mock/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
 	$(MOCKGEN) -destination ./pkg/mongo/mock/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult
+	$(MOCKGEN) -destination ./pkg/storage/mock/storage_mock.go github.com/nomkhonwaan/myblog/pkg/storage Uploader
 	
 .PHONY: test
 test:
