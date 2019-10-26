@@ -1,0 +1,7 @@
+.circleci
+bin
+build
+vendor
+web/.firebase
+web/dist
+web/node_modules
