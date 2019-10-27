@@ -12,6 +12,8 @@ import { ApolloQueryResult } from 'apollo-client';
 import { AuthService } from './auth/auth.service';
 import { Router } from '@angular/router';
 
+import { environment } from '../environments/environment';
+
 @Component({
   animations: [
     trigger('slideInOut', [
@@ -43,12 +45,22 @@ export class AppComponent implements OnInit {
   sidebarExpanded = false;
 
   /**
-   * Use to display at sidebar as a sub-menu to the group of posts
+   * Used to display at sidebar as a sub-menu to the group of posts
    */
   categories: Category[];
 
   /**
-   * Use to display at footer section as a current year of the copyright
+   * Used to display at footer section as a build version number
+   */
+  version: string = environment.version;
+
+  /**
+   * Used to display at footer section as a commit ID
+   */
+  revision: string = environment.revision;
+
+  /**
+   * Used to display at footer section as a current year of the copyright
    */
   fullYear: string;
 

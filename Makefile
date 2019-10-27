@@ -16,7 +16,8 @@ BINDIR   := $(CURDIR)/bin
 # Node.js options
 NPM	 ?= npm
 NPX	 ?= npx
-NG	 ?= $(NPX) ng
+FIREBASE := $(NPX) firebase
+NG	 := $(NPX) ng
 WEBDIR   := $(CURDIR)/web
 
 # Docker options
@@ -68,7 +69,15 @@ build:
 
 .PHONY: build-web
 build-web:
-	cd web && $(NG) build --prod
+	mv $(WEBDIR)/src/environments/environment.ts $(WEBDIR)/src/environments/environment.original.ts && \
+	mv $(WEBDIR)/src/environments/environment.prod.ts $(WEBDIR)/src/environments/environment.prod.original.ts && \
+	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.original.ts > $(WEBDIR)/src/environments/environment.ts && \
+	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.prod.original.ts > $(WEBDIR)/src/environments/environment.prod.ts && \
+	cd $(WEBDIR) && \
+	$(NG) build --prod && \
+	cd $(CURDIR) && \
+	mv $(WEBDIR)/src/environments/environment.original.ts $(WEBDIR)/src/environments/environment.ts && \
+	mv $(WEBDIR)/src/environments/environment.prod.original.ts $(WEBDIR)/src/environments/environment.prod.ts
 
 .PHONY: build-docker
 build-docker:
@@ -80,6 +89,6 @@ build-docker-all-in-one:
 
 .PHONY: deploy-web-firebase
 deploy-web:
-	cd web && \
-	$(NPX) firebase use www-nomkhonwaan-com --token=${FIREBASE_TOKEN} && \
-	$(NPX) firebase deploy --token=${FIREBASE_TOKEN}
+	cd $(WEBDIR) && \
+	$(FIREBASE) use www-nomkhonwaan-com --token=${FIREBASE_TOKEN} && \
+	$(FIREBASE) deploy --token=${FIREBASE_TOKEN}

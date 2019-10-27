@@ -5,6 +5,9 @@
 export const environment = {
   production: false,
 
+  version: '${VERSION}',
+  revision: '${REVISION}',
+
   auth0: {
     clientId: 'cSMgdzCX59n4TcL7H6RWRUYeRFGqCMbU',
     redirectUri: 'http://localhost:4200/login',
