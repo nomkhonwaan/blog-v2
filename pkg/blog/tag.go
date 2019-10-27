@@ -35,7 +35,14 @@ func (tag Tag) MarshalJSON() ([]byte, error) {
 
 // TagRepository is a repository interface of category which defines all category entity related functions
 type TagRepository interface {
+	// FindAll returns list of tags
+	FindAll(ctx context.Context) ([]Tag, error)
+
+	// FindAllByIDs returns list of tags from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error)
+
+	// FindByID returns a single tag from its ID
+	FindByID(ctx context.Context, id interface{}) (Tag, error)
 }
 
 // NewTagRepository returns tag repository
@@ -46,6 +53,19 @@ func NewTagRepository(col mongo.Collection) MongoTagRepository {
 // MongoTagRepository is a MongoDB specified repository for tag
 type MongoTagRepository struct {
 	col mongo.Collection
+}
+
+func (repo MongoTagRepository) FindAll(ctx context.Context) ([]Tag, error) {
+	cur, err := repo.col.Find(ctx, bson.D{})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var tags []Tag
+	err = cur.Decode(&tags)
+
+	return tags, err
 }
 
 func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error) {
@@ -63,4 +83,13 @@ func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids interface{}
 	err = cur.Decode(&tags)
 
 	return tags, err
+}
+
+func (repo MongoTagRepository) FindByID(ctx context.Context, id interface{}) (Tag, error) {
+	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
+
+	var tag Tag
+	err := r.Decode(&tag)
+
+	return tag, err
 }

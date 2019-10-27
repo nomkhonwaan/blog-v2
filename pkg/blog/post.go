@@ -88,16 +88,16 @@ func (Post) BelongToTags(repo TagRepository) interface{} {
 
 // PostRepository is a repository interface of post which defines all post entity related functions
 type PostRepository interface {
-	// Create new empty post which belongs to the author with "Draft" status
+	// Create inserts a new empty post which belongs to the author with "Draft" status
 	Create(ctx context.Context, authorID string) (Post, error)
 
-	// Return list of posts filtered by post query
+	// FindAll returns list of posts filtered by post query
 	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
 
-	// Return a single post by its ID
+	// FindByID returns a single post from its ID
 	FindByID(ctx context.Context, id interface{}) (Post, error)
 
-	// Save a single post
+	// Save does updating a single post
 	Save(ctx context.Context, id interface{}, q PostQuery) (Post, error)
 }
 
@@ -179,6 +179,18 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 	if html := q.HTML(); html != "" {
 		update["$set"].(bson.M)["html"] = html
 	}
+	if tags := q.Tags(); tags != nil {
+		update["$set"].(bson.M)["tags"] = make(primitive.A, 0)
+		for _, tag := range tags {
+			update["$set"].(bson.M)["tags"] = append(
+				update["$set"].(bson.M)["tags"].(primitive.A),
+				mongo.DBRef{
+					Ref: "tags",
+					ID:  tag.ID,
+				},
+			)
+		}
+	}
 
 	_, err := repo.col.UpdateOne(ctx, bson.M{"_id": id.(primitive.ObjectID)}, update)
 	if err != nil {
@@ -190,25 +202,28 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 
 // PostQueryBuilder is a builder for building query object that repository can use to find all posts
 type PostQueryBuilder interface {
-	// Allow to filter post by title
+	// WithTitle allows to set title to the post query object
 	WithTitle(title string) PostQueryBuilder
 
-	// Allow to filter post by markdown
+	//WithMarkdown allows to set markdown to the post query object
 	WithMarkdown(markdown string) PostQueryBuilder
 
-	// Allow to filter post by HTML
+	// WithHTML allows to set HTML to the post query object
 	WithHTML(html string) PostQueryBuilder
 
-	// Allow to filter post by status
+	// WithStatus allows to set status to the post query object
 	WithStatus(status Status) PostQueryBuilder
 
-	// Allow to set returned result offset
+	// WithTags allows to set tags to the post query object
+	WithTags(tags []Tag) PostQueryBuilder
+
+	// WithOffset allows to set returned result offset
 	WithOffset(offset int64) PostQueryBuilder
 
-	// Allow to set maximum returned result
+	// WithLimit allows to set maximum returned result
 	WithLimit(limit int64) PostQueryBuilder
 
-	// Return a post query
+	// Build returns a post query object
 	Build() PostQuery
 }
 
@@ -246,6 +261,11 @@ func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
 	return qb
 }
 
+func (qb *MongoPostQueryBuilder) WithTags(tags []Tag) PostQueryBuilder {
+	qb.MongoPostQuery.tags = tags
+	return qb
+}
+
 func (qb *MongoPostQueryBuilder) WithOffset(offset int64) PostQueryBuilder {
 	qb.MongoPostQuery.offset = offset
 	return qb
@@ -262,22 +282,25 @@ func (qb *MongoPostQueryBuilder) Build() PostQuery {
 
 // PostQuery is a query object which will be used for filtering list of posts
 type PostQuery interface {
-	// Return title to be filtered with
+	// Title returns a title field
 	Title() string
 
-	// Return markdown to be filtered with
+	// Markdown returns markdown field
 	Markdown() string
 
-	// Return HTML to be filtered with
+	// HTML returns an HTML field
 	HTML() string
 
-	// Return status to be filtered with
+	// Status returns a status field
 	Status() Status
 
-	// Return offset of the returned result
+	// Tags returns a tags field
+	Tags() []Tag
+
+	// Offset returns an offset of the returned result
 	Offset() int64
 
-	// Return maximum number of the returned result
+	// Limit returns  maximum number of the returned result
 	Limit() int64
 }
 
@@ -286,6 +309,7 @@ type MongoPostQuery struct {
 	markdown string
 	html     string
 	status   Status
+	tags     []Tag
 
 	offset int64
 	limit  int64
@@ -305,6 +329,10 @@ func (q *MongoPostQuery) HTML() string {
 
 func (q *MongoPostQuery) Status() Status {
 	return q.status
+}
+
+func (q *MongoPostQuery) Tags() []Tag {
+	return q.tags
 }
 
 func (q *MongoPostQuery) Offset() int64 {

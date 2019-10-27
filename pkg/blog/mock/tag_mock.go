@@ -34,6 +34,21 @@ func (m *MockTagRepository) EXPECT() *MockTagRepositoryMockRecorder {
 	return m.recorder
 }
 
+// FindAll mocks base method
+func (m *MockTagRepository) FindAll(arg0 context.Context) ([]blog.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAll", arg0)
+	ret0, _ := ret[0].([]blog.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAll indicates an expected call of FindAll
+func (mr *MockTagRepositoryMockRecorder) FindAll(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAll", reflect.TypeOf((*MockTagRepository)(nil).FindAll), arg0)
+}
+
 // FindAllByIDs mocks base method
 func (m *MockTagRepository) FindAllByIDs(arg0 context.Context, arg1 interface{}) ([]blog.Tag, error) {
 	m.ctrl.T.Helper()
@@ -47,4 +62,19 @@ func (m *MockTagRepository) FindAllByIDs(arg0 context.Context, arg1 interface{})
 func (mr *MockTagRepositoryMockRecorder) FindAllByIDs(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllByIDs", reflect.TypeOf((*MockTagRepository)(nil).FindAllByIDs), arg0, arg1)
+}
+
+// FindByID mocks base method
+func (m *MockTagRepository) FindByID(arg0 context.Context, arg1 interface{}) (blog.Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindByID", arg0, arg1)
+	ret0, _ := ret[0].(blog.Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindByID indicates an expected call of FindByID
+func (mr *MockTagRepositoryMockRecorder) FindByID(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockTagRepository)(nil).FindByID), arg0, arg1)
 }
