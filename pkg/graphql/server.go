@@ -96,7 +96,6 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 		return blog.Post{}, err
 	}
 
-	// do not check authority if the post had published
 	if p.Status == blog.Published {
 		return p, nil
 	}
@@ -146,7 +145,6 @@ func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct
 	if err != nil {
 		return blog.Post{}, err
 	}
-
 	html := blackfriday.Run([]byte(args.Markdown))
 
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
