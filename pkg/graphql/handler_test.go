@@ -69,6 +69,21 @@ func TestHandler(t *testing.T) {
 		assert.Equal(t, "200 OK", w.Result().Status)
 	})
 
+	t.Run("With successful querying list of tags", func(t *testing.T) {
+		// Given
+		q := query{Query: `{ tags { slug } }`}
+
+		w := httptest.NewRecorder()
+
+		tagRepo.EXPECT().FindAll(gomock.Any()).Return([]blog.Tag{}, nil)
+
+		// When
+		h.ServeHTTP(w, newGraphQLRequest(q))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
 	t.Run("With successful querying the latest published posts", func(t *testing.T) {
 		// Given
 		q := query{Query: `{ latestPublishedPosts(offset: 0, limit: 5) { slug } }`}
