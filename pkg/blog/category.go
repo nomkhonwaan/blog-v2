@@ -34,10 +34,10 @@ func (cat Category) MarshalJSON() ([]byte, error) {
 
 // CategoryRepository is a repository interface of category which defines all category entity related functions
 type CategoryRepository interface {
-	// Returns list of categories
+	// FindAll returns list of categories
 	FindAll(ctx context.Context) ([]Category, error)
 
-	// Returns list of categories from list of IDs
+	// FindAllByIDs returns list of categories from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]Category, error)
 }
 

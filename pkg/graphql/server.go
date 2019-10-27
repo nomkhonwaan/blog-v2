@@ -59,6 +59,7 @@ func (s *Server) registerQuery(schema *schemabuilder.Schema) {
 	obj := schema.Query()
 
 	obj.FieldFunc("categories", s.makeFieldFuncCategories)
+	obj.FieldFunc("tags", s.makeFieldFuncTags)
 	obj.FieldFunc("latestPublishedPosts", s.makeFieldFuncLatestPublishedPosts)
 	obj.FieldFunc("post", s.makeFieldFuncPost)
 }
@@ -69,6 +70,7 @@ func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 	obj.FieldFunc("createPost", s.makeFieldFuncCreatePost)
 	obj.FieldFunc("updatePostTitle", s.makeFieldFuncUpdatePostTitle)
 	obj.FieldFunc("updatePostContent", s.makeFieldFuncUpdatePostContent)
+	obj.FieldFunc("updatePostTags", s.makeFieldFuncUpdatePostTags)
 }
 
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
@@ -80,6 +82,10 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 
 func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, error) {
 	return s.service.Category().FindAll(ctx)
+}
+
+func (s *Server) makeFieldFuncTags(ctx context.Context) ([]blog.Tag, error) {
+	return s.service.Tag().FindAll(ctx)
 }
 
 func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
@@ -96,7 +102,6 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 		return blog.Post{}, err
 	}
 
-	// do not check authority if the post had published
 	if p.Status == blog.Published {
 		return p, nil
 	}
@@ -146,10 +151,33 @@ func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct
 	if err != nil {
 		return blog.Post{}, err
 	}
-
 	html := blackfriday.Run([]byte(args.Markdown))
 
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
+}
+
+func (s *Server) makeFieldFuncUpdatePostTags(ctx context.Context, args struct {
+	Slug     Slug   `graphql:"slug"`
+	TagSlugs []Slug `graphql:"tagSlugs"`
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	var ids []primitive.ObjectID
+	for _, slug := range args.TagSlugs {
+		ids = append(ids, slug.MustGetID().(primitive.ObjectID))
+	}
+
+	tags, err := s.service.Tag().FindAllByIDs(ctx, ids)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),

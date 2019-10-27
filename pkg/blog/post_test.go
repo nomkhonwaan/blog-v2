@@ -226,8 +226,8 @@ func TestMongoPostRepository_FindByID(t *testing.T) {
 
 	singleResult := mock_mongo.NewMockSingleResult(ctrl)
 	col := mock_mongo.NewMockCollection(ctrl)
-	ctx := context.Background()
 
+	ctx := context.Background()
 	repo := NewPostRepository(col)
 
 	tests := map[string]struct {
@@ -239,7 +239,7 @@ func TestMongoPostRepository_FindByID(t *testing.T) {
 		},
 		"When an error has occurred while finding the result": {
 			id:  primitive.NewObjectID(),
-			err: errors.New("something went wrong"),
+			err: errors.New("test find by ID error"),
 		},
 	}
 
@@ -269,9 +269,10 @@ func TestMongoPostRepository_Save(t *testing.T) {
 
 	singleResult := mock_mongo.NewMockSingleResult(ctrl)
 	col := mock_mongo.NewMockCollection(ctrl)
-	ctx := context.Background()
 
+	ctx := context.Background()
 	repo := NewPostRepository(col)
+	tagID := primitive.NewObjectID()
 
 	tests := map[string]struct {
 		q      PostQuery
@@ -284,15 +285,20 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{}},
 		},
-		"With updated title": {
+		"When updating post's title": {
 			q:      NewPostQueryBuilder().WithTitle("Test update post title").Build(),
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"title": "Test update post title"}},
 		},
-		"With updated post content": {
+		"When updating post's content": {
 			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>"}},
+		},
+		"When updating post's tags": {
+			q:      NewPostQueryBuilder().WithTags([]Tag{{ID: tagID, Name: "Blog", Slug: "blog-" + tagID.Hex()}}).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"tags": bson.A{mongo.DBRef{Ref: "tags", ID: tagID}}}},
 		},
 		"When an error has occurred while updating the post": {
 			q:      NewPostQueryBuilder().Build(),
