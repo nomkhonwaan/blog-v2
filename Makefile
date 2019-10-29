@@ -84,7 +84,7 @@ build-docker:
 
 .PHONY: build-docker-all-in-one
 build-docker-all-in-one:
-	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog-all-in-one:latest .
+	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog:latest .
 
 .PHONY: deploy-web-firebase
 deploy-web:

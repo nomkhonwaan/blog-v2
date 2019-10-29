@@ -36,7 +36,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: make build-docker
+      - run: make build-docker-all-in-one
       - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run: docker push nomkhonwaan/myblog:latest
   server_deploy_to_docker_deploy_webhook:
