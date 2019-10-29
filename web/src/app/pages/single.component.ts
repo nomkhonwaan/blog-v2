@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Apollo } from 'apollo-angular';
-import gql from 'graphql-tag';
 import { ApolloQueryResult } from 'apollo-client';
+import gql from 'graphql-tag';
 
 @Component({
   selector: 'app-single',
@@ -35,7 +35,7 @@ export class SingleComponent implements OnInit {
       `,
       variables: {
         idOrSlug: this.route.snapshot.paramMap.get('slug'),
-      }
+      },
     }).valueChanges.subscribe((result: ApolloQueryResult<{ post: Post }>): void => {
       this.p = result.data.post;
     });
