@@ -54,10 +54,29 @@ func TestHandler(t *testing.T) {
 	server := NewServer(service)
 	h := Handler(server.Schema())
 
+	t.Run("With successful querying category by its ID", func(t *testing.T) {
+		// Given
+		id := primitive.NewObjectID()
+		q := query{
+			Query: `{ category(slug: $slug) { slug } }`,
+			Variables: map[string]interface{}{
+				"slug": "test-" + id.Hex(),
+			},
+		}
+		w := httptest.NewRecorder()
+
+		catRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Category{}, nil)
+
+		// When
+		h.ServeHTTP(w, newGraphQLRequest(q))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
 	t.Run("With successful querying list of categories", func(t *testing.T) {
 		// Given
 		q := query{Query: `{ categories { slug } }`}
-
 		w := httptest.NewRecorder()
 
 		catRepo.EXPECT().FindAll(gomock.Any()).Return([]blog.Category{}, nil)
@@ -72,10 +91,29 @@ func TestHandler(t *testing.T) {
 	t.Run("With successful querying list of tags", func(t *testing.T) {
 		// Given
 		q := query{Query: `{ tags { slug } }`}
-
 		w := httptest.NewRecorder()
 
 		tagRepo.EXPECT().FindAll(gomock.Any()).Return([]blog.Tag{}, nil)
+
+		// When
+		h.ServeHTTP(w, newGraphQLRequest(q))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("With successful querying tag by its ID", func(t *testing.T) {
+		// Given
+		id := primitive.NewObjectID()
+		q := query{
+			Query: `{ tag(slug: $slug) { slug } }`,
+			Variables: map[string]interface{}{
+				"slug": "test-" + id.Hex(),
+			},
+		}
+		w := httptest.NewRecorder()
+
+		tagRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Tag{}, nil)
 
 		// When
 		h.ServeHTTP(w, newGraphQLRequest(q))
@@ -111,7 +149,6 @@ func TestHandler(t *testing.T) {
 			expected := primitive.NewObjectID()
 			slug := "test-published-" + expected.Hex()
 			q := query{Query: `{ post(slug: "` + slug + `") { slug } }`}
-
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, id interface{}) (blog.Post, error) {
@@ -133,7 +170,6 @@ func TestHandler(t *testing.T) {
 			expected := primitive.NewObjectID()
 			slug := "test-draft-" + expected.Hex()
 			q := query{Query: `{ post(slug: "` + slug + `") { slug } }`}
-
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft, AuthorID: "authorizedID"}, nil)
@@ -150,7 +186,6 @@ func TestHandler(t *testing.T) {
 			expected := primitive.NewObjectID()
 			slug := "test-published-" + expected.Hex()
 			q := query{Query: `{ post(slug: "` + slug + `") { slug } }`}
-
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{}, errors.New("test error on finding post by ID"))
@@ -170,7 +205,6 @@ func TestHandler(t *testing.T) {
 			expected := primitive.NewObjectID()
 			slug := "test-draft-" + expected.Hex()
 			q := query{Query: `{ post(slug: "` + slug + `") { slug } }`}
-
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft}, nil)
@@ -190,7 +224,6 @@ func TestHandler(t *testing.T) {
 			expected := primitive.NewObjectID()
 			slug := "test-draft-" + expected.Hex()
 			q := query{Query: `{ post(slug: "` + slug + `") { slug } }`}
-
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft, AuthorID: "otherAuthorizedID"}, nil)
@@ -203,6 +236,134 @@ func TestHandler(t *testing.T) {
 			_ = json.NewDecoder(w.Body).Decode(&result)
 
 			assert.Equal(t, "post: Forbidden", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
+	t.Run("Create a new post", func(t *testing.T) {
+		t.Run("With successful creating a new post", func(t *testing.T) {
+			// Given
+			q := query{Query: `mutation { createPost { slug } }`}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().Create(gomock.Any(), "authorizedID").Return(blog.Post{}, nil)
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			q := query{Query: `mutation { createPost { slug } }`}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "createPost: Unauthorized", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
+	t.Run("Update post title", func(t *testing.T) {
+		t.Run("When successful updating post title", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			title := "Test post"
+			q := query{
+				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":  "test-post-" + id.Hex(),
+					"title": title,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTitle(title).Build()).Return(blog.Post{}, nil)
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			title := "Test post"
+			q := query{
+				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":  "test-post-" + id.Hex(),
+					"title": title,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostTitle: Unauthorized", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
+	t.Run("Update post content", func(t *testing.T) {
+		t.Run("When successful updating post content", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			markdown := "test"
+			html := "<p>test</p>\n"
+			q := query{
+				Query: `mutation { updatePostContent(slug: $slug, markdown: $markdown) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":     "test-post-" + id.Hex(),
+					"markdown": markdown,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithMarkdown(markdown).WithHTML(html).Build())
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			markdown := "test"
+			q := query{
+				Query: `mutation { updatePostContent(slug: $slug, markdown: $markdown) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":     "test-post-" + id.Hex(),
+					"markdown": markdown,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostContent: Unauthorized", result["errors"].([]interface{})[0].(string))
 		})
 	})
 }
