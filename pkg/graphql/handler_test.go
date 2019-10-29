@@ -11,6 +11,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/graphql"
+	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -28,8 +29,8 @@ func TestHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		service  = mock_blog.NewMockService(ctrl)
 		catRepo  = mock_blog.NewMockCategoryRepository(ctrl)
+		fileRepo = mock_storage.NewMockFileRepository(ctrl)
 		postRepo = mock_blog.NewMockPostRepository(ctrl)
 		tagRepo  = mock_blog.NewMockTagRepository(ctrl)
 	)
@@ -47,11 +48,7 @@ func TestHandler(t *testing.T) {
 		}))
 	}
 
-	service.EXPECT().Category().Return(catRepo).AnyTimes()
-	service.EXPECT().Post().Return(postRepo).AnyTimes()
-	service.EXPECT().Tag().Return(tagRepo).AnyTimes()
-
-	server := NewServer(service)
+	server := NewServer(catRepo, fileRepo, postRepo, tagRepo)
 	h := Handler(server.Schema())
 
 	t.Run("With successful querying category by its ID", func(t *testing.T) {
