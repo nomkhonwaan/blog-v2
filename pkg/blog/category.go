@@ -39,6 +39,9 @@ type CategoryRepository interface {
 
 	// FindAllByIDs returns list of categories from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]Category, error)
+
+	// FindByID returns a single category from its ID
+	FindByID(ctx context.Context, id interface{}) (Category, error)
 }
 
 // NewCategoryRepository returns category repository
@@ -79,4 +82,13 @@ func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids interf
 	err = cur.Decode(&categories)
 
 	return categories, err
+}
+
+func (repo MongoCategoryRepository) FindByID(ctx context.Context, id interface{}) (Category, error) {
+	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
+
+	var cat Category
+	err := r.Decode(&cat)
+
+	return cat, err
 }

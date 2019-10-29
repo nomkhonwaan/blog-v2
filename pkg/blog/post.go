@@ -64,28 +64,6 @@ func (p Post) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// BelongToCategories returns list of categories that the post has belonging to
-func (Post) BelongToCategories(repo CategoryRepository) interface{} {
-	return func(ctx context.Context, p Post) ([]Category, error) {
-		ids := make([]primitive.ObjectID, len(p.Categories))
-		for i, category := range p.Categories {
-			ids[i] = category.ID
-		}
-		return repo.FindAllByIDs(ctx, ids)
-	}
-}
-
-// BelongToTags returns list of tags that the post has belonging to
-func (Post) BelongToTags(repo TagRepository) interface{} {
-	return func(ctx context.Context, p Post) ([]Tag, error) {
-		ids := make([]primitive.ObjectID, len(p.Tags))
-		for i, tag := range p.Tags {
-			ids[i] = tag.ID
-		}
-		return repo.FindAllByIDs(ctx, ids)
-	}
-}
-
 // PostRepository is a repository interface of post which defines all post entity related functions
 type PostRepository interface {
 	// Create inserts a new empty post which belongs to the author with "Draft" status
@@ -143,6 +121,9 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 			}
 		}
 	}
+	if cat := q.Category(); !cat.ID.IsZero() {
+		filter["categories.$id"] = cat.ID
+	}
 
 	opts.SetSkip(q.Offset()).SetLimit(q.Limit())
 
@@ -179,6 +160,18 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 	if html := q.HTML(); html != "" {
 		update["$set"].(bson.M)["html"] = html
 	}
+	if categories := q.Categories(); categories != nil {
+		update["$set"].(bson.M)["categories"] = make(primitive.A, 0)
+		for _, cat := range categories {
+			update["$set"].(bson.M)["categories"] = append(
+				update["$set"].(bson.M)["categories"].(primitive.A),
+				mongo.DBRef{
+					Ref: "categories",
+					ID:  cat.ID,
+				},
+			)
+		}
+	}
 	if tags := q.Tags(); tags != nil {
 		update["$set"].(bson.M)["tags"] = make(primitive.A, 0)
 		for _, tag := range tags {
@@ -213,6 +206,15 @@ type PostQueryBuilder interface {
 
 	// WithStatus allows to set status to the post query object
 	WithStatus(status Status) PostQueryBuilder
+
+	// WithCategory allows to set category to the post query object
+	WithCategory(category Category) PostQueryBuilder
+
+	// WithCategories allows to set categories to the post query object
+	WithCategories(categories []Category) PostQueryBuilder
+
+	// WithTag allows to set tag to the post query object
+	WithTag(tag Tag) PostQueryBuilder
 
 	// WithTags allows to set tags to the post query object
 	WithTags(tags []Tag) PostQueryBuilder
@@ -261,6 +263,21 @@ func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
 	return qb
 }
 
+func (qb *MongoPostQueryBuilder) WithCategory(category Category) PostQueryBuilder {
+	qb.MongoPostQuery.category = category
+	return qb
+}
+
+func (qb *MongoPostQueryBuilder) WithCategories(categories []Category) PostQueryBuilder {
+	qb.MongoPostQuery.categories = categories
+	return qb
+}
+
+func (qb *MongoPostQueryBuilder) WithTag(tag Tag) PostQueryBuilder {
+	qb.MongoPostQuery.tag = tag
+	return qb
+}
+
 func (qb *MongoPostQueryBuilder) WithTags(tags []Tag) PostQueryBuilder {
 	qb.MongoPostQuery.tags = tags
 	return qb
@@ -294,7 +311,16 @@ type PostQuery interface {
 	// Status returns a status field
 	Status() Status
 
-	// Tags returns a tags field
+	// Category returns a single category field
+	Category() Category
+
+	// Categories returns a list of categories field
+	Categories() []Category
+
+	// Tag returns a single tag field
+	Tag() Tag
+
+	// Tags returns a list of tags field
 	Tags() []Tag
 
 	// Offset returns an offset of the returned result
@@ -305,11 +331,14 @@ type PostQuery interface {
 }
 
 type MongoPostQuery struct {
-	title    string
-	markdown string
-	html     string
-	status   Status
-	tags     []Tag
+	title      string
+	markdown   string
+	html       string
+	status     Status
+	category   Category
+	categories []Category
+	tag        Tag
+	tags       []Tag
 
 	offset int64
 	limit  int64
@@ -329,6 +358,18 @@ func (q *MongoPostQuery) HTML() string {
 
 func (q *MongoPostQuery) Status() Status {
 	return q.status
+}
+
+func (q *MongoPostQuery) Category() Category {
+	return q.category
+}
+
+func (q *MongoPostQuery) Categories() []Category {
+	return q.categories
+}
+
+func (q *MongoPostQuery) Tag() Tag {
+	return q.tag
 }
 
 func (q *MongoPostQuery) Tags() []Tag {

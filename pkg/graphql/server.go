@@ -50,6 +50,7 @@ func NewServer(service blog.Service) *Server {
 func (s *Server) Schema() *graphql.Schema {
 	s.registerQuery(s.schema)
 	s.registerMutation(s.schema)
+	s.registerCategory(s.schema)
 	s.registerPost(s.schema)
 
 	return s.schema.MustBuild()
@@ -58,41 +59,59 @@ func (s *Server) Schema() *graphql.Schema {
 func (s *Server) registerQuery(schema *schemabuilder.Schema) {
 	obj := schema.Query()
 
-	obj.FieldFunc("categories", s.makeFieldFuncCategories)
-	obj.FieldFunc("tags", s.makeFieldFuncTags)
-	obj.FieldFunc("latestPublishedPosts", s.makeFieldFuncLatestPublishedPosts)
-	obj.FieldFunc("post", s.makeFieldFuncPost)
+	obj.FieldFunc("category", s.findCategoryBySlugQuery)
+	obj.FieldFunc("categories", s.findAllCategoriesQuery)
+	obj.FieldFunc("tag", s.findTagBySlugQuery)
+	obj.FieldFunc("tags", s.findAllTagsQuery)
+	obj.FieldFunc("latestPublishedPosts", s.findLatestPublishedPostsQuery)
+	obj.FieldFunc("post", s.findPostBySlugQuery)
 }
 
 func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 	obj := schema.Mutation()
 
-	obj.FieldFunc("createPost", s.makeFieldFuncCreatePost)
-	obj.FieldFunc("updatePostTitle", s.makeFieldFuncUpdatePostTitle)
-	obj.FieldFunc("updatePostContent", s.makeFieldFuncUpdatePostContent)
-	obj.FieldFunc("updatePostTags", s.makeFieldFuncUpdatePostTags)
+	obj.FieldFunc("createPost", s.createPostMutation)
+	obj.FieldFunc("updatePostTitle", s.updatePostTitleMutation)
+	obj.FieldFunc("updatePostContent", s.updatePostContentMutation)
+	obj.FieldFunc("updatePostTags", s.updatePostTagsMutation)
+}
+
+func (s *Server) registerCategory(schema *schemabuilder.Schema) {
+	obj := schema.Object("Category", blog.Category{})
+
+	obj.FieldFunc("latestPublishedPosts", s.categoryLatestPublishedPostsFieldFunc)
 }
 
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj := schema.Object("Post", blog.Post{})
 
-	obj.FieldFunc("categories", (blog.Post{}).BelongToCategories(s.service.Category()))
-	obj.FieldFunc("tags", (blog.Post{}).BelongToTags(s.service.Tag()))
+	obj.FieldFunc("categories", s.postCategoriesFieldFunc)
+	obj.FieldFunc("tags", s.postTagsFieldFunc)
 }
 
-func (s *Server) makeFieldFuncCategories(ctx context.Context) ([]blog.Category, error) {
+func (s *Server) findCategoryBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Category, error) {
+	id := args.Slug.MustGetID()
+	return s.service.Category().FindByID(ctx, id)
+}
+
+func (s *Server) findAllCategoriesQuery(ctx context.Context) ([]blog.Category, error) {
 	return s.service.Category().FindAll(ctx)
 }
 
-func (s *Server) makeFieldFuncTags(ctx context.Context) ([]blog.Tag, error) {
+func (s *Server) findTagBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Tag, error) {
+	id := args.Slug.MustGetID()
+	return s.service.Tag().FindByID(ctx, id)
+}
+
+func (s *Server) findAllTagsQuery(ctx context.Context) ([]blog.Tag, error) {
 	return s.service.Tag().FindAll(ctx)
 }
 
-func (s *Server) makeFieldFuncLatestPublishedPosts(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
+func (s *Server) findLatestPublishedPostsQuery(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
 	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).WithOffset(args.Offset).WithLimit(args.Limit).Build())
 }
 
-func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
+func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 	Slug Slug `graphql:"slug"`
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
@@ -118,7 +137,7 @@ func (s *Server) makeFieldFuncPost(ctx context.Context, args struct {
 	return blog.Post{}, errors.New(http.StatusText(http.StatusForbidden))
 }
 
-func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error) {
+func (s *Server) createPostMutation(ctx context.Context) (blog.Post, error) {
 	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
 		return blog.Post{}, err
@@ -127,9 +146,9 @@ func (s *Server) makeFieldFuncCreatePost(ctx context.Context) (blog.Post, error)
 	return s.service.Post().Create(ctx, authorizedID.(string))
 }
 
-func (s *Server) makeFieldFuncUpdatePostTitle(ctx context.Context, args struct {
-	Slug  Slug   `graphql:"slug"`
-	Title string `graphql:"title"`
+func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
+	Slug  Slug
+	Title string
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
 
@@ -141,9 +160,9 @@ func (s *Server) makeFieldFuncUpdatePostTitle(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).Build())
 }
 
-func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct {
-	Slug     Slug   `graphql:"slug"`
-	Markdown string `graphql:"markdown"`
+func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
+	Slug     Slug
+	Markdown string
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
 
@@ -156,9 +175,9 @@ func (s *Server) makeFieldFuncUpdatePostContent(ctx context.Context, args struct
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
-func (s *Server) makeFieldFuncUpdatePostTags(ctx context.Context, args struct {
-	Slug     Slug   `graphql:"slug"`
-	TagSlugs []Slug `graphql:"tagSlugs"`
+func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
+	Slug     Slug
+	TagSlugs []Slug
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
 
@@ -178,6 +197,34 @@ func (s *Server) makeFieldFuncUpdatePostTags(ctx context.Context, args struct {
 	}
 
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
+}
+
+func (s *Server) categoryLatestPublishedPostsFieldFunc(ctx context.Context, cat blog.Category, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithCategory(cat).WithOffset(args.Offset).WithLimit(args.Limit).Build())
+}
+
+func (s *Server) tagLatestPublishedPostsFieldFunc(ctx context.Context, tag blog.Tag, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithTag(tag).WithOffset(args.Offset).WithLimit(args.Limit).Build())
+}
+
+func (s *Server) postCategoriesFieldFunc(ctx context.Context, p blog.Post) ([]blog.Category, error) {
+	ids := make([]primitive.ObjectID, len(p.Categories))
+
+	for i, cat := range p.Categories {
+		ids[i] = cat.ID
+	}
+
+	return s.service.Category().FindAllByIDs(ctx, ids)
+}
+
+func (s *Server) postTagsFieldFunc(ctx context.Context, p blog.Post) ([]blog.Tag, error) {
+	ids := make([]primitive.ObjectID, len(p.Tags))
+
+	for i, tag := range p.Tags {
+		ids[i] = tag.ID
+	}
+
+	return s.service.Tag().FindAllByIDs(ctx, ids)
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),

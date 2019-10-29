@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	. "github.com/nomkhonwaan/myblog/pkg/blog"
-	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	"github.com/stretchr/testify/assert"
@@ -44,50 +43,6 @@ func TestPost_MarshalJSON(t *testing.T) {
 	// Then
 	assert.Nil(t, err)
 	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"title\":\"Children of Dune\",\"slug\":\"children-of-dune-"+id.Hex()+"\",\"status\":\"DRAFT\",\"markdown\":\"Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.\",\"html\":\"Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.\",\"publishedAt\":\"0001-01-01T00:00:00Z\",\"authorId\":\"github|c7834cb0-2b79-4d27-a817-520a6420c11b\",\"createdAt\":\""+createdAt.Format(time.RFC3339Nano)+"\",\"updatedAt\":\"0001-01-01T00:00:00Z\"}", string(result))
-}
-
-func TestPost_BelongToCategories(t *testing.T) {
-	// Given
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	categoryRepo := mock_blog.NewMockCategoryRepository(ctrl)
-	ctx := context.Background()
-	catID := primitive.NewObjectID()
-	categories := []Category{{ID: catID}}
-
-	categoryRepo.EXPECT().FindAllByIDs(ctx, []primitive.ObjectID{catID}).Return(categories, nil)
-
-	post := Post{Categories: []mongo.DBRef{{ID: catID}}}
-
-	// When
-	result, err := post.BelongToCategories(categoryRepo).(func(context.Context, Post) ([]Category, error))(ctx, post)
-
-	// Then
-	assert.Nil(t, err)
-	assert.Equal(t, categories, result)
-}
-
-func TestPost_BelongToTags(t *testing.T) {
-	// Given
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	tagRepo := mock_blog.NewMockTagRepository(ctrl)
-	ctx := context.Background()
-	tagID := primitive.NewObjectID()
-	tags := []Tag{{ID: tagID}}
-
-	tagRepo.EXPECT().FindAllByIDs(ctx, []primitive.ObjectID{tagID}).Return(tags, nil)
-
-	post := Post{Tags: []mongo.DBRef{{ID: tagID}}}
-
-	// When
-	result, err := post.BelongToTags(tagRepo).(func(context.Context, Post) ([]Tag, error))(ctx, post)
-
-	// Then
-	assert.Nil(t, err)
-	assert.Equal(t, tags, result)
 }
 
 func TestMongoPostRepository_Create(t *testing.T) {
