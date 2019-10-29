@@ -33,15 +33,7 @@ export class RecentPostsComponent implements OnInit {
         }
       `,
     }).valueChanges.subscribe((result: ApolloQueryResult<{ latestPublishedPosts: Post[] }>): void => {
-      this.latestPublishedPosts = result.data.latestPublishedPosts
-        .map(
-          (p: Post): Post => Object.assign(p, {
-            tags: [
-              { name: 'Donec', slug: 'donec' },
-              { name: 'Lorem', slug: 'lorem' },
-              { name: 'Curabitur', slug: 'curabitur' },
-            ],
-          }));
+      this.latestPublishedPosts = result.data.latestPublishedPosts;
     });
   }
 
