@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
 
-  version: '${VERSION}',
-  revision: '${REVISION}',
+  version: 'v0.0.1',
+  revision: 'development',
 
   auth0: {
     clientId: 'cSMgdzCX59n4TcL7H6RWRUYeRFGqCMbU',

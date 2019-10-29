@@ -71,12 +71,10 @@ build:
 build-web:
 	mv $(WEBDIR)/src/environments/environment.ts $(WEBDIR)/src/environments/environment.original.ts && \
 	mv $(WEBDIR)/src/environments/environment.prod.ts $(WEBDIR)/src/environments/environment.prod.original.ts && \
-	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.original.ts > $(WEBDIR)/src/environments/environment.ts && \
 	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.prod.original.ts > $(WEBDIR)/src/environments/environment.prod.ts && \
 	cd $(WEBDIR) && \
 	$(NG) build --prod && \
 	cd $(CURDIR) && \
-	mv $(WEBDIR)/src/environments/environment.original.ts $(WEBDIR)/src/environments/environment.ts && \
 	mv $(WEBDIR)/src/environments/environment.prod.original.ts $(WEBDIR)/src/environments/environment.prod.ts
 
 .PHONY: build-docker
