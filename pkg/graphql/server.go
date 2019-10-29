@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/russross/blackfriday/v2"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
@@ -30,18 +31,56 @@ func (s Slug) MustGetID() interface{} {
 	return primitive.NewObjectID()
 }
 
+// Service helps co-working between data-layer and control-layer
+type Service interface {
+	// A Category repository
+	Category() blog.CategoryRepository
+
+	// A File repository
+	File() storage.FileRepository
+
+	// A Post repository
+	Post() blog.PostRepository
+
+	// A Tag repository
+	Tag() blog.TagRepository
+}
+
+type service struct {
+	catRepo  blog.CategoryRepository
+	fileRepo storage.FileRepository
+	postRepo blog.PostRepository
+	tagRepo  blog.TagRepository
+}
+
+func (s service) Category() blog.CategoryRepository {
+	return s.catRepo
+}
+
+func (s service) File() storage.FileRepository {
+	return s.fileRepo
+}
+
+func (s service) Post() blog.PostRepository {
+	return s.postRepo
+}
+
+func (s service) Tag() blog.TagRepository {
+	return s.tagRepo
+}
+
 // Server is our GraphQL server
 type Server struct {
-	service blog.Service
+	service Service
 
 	// GraphQL schema schema object
 	schema *schemabuilder.Schema
 }
 
 // NewServer returns new GraphQL server
-func NewServer(service blog.Service) *Server {
+func NewServer(catRepo blog.CategoryRepository, fileRepo storage.FileRepository, postRepo blog.PostRepository, tagRepo blog.TagRepository) *Server {
 	return &Server{
-		service: service,
+		service: service{catRepo, fileRepo, postRepo, tagRepo},
 		schema:  schemabuilder.NewSchema(),
 	}
 }

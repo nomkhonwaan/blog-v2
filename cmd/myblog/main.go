@@ -97,9 +97,7 @@ func action(ctx *cli.Context) error {
 	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
-	service := blog.NewService(catRepo, postRepo, tagRepo)
-
-	schema := graphql.NewServer(service).Schema()
+	schema := graphql.NewServer(catRepo, fileRepo, postRepo, tagRepo).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
 	r := mux.NewRouter()
