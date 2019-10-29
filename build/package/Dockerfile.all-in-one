@@ -10,7 +10,7 @@ RUN make build
 FROM node:12.13-alpine AS web-builder
 ARG NPM_AUTH_TOKEN
 WORKDIR /opt/app-root
-RUN apk add -u --no-cache curl git make
+RUN apk add -u --no-cache curl gettext git make
 COPY Makefile ./
 COPY ./web/.npmrc ./web/package.json ./web/package-lock.json ./web/
 RUN make install-web && \
