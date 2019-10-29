@@ -124,6 +124,9 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 	if cat := q.Category(); !cat.ID.IsZero() {
 		filter["categories.$id"] = cat.ID
 	}
+	if tag := q.Tag(); !tag.ID.IsZero() {
+		filter["tags.$id"] = tag.ID
+	}
 
 	opts.SetSkip(q.Offset()).SetLimit(q.Limit())
 

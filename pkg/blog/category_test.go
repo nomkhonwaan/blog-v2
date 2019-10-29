@@ -119,3 +119,46 @@ func TestMongoCategoryRepository_FindAllByIDs(t *testing.T) {
 		assert.EqualError(t, err, "test unable to find all categories by list of IDs")
 	})
 }
+
+func TestMongoCategoryRepository_FindByID(t *testing.T) {
+	// Given
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	singleResult := mock_mongo.NewMockSingleResult(ctrl)
+	col := mock_mongo.NewMockCollection(ctrl)
+
+	ctx := context.Background()
+	repo := NewCategoryRepository(col)
+
+	tests := map[string]struct {
+		id  interface{}
+		err error
+	}{
+		"With existing tag ID": {
+			id: primitive.NewObjectID(),
+		},
+		"When an error has occurred while finding the result": {
+			id:  primitive.NewObjectID(),
+			err: errors.New("test find by ID error"),
+		},
+	}
+
+	// When
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			col.EXPECT().FindOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}, gomock.Any()).Return(singleResult)
+			singleResult.EXPECT().Decode(gomock.Any()).Return(test.err)
+
+			if test.err == nil {
+				_, err := repo.FindByID(ctx, test.id)
+				assert.Nil(t, err)
+			} else {
+				_, err := repo.FindByID(ctx, test.id)
+				assert.EqualError(t, err, test.err.Error())
+			}
+		})
+	}
+
+	// Then
+}

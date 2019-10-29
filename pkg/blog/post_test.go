@@ -101,9 +101,11 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 
 	cur := mock_mongo.NewMockCursor(ctrl)
 	col := mock_mongo.NewMockCollection(ctrl)
-	ctx := context.Background()
 
+	ctx := context.Background()
 	repo := NewPostRepository(col)
+	catID := primitive.NewObjectID()
+	tagID := primitive.NewObjectID()
 
 	tests := map[string]struct {
 		q       PostQuery
@@ -136,11 +138,25 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 			q:      NewPostQueryBuilder().WithStatus(Published).Build(),
 			filter: bson.M{"status": Published},
 			options: func() *options.FindOptions {
-				options := (&options.FindOptions{}).SetSkip(0).SetLimit(5)
-				options.Sort = map[string]interface{}{
+				opts := (&options.FindOptions{}).SetSkip(0).SetLimit(5)
+				opts.Sort = map[string]interface{}{
 					"publishedAt": -1,
 				}
-				return options
+				return opts
+			},
+		},
+		"With specific category": {
+			q:      NewPostQueryBuilder().WithCategory(Category{ID: catID}).Build(),
+			filter: bson.M{"categories.$id": catID},
+			options: func() *options.FindOptions {
+				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
+			},
+		},
+		"With specific tag": {
+			q:      NewPostQueryBuilder().WithTag(Tag{ID: tagID}).Build(),
+			filter: bson.M{"tags.$id": tagID},
+			options: func() *options.FindOptions {
+				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
 			},
 		},
 		"When an error has occurred while finding the result": {
@@ -227,6 +243,7 @@ func TestMongoPostRepository_Save(t *testing.T) {
 
 	ctx := context.Background()
 	repo := NewPostRepository(col)
+	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
 
 	tests := map[string]struct {
@@ -249,6 +266,11 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>"}},
+		},
+		"When updating post's categories": {
+			q:      NewPostQueryBuilder().WithCategories([]Category{{ID: catID, Name: "Web Development", Slug: "web-development-" + catID.Hex()}}).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"categories": bson.A{mongo.DBRef{Ref: "categories", ID: catID}}}},
 		},
 		"When updating post's tags": {
 			q:      NewPostQueryBuilder().WithTags([]Tag{{ID: tagID, Name: "Blog", Slug: "blog-" + tagID.Hex()}}).Build(),
