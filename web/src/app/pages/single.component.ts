@@ -19,7 +19,7 @@ export class SingleComponent implements OnInit {
     this.apollo.watchQuery({
       query: gql`
         {
-          post(idOrSlug: $idOrSlug) {
+          post(slug: $slug) {
             title
             slug
             html
@@ -34,7 +34,7 @@ export class SingleComponent implements OnInit {
         }
       `,
       variables: {
-        idOrSlug: this.route.snapshot.paramMap.get('slug'),
+        slug: this.route.snapshot.paramMap.get('slug'),
       },
     }).valueChanges.subscribe((result: ApolloQueryResult<{ post: Post }>): void => {
       this.p = result.data.post;
