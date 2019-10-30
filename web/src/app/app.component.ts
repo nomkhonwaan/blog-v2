@@ -17,8 +17,8 @@ import { environment } from '../environments/environment';
 
 const coffeeCup = require('../assets/lottie-files/lf30_editor_pohhBA.json');
 
-@Directive({ selector: '[animation]' })
-export class AnimationDirective {
+@Directive({ selector: '[appAnimation]' })
+export class AnimationDirective implements OnInit {
 
   @Input()
   data: any;
