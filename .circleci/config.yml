@@ -4,7 +4,7 @@ orbs:
   codecov: codecov/codecov@1.0.5
 
 jobs:
-  server_install:
+  install:
     docker:
       - image: circleci/golang:1.13
         environment:
@@ -17,7 +17,7 @@ jobs:
           key: go-mod-v1-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
-  server_test:
+  test:
     docker:
       - image: circleci/golang:1.13
         environment:
@@ -31,15 +31,15 @@ jobs:
       - run: make test
       - codecov/upload:
           file: ./coverage.out
-  server_docker_build:
+  build_docker_image:
     machine: true
     working_directory: ~/repo
     steps:
       - checkout
       - run: make build-docker-all-in-one
       - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-      - run: docker push nomkhonwaan/myblog:latest
-  server_deploy_to_docker_deploy_webhook:
+      - run: docker push nomkhonwaan/myblog-all-in-one:latest
+  deploy_to_docker_deploy_webhook:
     machine: true
     steps:
       - run: |
@@ -49,15 +49,15 @@ jobs:
             ${DOCKER_DEPLOY_WEBHOOK_URL}
 workflows:
   version: 2
-  server_workflow:
+  build_test_and_deploy:
     jobs:
-      - server_install
-      - server_test:
+      - install
+      - test:
           requires:
-            - server_install
-      - server_docker_build:
+            - install
+      - build_docker_image:
           requires:
-            - server_test
-      - server_deploy_to_docker_deploy_webhook:
+            - test
+      - deploy_to_docker_deploy_webhook:
           requires:
-            - server_docker_build
+            - build_docker_image
