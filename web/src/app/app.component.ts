@@ -1,11 +1,11 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, HostBinding, OnInit } from '@angular/core';
+import { Component, HostBinding, OnInit, Directive, ElementRef, Input } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
-import * as lottie from 'lottie-web';
+import Lottie from 'lottie-web';
 import { Observable } from 'rxjs';
 
 import { toggleSidebar } from './app.actions';
@@ -15,6 +15,27 @@ import { Router } from '@angular/router';
 
 import { environment } from '../environments/environment';
 
+const coffeeCup = require('../assets/lottie-files/lf30_editor_pohhBA.json');
+
+@Directive({ selector: '[animation]' })
+export class AnimationDirective {
+
+  @Input()
+  data: any;
+
+  constructor(private el: ElementRef) { }
+
+  ngOnInit(): void {
+    Lottie.loadAnimation({
+      container: this.el.nativeElement,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      animationData: this.data,
+    });
+  }
+
+}
 
 @Component({
   animations: [
@@ -47,6 +68,16 @@ export class AppComponent implements OnInit {
   sidebarExpanded = false;
 
   /**
+   * Used to display loading animation while fetching resources
+   */
+  isFetching = false;
+
+  /**
+   * Used to render with animation directive
+   */
+  loadingAnimationData: any;
+
+  /**
    * Used to display at sidebar as a sub-menu to the group of posts
    */
   categories: Category[];
@@ -73,14 +104,32 @@ export class AppComponent implements OnInit {
     private router: Router,
   ) {
     this.app$ = store.pipe(select('app'));
-    this.app$.subscribe(({ sidebar }: AppState): void => { this.sidebarExpanded = !sidebar.collapsed; });
+    this.app$.subscribe(({ isFetching, sidebar }: AppState): void => {
+      this.isFetching = isFetching;
+      this.sidebarExpanded = !sidebar.collapsed;
+    });
+    this.loadingAnimationData = coffeeCup;
   }
 
   ngOnInit(): void {
+    // Try to check and renew an authentication token if possible
+    this.renewTokenIfAuthenticated();
+
+    // Perform a query to the GraphQL server for retrieving a list of categories for displaying on sidebar menu
+    this.queryAllCategories();
+
+    // Get the current year on user's browser for displaying as a copyright year,
+    // I know you can fool it but who care ¯\_(ツ)_/¯
+    this.fullYear = new Date().getFullYear().toString();
+  }
+
+  renewTokenIfAuthenticated(): void {
     if (this.auth.isAuthenticated()) {
       this.auth.renewTokens();
     }
+  }
 
+  queryAllCategories(): void {
     this.apollo.watchQuery({
       query: gql`
         {
@@ -93,8 +142,6 @@ export class AppComponent implements OnInit {
     }).valueChanges.subscribe((result: ApolloQueryResult<{ categories: Category[] }>): void => {
       this.categories = result.data.categories;
     });
-
-    this.fullYear = new Date().getFullYear().toString();
   }
 
   toggleSidebar() {

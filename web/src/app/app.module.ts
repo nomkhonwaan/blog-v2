@@ -14,7 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { PagesModule } from './pages/pages.module';
 import { SharedModule } from './shared/share.module';
 
-import { AppComponent } from './app.component';
+import { AppComponent, AnimationDirective } from './app.component';
 
 import * as appReducer from './app.reducer';
 import { AppHttpInterceptor } from './app-http.interceptor';
@@ -43,6 +43,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
   ],
   declarations: [
     AppComponent,
+    AnimationDirective,
   ],
   providers: [
     {

@@ -31,6 +31,10 @@
 </div>
 
 <main class="main">
+  <div *ngIf="isFetching" class="loading-animation _flex _flex-horizontal-align-center">
+    <div animation class="_flex _flex-horizontal-align-center" [data]="loadingAnimationData"></div>
+  </div>
+
   <router-outlet></router-outlet>
 </main>
 
