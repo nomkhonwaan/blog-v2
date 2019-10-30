@@ -44,10 +44,8 @@
   grid-row: 2 / 3;
 
   > .loading-animation {
-    height: 100%;
-
     > div {
-      width: 64%;
+      height: 64%;
     }
   }
 }
