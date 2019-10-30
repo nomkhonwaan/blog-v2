@@ -45,7 +45,7 @@ jobs:
       - run: |
           curl \
             -H 'Content-Type: application/json' \
-            -d '{"repository": {"repo_name": "nomkhonwaan/myblog"}, "push_data": {"tag": "latest"}}' \
+            -d '{"repository": {"repo_name": "nomkhonwaan/myblog-all-in-one"}, "push_data": {"tag": "latest"}}' \
             ${DOCKER_DEPLOY_WEBHOOK_URL}
 workflows:
   version: 2
