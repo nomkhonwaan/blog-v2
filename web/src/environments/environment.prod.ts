@@ -10,6 +10,6 @@ export const environment = {
   },
 
   graphql: {
-    endpoint: 'https://api.nomkhonwaan.com/graphql',
+    endpoint: '/graphql',
   },
 };
