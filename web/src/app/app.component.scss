@@ -50,17 +50,27 @@
   }
 }
 
-.landscape {
-  background: right (bottom / auto) 100% no-repeat url("../assets/images/london.svg");
+.pre-footer {
+  background: right (bottom / auto) 100% repeat url("../assets/images/computer-3163436.svg");
+  background-size: 100% auto;
   grid-column: 2 / 3;
   grid-row: 3 / 4;
   margin-top: 8rem;
   opacity: 0.16;
   height: 15.4rem;
 
+  &:before {
+    background: rgb(255, 255, 255);
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 1) 100%);
+    content: "";
+    display: block;
+    height: 100%;
+    position: relative;
+    width: 100%;
+  }
+
   @include md {
-    background-size: 100% 15.4rem;
-    background-position: left top;
+    background-position: left bottom;
   }
 }
 
