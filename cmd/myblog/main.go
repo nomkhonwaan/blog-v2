@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 	"time"
 )
@@ -86,6 +85,7 @@ func main() {
 }
 
 func action(ctx *cli.Context) error {
+	/* Connect to MongoDB */
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(ctx.String("mongodb-uri")))
 	if err != nil {
 		return err
@@ -97,25 +97,30 @@ func action(ctx *cli.Context) error {
 	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
-	schema := graphql.NewServer(catRepo, fileRepo, postRepo, tagRepo).Schema()
-	introspection.AddIntrospectionToSchema(schema)
-
-	r := mux.NewRouter()
-
-	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
-
-	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
-	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(ctx.String("static-files-path"))))
-
+	/* Connect to Amazon S3 */
 	uploader, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
 	if err != nil {
 		return err
 	}
-	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 
+	/* Build GraphQL schema */
+	schema := graphql.NewServer(catRepo, fileRepo, postRepo, tagRepo).Schema()
+	introspection.AddIntrospectionToSchema(schema)
+
+	/* New authentication middleware */
+	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
+
+	/* Define HTTP routes */
+	r := mux.NewRouter()
+
+	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
+	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
+	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(ctx.String("static-files-path"))))
+
+	/* Instantiate an HTTP server */
 	s := server.InsecureServer{
-		Handler:         allowCORS(logRequest(r)),
+		Handler:         logRequest(r),
 		ShutdownTimeout: time.Minute * 5,
 	}
 
@@ -131,19 +136,19 @@ func action(ctx *cli.Context) error {
 	return nil
 }
 
-func allowCORS(h http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}, ","))
-		w.Header().Set("Access-Control-Allow-Headers", strings.Join([]string{"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Content-Length", "Content-Type"}, ","))
-
-		if r.Method == "OPTIONS" {
-			return
-		}
-
-		h.ServeHTTP(w, r)
-	})
-}
+//func allowCORS(h http.Handler) http.Handler {
+//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+//		w.Header().Set("Access-Control-Allow-Origin", "*")
+//		w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}, ","))
+//		w.Header().Set("Access-Control-Allow-Headers", strings.Join([]string{"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Content-Length", "Content-Type"}, ","))
+//
+//		if r.Method == "OPTIONS" {
+//			return
+//		}
+//
+//		h.ServeHTTP(w, r)
+//	})
+//}
 
 func logRequest(h http.Handler) http.Handler {
 	return log.NewLoggingInterceptor(log.NewDefaultTimer(), logrus.New()).Handler(h)
