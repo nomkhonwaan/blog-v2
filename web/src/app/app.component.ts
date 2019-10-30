@@ -5,6 +5,7 @@ import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-ligh
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
+import * as lottie from 'lottie-web';
 import { Observable } from 'rxjs';
 
 import { toggleSidebar } from './app.actions';
@@ -13,6 +14,7 @@ import { AuthService } from './auth/auth.service';
 import { Router } from '@angular/router';
 
 import { environment } from '../environments/environment';
+
 
 @Component({
   animations: [
