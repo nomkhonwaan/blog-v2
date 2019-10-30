@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 )
@@ -76,6 +77,10 @@ func main() {
 			Name:   "amazon-s3-secret-key",
 			EnvVar: "AMAZON_S3_SECRET_KEY",
 		},
+		cli.BoolFlag{
+			Name:   "allow-cors",
+			EnvVar: "ALLOW_CORS",
+		},
 	}
 	app.Action = action
 
@@ -119,8 +124,14 @@ func action(ctx *cli.Context) error {
 	r.PathPrefix("/").Handler(http.FileServer(http.Dir(ctx.String("static-files-path"))))
 
 	/* Instantiate an HTTP server */
+	handler := logRequest(r)
+	if ctx.Bool("allow-cors") {
+		logrus.Info("the Cross-Origin Resource Sharing (CORS) is allowed for all sites (*)")
+		handler = allowCORS(handler)
+	}
+
 	s := server.InsecureServer{
-		Handler:         logRequest(r),
+		Handler:         handler,
 		ShutdownTimeout: time.Minute * 5,
 	}
 
@@ -136,19 +147,19 @@ func action(ctx *cli.Context) error {
 	return nil
 }
 
-//func allowCORS(h http.Handler) http.Handler {
-//	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-//		w.Header().Set("Access-Control-Allow-Origin", "*")
-//		w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}, ","))
-//		w.Header().Set("Access-Control-Allow-Headers", strings.Join([]string{"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Content-Length", "Content-Type"}, ","))
-//
-//		if r.Method == "OPTIONS" {
-//			return
-//		}
-//
-//		h.ServeHTTP(w, r)
-//	})
-//}
+func allowCORS(h http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Access-Control-Allow-Methods", strings.Join([]string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}, ","))
+		w.Header().Set("Access-Control-Allow-Headers", strings.Join([]string{"Accept", "Accept-Encoding", "Accept-Language", "Authorization", "Content-Length", "Content-Type"}, ","))
+
+		if r.Method == "OPTIONS" {
+			return
+		}
+
+		h.ServeHTTP(w, r)
+	})
+}
 
 func logRequest(h http.Handler) http.Handler {
 	return log.NewLoggingInterceptor(log.NewDefaultTimer(), logrus.New()).Handler(h)
