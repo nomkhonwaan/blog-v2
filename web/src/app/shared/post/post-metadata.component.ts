@@ -12,28 +12,28 @@ import { PostComponent } from './post.component';
   styles: [
     `
       :host {
-          display: grid;
-          grid-template-columns: 6.4rem auto;
-          grid-template-rows: 6.4rem auto;
+        display: grid;
+        grid-template-columns: 6.4rem auto;
+        grid-template-rows: 6.4rem auto;
       }
     `,
     `
       app-post-author {
-          grid-column: 1/3;
+        grid-column: 1/3;
       }
     `,
     `
       .published-at {
-          color: #666;
-          font: normal 400 1.6rem Lato, sans-serif;
-          grid-column: 2/3;
-          grid-row: 2/3;
-          margin: -2.8rem 0 0 1.6rem;
+        color: #666;
+        font: normal 400 1.6rem Lato, sans-serif;
+        grid-column: 2/3;
+        grid-row: 2/3;
+        margin: -2.8rem 0 0 1.6rem;
       }
     `,
     `
       app-post-categories {
-          display: inline-block;
+        display: inline-block;
       }
     `,
   ],

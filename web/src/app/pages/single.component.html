@@ -1,9 +1,19 @@
-<div *ngIf="p" class="_flex _flex-direction-column _narrow">
-  <app-post-title [post]="p" [link]="false">
-    <h1>{{p.title}}</h1>
-  </app-post-title>
+<div *ngIf="p" class="_flex _flex-direction-column _wide">
+  <div>
+    <app-post-author [displayName]="false"></app-post-author>
 
-  <app-post-content [post]="p"></app-post-content>
+    <div class="facebook-share-count"></div>
 
-  <app-post-metadata [post]="p"></app-post-metadata>
+    <app-post-share-to [flow]="column"></app-post-share-to>
+  </div>
+
+  <div>
+    <app-post-title [post]="p" [link]="false">
+      <h1>{{p.title}}</h1>
+    </app-post-title>
+
+    <app-post-content [post]="p"></app-post-content>
+
+    <app-post-metadata [post]="p"></app-post-metadata>
+  </div>
 </div>
