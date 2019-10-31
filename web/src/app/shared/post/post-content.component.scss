@@ -1,18 +1,51 @@
 @import "../../../styles.scss";
 
-:host {
-    font: normal 300 1.6rem Pridi, sans-serif;
-}
+:host ::ng-deep {
+  font: normal 300 1.6rem Pridi, sans-serif;
 
-::ng-deep p {
+  h2,
+  h3,
+  h4 {
+    color: #333;
+    font-family: Athiti, sans-serif;
+    font-weight: 500;
+  }
+
+  h2 {
+    font-size: 3.6rem;
+  }
+  h3 {
+    font-size: 2.8rem;
+  }
+  h4 {
+    font-size: 1.8rem;
+  }
+
+  hr {
+    border: none;
+    border-bottom: 0.1rem solid #ececec;
+    display: block;
+    margin: 2.4rem auto;
+    padding-top: 0.8rem;
+    width: 100%;
+
+    @include md {
+      width: 51.4rem;
+    }
+  }
+
+  p {
     margin: 2.4rem 0;
     text-align: justify;
 
     @include md {
-        text-align: left;
+      text-align: left;
     }
-}
+  }
 
-::ng-deep img {
+  img {
+    display: block;
     max-width: 100%;
+    margin: 0.8rem auto;
+  }
 }

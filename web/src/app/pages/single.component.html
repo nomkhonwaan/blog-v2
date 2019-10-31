@@ -1,18 +1,22 @@
 <div *ngIf="p" class="_flex _flex-direction-column _wide">
-  <div>
+  <!-- <div>
     <app-post-author [displayName]="false"></app-post-author>
 
     <div class="facebook-share-count"></div>
 
     <app-post-share-to [flow]="column"></app-post-share-to>
-  </div>
+  </div> -->
 
-  <div>
+  <div class="_narrow">
     <app-post-title [post]="p" [link]="false">
       <h1>{{p.title}}</h1>
     </app-post-title>
 
+    <app-post-tags [post]="p"></app-post-tags>
+
     <app-post-content [post]="p"></app-post-content>
+
+    <hr class="horizontal-separator" />
 
     <app-post-metadata [post]="p"></app-post-metadata>
   </div>

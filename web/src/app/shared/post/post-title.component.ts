@@ -13,6 +13,7 @@ import { PostComponent } from './post.component';
     `
       :host {
         color: #333;
+        display: block;
         font-family: Athiti, sans-serif;
         font-weight: 500;
       }
