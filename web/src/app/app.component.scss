@@ -51,12 +51,10 @@
 }
 
 .pre-footer {
-  background: right (bottom / auto) 100% repeat url("../assets/images/computer-3163436.svg");
-  background-size: 100% auto;
+  background: right bottom / 100% auto repeat url("../assets/images/computer-3163436.svg");
   grid-column: 2 / 3;
   grid-row: 3 / 4;
   margin-top: 8rem;
-  opacity: 0.16;
   height: 15.4rem;
 
   &:before {
@@ -70,7 +68,7 @@
   }
 
   @include md {
-    background-position: left bottom;
+    opacity: 0.64;
   }
 }
 
