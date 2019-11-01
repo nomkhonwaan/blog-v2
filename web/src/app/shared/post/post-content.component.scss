@@ -3,6 +3,10 @@
 :host ::ng-deep {
   font: normal 300 1.6rem Pridi, sans-serif;
 
+  a {
+    color: #0091ea;
+  }
+
   h2,
   h3,
   h4 {
@@ -34,6 +38,12 @@
     }
   }
 
+  img {
+    display: block;
+    max-width: 100%;
+    margin: 0.8rem auto;
+  }
+
   p {
     margin: 2.4rem 0;
     text-align: justify;
@@ -41,11 +51,15 @@
     @include md {
       text-align: left;
     }
+
+    &.fill-width {
+      margin: 0 calc((100vw / 2 * -1) + 25.6rem + 12.8rem + .8rem);
+      /*                                Sidebar     N/A      N/A */
+
+      & > img {
+        width: 100%;
+      }
+    }
   }
 
-  img {
-    display: block;
-    max-width: 100%;
-    margin: 0.8rem auto;
-  }
 }

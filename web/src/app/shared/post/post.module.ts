@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 
 import { PostAuthorComponent } from './post-author.component';
 import { PostCategoriesComponent } from './post-categories.component';
-import { PostContentComponent } from './post-content.component';
+import { PostContentComponent, HTMLImageDirective } from './post-content.component';
 import { PostExcerptComponent } from './post-excerpt.component';
 import { PostMetadataComponent } from './post-metadata.component';
 import { PostShareToComponent } from './post-share-to.component';
@@ -20,6 +20,7 @@ import { TemplateModule } from '../template/template.module';
     TemplateModule,
   ],
   declarations: [
+    HTMLImageDirective,
     PostAuthorComponent,
     PostCategoriesComponent,
     PostContentComponent,
