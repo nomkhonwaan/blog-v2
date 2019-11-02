@@ -1,6 +1,8 @@
 export const environment = {
   production: true,
 
+  url: 'https://www.nomkhonwaan.com',
+
   version: '${VERSION}',
   revision: '${REVISION}',
 
