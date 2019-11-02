@@ -20,6 +20,7 @@
     "@angular/platform-browser-dynamic": "^8.2.12",
     "@angular/router": "^8.2.12",
     "@fortawesome/angular-fontawesome": "^0.4.0",
+    "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "@fortawesome/fontawesome-svg-core": "^1.2.25",
     "@fortawesome/free-brands-svg-icons": "^5.11.2",
     "@fortawesome/pro-light-svg-icons": "^5.11.2",

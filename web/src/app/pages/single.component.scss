@@ -3,6 +3,12 @@ app-post-title {
 }
 
 .horizontal-separator {
+  /*
+    Actually, these CSS rules should be `border: none;`,
+    in some reason, it doesn't work on the Ubuntu desktop 18.04 LTS version.
+    But it will work if I define each side of border to "none" and leave the bottom side to style.
+  */
+  border-top: none;
   border-left: none;
   border-right: none;
   border-bottom: 0.1rem solid #ececec;
