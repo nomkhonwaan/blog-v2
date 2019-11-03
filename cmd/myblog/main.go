@@ -7,6 +7,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"github.com/nomkhonwaan/myblog/pkg/log"
@@ -115,13 +116,16 @@ func action(ctx *cli.Context) error {
 	/* New authentication middleware */
 	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
+	/* Facebook's crawler middleware */
+	fbCrawlerMiddleware := facebook.NewCrawlerMiddleware(postRepo)
+
 	/* Define HTTP routes */
 	r := mux.NewRouter()
 
 	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(ctx.String("static-files-path"))))
+	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(http.FileServer(http.Dir(ctx.String("static-files-path")))))
 
 	/* Instantiate an HTTP server */
 	handler := logRequest(r)

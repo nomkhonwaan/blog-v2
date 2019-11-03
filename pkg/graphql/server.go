@@ -80,8 +80,13 @@ type Server struct {
 // NewServer returns new GraphQL server
 func NewServer(catRepo blog.CategoryRepository, fileRepo storage.FileRepository, postRepo blog.PostRepository, tagRepo blog.TagRepository) *Server {
 	return &Server{
-		service: service{catRepo, fileRepo, postRepo, tagRepo},
-		schema:  schemabuilder.NewSchema(),
+		service: service{
+			catRepo:  catRepo,
+			fileRepo: fileRepo,
+			postRepo: postRepo,
+			tagRepo:  tagRepo,
+		},
+		schema: schemabuilder.NewSchema(),
 	}
 }
 
