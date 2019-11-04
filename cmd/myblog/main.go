@@ -16,6 +16,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
+	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -136,7 +137,7 @@ func action(ctx *cli.Context) error {
 	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
-	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(http.FileServer(http.Dir(ctx.String("static-files-path")))))
+	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))
 
 	/* Instantiate an HTTP server */
 	handler := logRequest(r)
