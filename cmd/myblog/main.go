@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
+	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
@@ -136,8 +137,8 @@ func action(ctx *cli.Context) error {
 
 	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
-	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))
+	r.Handle("/graphql", jwtMiddleware.Handler(gziphandler.GzipHandler(graphql.Handler(schema))))
+	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(gziphandler.GzipHandler(web.NewSPAHandler(ctx.String("static-files-path")))))
 
 	/* Instantiate an HTTP server */
 	handler := logRequest(r)

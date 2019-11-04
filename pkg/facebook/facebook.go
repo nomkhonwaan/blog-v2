@@ -1,7 +1,6 @@
 package facebook
 
 import (
-	"compress/gzip"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
@@ -90,7 +89,6 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	// TODO: a post's featured image function is not ready yet
 	data := struct {
 		URL           string
 		Type          string
@@ -105,13 +103,7 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		FeaturedImage: "https://beta.nomkhonwaan.com/assets/images/303589.webp",
 	}
 
-	w.Header().Set("Content-Type", "text/html")
-	w.Header().Set("Content-Encoding", "gzip")
-
-	wtr, _ := gzip.NewWriterLevel(w, gzip.BestCompression)
-	defer wtr.Close()
-
-	if err = mw.template.Execute(wtr, data); err != nil {
+	if err = mw.template.Execute(w, data); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
