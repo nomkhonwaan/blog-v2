@@ -98,7 +98,7 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		Description   string
 		FeaturedImage string
 	}{
-		URL:         "https://beta.nomkhonwaan.com/" + p.PublishedAt.Format("2006/1/2") + p.Slug,
+		URL:         "https://beta.nomkhonwaan.com/" + p.PublishedAt.Format("2006/1/2") + "/" + p.Slug,
 		Type:        "article",
 		Title:       p.Title,
 		Description: strings.Split(p.Markdown, "\n")[0],
