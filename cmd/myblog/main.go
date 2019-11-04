@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -18,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -117,7 +120,15 @@ func action(ctx *cli.Context) error {
 	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
 	/* Facebook's crawler middleware */
-	fbCrawlerMiddleware := facebook.NewCrawlerMiddleware(postRepo)
+	openGraphTemplate, err := uncomressGzipData(data.MustGzipAsset("data/facebook-opengraph-template.html"))
+	if err != nil {
+		return err
+	}
+
+	fbCrawlerMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
+	if err != nil {
+		return err
+	}
 
 	/* Define HTTP routes */
 	r := mux.NewRouter()
@@ -184,4 +195,15 @@ func handleSignals() <-chan struct{} {
 	}()
 
 	return stopCh
+}
+
+func uncomressGzipData(compressed []byte) ([]byte, error) {
+	rdr, err := gzip.NewReader(bytes.NewBuffer(compressed))
+	if err != nil {
+		return nil, err
+	}
+	defer rdr.Close()
+
+	uncompressed, _ := ioutil.ReadAll(rdr)
+	return uncompressed, nil
 }

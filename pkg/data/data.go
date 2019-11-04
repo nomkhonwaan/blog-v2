@@ -192,7 +192,7 @@ func gzipBindataDataGraphqlplaygroundhtml() (*gzipAsset, error) {
 		size:        18126,
 		md5checksum: "",
 		mode:        os.FileMode(420),
-		modTime:     time.Unix(1567041319, 0),
+		modTime:     time.Unix(1572832042, 0),
 	}
 
 	a := &gzipAsset{bytes: bytes, info: info}
