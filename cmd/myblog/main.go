@@ -1,12 +1,15 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"github.com/nomkhonwaan/myblog/pkg/log"
@@ -17,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
@@ -115,13 +119,24 @@ func action(ctx *cli.Context) error {
 	/* New authentication middleware */
 	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
+	/* Facebook's crawler middleware */
+	openGraphTemplate, err := uncomressGzipData(data.MustGzipAsset("data/facebook-opengraph-template.html"))
+	if err != nil {
+		return err
+	}
+
+	fbCrawlerMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
+	if err != nil {
+		return err
+	}
+
 	/* Define HTTP routes */
 	r := mux.NewRouter()
 
 	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(ctx.String("static-files-path"))))
+	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(http.FileServer(http.Dir(ctx.String("static-files-path")))))
 
 	/* Instantiate an HTTP server */
 	handler := logRequest(r)
@@ -180,4 +195,15 @@ func handleSignals() <-chan struct{} {
 	}()
 
 	return stopCh
+}
+
+func uncomressGzipData(compressed []byte) ([]byte, error) {
+	rdr, err := gzip.NewReader(bytes.NewBuffer(compressed))
+	if err != nil {
+		return nil, err
+	}
+	defer rdr.Close()
+
+	uncompressed, _ := ioutil.ReadAll(rdr)
+	return uncompressed, nil
 }

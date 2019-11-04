@@ -5,6 +5,8 @@
 export const environment = {
   production: false,
 
+  url: 'http://localhost:4200',
+
   version: 'v0.0.1',
   revision: 'development',
 

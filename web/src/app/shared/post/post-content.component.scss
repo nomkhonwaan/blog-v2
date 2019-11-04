@@ -1,18 +1,85 @@
 @import "../../../styles.scss";
 
-:host {
-    font: normal 300 1.6rem Pridi, sans-serif;
-}
+:host ::ng-deep {
+  color: #333;
+  font: normal 300 1.6rem Pridi, sans-serif;
 
-::ng-deep p {
+  a {
+    color: #0091ea;
+  }
+
+  blockquote {
+    border-left: .8rem solid #ececec;
+    display: block;
+    margin: 3.2rem 0;
+    padding: 0 1.6rem;
+
+    > p:first-child {
+      padding-top: 1.6rem;
+    }
+
+    > p:last-child {
+      padding-bottom: 1.6rem;
+    }
+  }
+
+  h2,
+  h3,
+  h4 {
+    font-family: Athiti, sans-serif;
+    font-weight: 500;
+  }
+
+  h2 {
+    font-size: 3.6rem;
+  }
+  h3 {
+    font-size: 2.8rem;
+  }
+  h4 {
+    font-size: 1.8rem;
+  }
+
+  hr {
+    border: none;
+    border-bottom: 0.1rem solid #ececec;
+    display: block;
+    margin: 2.4rem auto;
+    padding-top: 0.8rem;
+    width: 100%;
+
+    @include md {
+      width: 51.4rem;
+    }
+  }
+
+  img {
+    display: block;
+    max-width: 100%;
+    margin: 0.8rem auto;
+    padding-top: 0.8rem;
+  }
+
+  p {
     margin: 2.4rem 0;
     text-align: justify;
 
     @include md {
-        text-align: left;
+      text-align: left;
     }
-}
 
-::ng-deep img {
-    max-width: 100%;
+    &.fill-width {
+      margin: 0 calc((100vw / 2 * -1) + 25.6rem + 12.8rem);
+      /*                                Sidebar     N/A  */
+
+      & > img {
+        width: 100%;
+      }
+    }
+  }
+
+  .caption {
+    font-size: 1.5rem;
+    text-align: center;
+  }
 }

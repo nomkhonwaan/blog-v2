@@ -13,6 +13,7 @@ import { PostComponent } from './post.component';
     `
       :host {
         color: #333;
+        display: block;
         font-family: Athiti, sans-serif;
         font-weight: 500;
       }
@@ -37,7 +38,7 @@ export class PostTitleComponent extends PostComponent implements OnInit {
    * Used to indiciate whether link or no-link
    */
   @Input()
-  link: boolean = true;
+  link = true;
 
   href: string[];
 
@@ -45,7 +46,12 @@ export class PostTitleComponent extends PostComponent implements OnInit {
     const publishedAt: Date = new Date(this.post.publishedAt);
 
     if (this.link) {
-      this.href = [publishedAt.getFullYear().toString(), publishedAt.getMonth().toString(), publishedAt.getDate().toString(), this.post.slug];
+      this.href = [
+        publishedAt.getFullYear().toString(),
+        publishedAt.getMonth().toString(),
+        publishedAt.getDate().toString(),
+        this.post.slug,
+      ];
     }
   }
 
