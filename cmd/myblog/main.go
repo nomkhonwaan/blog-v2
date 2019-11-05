@@ -122,12 +122,12 @@ func action(ctx *cli.Context) error {
 	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
 	/* Facebook's crawler middleware */
-	openGraphTemplate, err := uncomressGzipData(data.MustGzipAsset("data/facebook-opengraph-template.html"))
+	ogTemplate, err := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
 	if err != nil {
 		return err
 	}
 
-	fbCrawlerMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
+	fbMiddleware, err := facebook.NewCrawlerMiddleware(string(ogTemplate), postRepo)
 	if err != nil {
 		return err
 	}
@@ -137,8 +137,8 @@ func action(ctx *cli.Context) error {
 
 	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", jwtMiddleware.Handler(gziphandler.GzipHandler(graphql.Handler(schema))))
-	r.PathPrefix("/").Handler(fbCrawlerMiddleware.Handler(gziphandler.GzipHandler(web.NewSPAHandler(ctx.String("static-files-path")))))
+	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
+	r.PathPrefix("/").Handler(fbMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))
 
 	/* Instantiate an HTTP server */
 	handler := logRequest(r)
@@ -148,7 +148,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	s := server.InsecureServer{
-		Handler:         handler,
+		Handler:         gziphandler.GzipHandler(handler),
 		ShutdownTimeout: time.Minute * 5,
 	}
 
@@ -199,7 +199,7 @@ func handleSignals() <-chan struct{} {
 	return stopCh
 }
 
-func uncomressGzipData(compressed []byte) ([]byte, error) {
+func unzip(compressed []byte) ([]byte, error) {
 	rdr, err := gzip.NewReader(bytes.NewBuffer(compressed))
 	if err != nil {
 		return nil, err
