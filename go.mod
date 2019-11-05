@@ -3,6 +3,7 @@ module github.com/nomkhonwaan/myblog
 go 1.13
 
 require (
+	github.com/NYTimes/gziphandler v1.1.1
 	github.com/auth0/go-jwt-middleware v0.0.0-20190805220309-36081240882b
 	github.com/aws/aws-sdk-go v1.25.19
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
@@ -23,7 +24,7 @@ require (
 	github.com/satori/go.uuid v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.4.2
 	github.com/smartystreets/goconvey v0.0.0-20190731233626-505e41936337 // indirect
-	github.com/stretchr/testify v1.2.2
+	github.com/stretchr/testify v1.3.0
 	github.com/tidwall/pretty v1.0.0 // indirect
 	github.com/urfave/cli v1.22.1
 	github.com/urfave/negroni v1.0.0 // indirect
