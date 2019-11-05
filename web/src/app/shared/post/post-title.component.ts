@@ -48,7 +48,7 @@ export class PostTitleComponent extends PostComponent implements OnInit {
     if (this.link) {
       this.href = [
         publishedAt.getFullYear().toString(),
-        publishedAt.getMonth().toString(),
+        (publishedAt.getMonth() + 1).toString(), // a month number start at 0 not 1
         publishedAt.getDate().toString(),
         this.post.slug,
       ];
