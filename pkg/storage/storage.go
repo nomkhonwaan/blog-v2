@@ -5,8 +5,12 @@ import (
 	"io"
 )
 
-// Uploader is the interface that wraps the file uploading method.
+// Downloader uses to downloading file from the storage server
+type Downloader interface {
+	Download(ctx context.Context, path string) (File, error)
+}
+
+// Uploader uses to uploading file from multipart body to the storage server
 type Uploader interface {
-	// Perform file uploading to the destination whether cloud service or internal storage
 	Upload(ctx context.Context, path string, body io.Reader) (File, error)
 }

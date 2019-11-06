@@ -20,6 +20,9 @@ type File struct {
 	// An original file name
 	FileName string `bson:"fileName" json:"fileName" graphql:"fileName"`
 
+	// A file content
+	Body []byte `bson:"-" json:"-" graphql:"-"`
+
 	// An optional field #1 for using in some storage server
 	OptionalField1 string `bson:"optionalField1" json:"optionalField1,omitempty" graphql:"optionalField1"`
 
@@ -52,6 +55,9 @@ func (f File) MarshalJSON() ([]byte, error) {
 type FileRepository interface {
 	// Create or replace (if the file name is exists)
 	Create(ctx context.Context, file File) (File, error)
+
+	// Find a single file from its path
+	FindByPath(ctx context.Context, path string) (File, error)
 }
 
 // NewFileRepository returns file repository which connects to MongoDB
@@ -77,4 +83,13 @@ func (repo MongoFileRepository) Create(ctx context.Context, file File) (File, er
 	}
 
 	return file, nil
+}
+
+func (repo MongoFileRepository) FindByPath(ctx context.Context, path string) (File, error) {
+	r := repo.col.FindOne(ctx, bson.M{"path": path})
+
+	var file File
+	err := r.Decode(&file)
+
+	return file, err
 }

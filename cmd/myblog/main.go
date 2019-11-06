@@ -109,7 +109,7 @@ func action(ctx *cli.Context) error {
 	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
 	/* Connect to Amazon S3 */
-	uploader, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
+	s3, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
 	if err != nil {
 		return err
 	}
@@ -119,36 +119,37 @@ func action(ctx *cli.Context) error {
 	introspection.AddIntrospectionToSchema(schema)
 
 	/* New authentication middleware */
-	jwtMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
+	authMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
 	/* Facebook's crawler middleware */
-	ogTemplate, err := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	if err != nil {
-		return err
-	}
+	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
 
-	fbMiddleware, err := facebook.NewCrawlerMiddleware(string(ogTemplate), postRepo)
+	facebookMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
 	if err != nil {
 		return err
 	}
 
 	/* Define HTTP routes */
 	r := mux.NewRouter()
+	r.Use(logRequest)
+	r.Use(gziphandler.GzipHandler)
+	r.Use(authMiddleware.Handler)
 
-	r.Handle("/v1/storage/upload", jwtMiddleware.Handler(storage.Handler(uploader)))
+	// Storage handlers require the downloader and uploader which already implemented in the Amazon S3 client
+	storage.Register(r.PathPrefix("/api/v1/storage").Subrouter(), s3, s3)
+
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", jwtMiddleware.Handler(graphql.Handler(schema)))
-	r.PathPrefix("/").Handler(fbMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))
+	r.Handle("/graphql", graphql.Handler(schema))
+	r.PathPrefix("/").Handler(facebookMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))
 
 	/* Instantiate an HTTP server */
-	handler := logRequest(r)
 	if ctx.Bool("allow-cors") {
 		logrus.Info("the Cross-Origin Resource Sharing (CORS) is allowed for all sites (*)")
-		handler = allowCORS(handler)
+		r.Use(allowCORS)
 	}
 
 	s := server.InsecureServer{
-		Handler:         gziphandler.GzipHandler(handler),
+		Handler:         r,
 		ShutdownTimeout: time.Minute * 5,
 	}
 

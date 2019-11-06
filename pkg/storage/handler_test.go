@@ -7,6 +7,7 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
+	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	. "github.com/nomkhonwaan/myblog/pkg/storage"
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
@@ -22,7 +23,11 @@ func TestHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	u := mock_storage.NewMockUploader(ctrl)
+	downloader := mock_storage.NewMockDownloader(ctrl)
+	uploader := mock_storage.NewMockUploader(ctrl)
+	router := mux.NewRouter()
+
+	Register(router.PathPrefix("/v1/storage").Subrouter(), downloader, uploader)
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}
@@ -54,10 +59,10 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		u.EXPECT().Upload(r.Context(), "authorizedID/"+fileName, gomock.Any()).Return(File{}, nil)
+		uploader.EXPECT().Upload(gomock.Any(), "authorizedID/"+fileName, gomock.Any()).Return(File{}, nil)
 
 		// When
-		Handler(u).ServeHTTP(w, r)
+		router.ServeHTTP(w, r)
 
 		// Then
 		assert.Equal(t, "200 OK", w.Result().Status)
@@ -72,7 +77,7 @@ func TestHandler(t *testing.T) {
 		r := newFileUploadRequest(fileName, body)
 
 		// When
-		Handler(u).ServeHTTP(w, r)
+		router.ServeHTTP(w, r)
 
 		// Then
 		var result map[string]interface{}
@@ -91,7 +96,7 @@ func TestHandler(t *testing.T) {
 		r := withAuthorizedID(newFileUploadRequest("", body))
 
 		// When
-		Handler(u).ServeHTTP(w, r)
+		router.ServeHTTP(w, r)
 
 		// Then
 		assert.Equal(t, "500 Internal Server Error", w.Result().Status)
@@ -105,10 +110,10 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		u.EXPECT().Upload(r.Context(), "authorizedID/"+fileName, gomock.Any()).Return(File{}, errors.New("test upload file error"))
+		uploader.EXPECT().Upload(gomock.Any(), "authorizedID/"+fileName, gomock.Any()).Return(File{}, errors.New("test upload file error"))
 
 		// When
-		Handler(u).ServeHTTP(w, r)
+		router.ServeHTTP(w, r)
 
 		// Then
 		assert.Equal(t, "500 Internal Server Error", w.Result().Status)

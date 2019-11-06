@@ -2,12 +2,41 @@ package storage
 
 import (
 	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/sirupsen/logrus"
+	"mime"
 	"net/http"
+	"path/filepath"
 )
 
-func Handler(u Uploader) http.Handler {
+// Register allows the register HTTP handlers for each sub-router
+func Register(r *mux.Router, downloader Downloader, uploader Uploader) {
+	r.Path("/{authorizedID}/{fileName}").Handler(downloadFileHandler(downloader)).Methods(http.MethodGet)
+	r.Path("/upload").Handler(uploadFileHandler(uploader)).Methods(http.MethodPost)
+}
+
+func downloadFileHandler(downloader Downloader) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
+
+		file, err := downloader.Download(r.Context(), vars["authorizedID"]+"/"+vars["fileName"])
+		if err != nil {
+			responseError(w, err.Error(), http.StatusNotFound)
+			return
+		}
+
+		mimeType := mime.TypeByExtension(filepath.Ext(file.Path))
+
+		w.Header().Set("Content-Type", mimeType)
+		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(file.Body)))
+
+		_, _ = w.Write(file.Body)
+	})
+}
+
+func uploadFileHandler(uploader Uploader) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
@@ -27,7 +56,7 @@ func Handler(u Uploader) http.Handler {
 		path := authorizedID.(string) + "/" + header.Filename
 		logrus.Infof("uploading file %s with size %d to the storage server...", path, header.Size)
 
-		file, err := u.Upload(r.Context(), path, f)
+		file, err := uploader.Upload(r.Context(), path, f)
 		if err != nil {
 			responseError(w, err.Error(), http.StatusInternalServerError)
 			return
