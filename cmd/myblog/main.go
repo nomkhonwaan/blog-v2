@@ -109,7 +109,7 @@ func action(ctx *cli.Context) error {
 	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
 	/* Connect to Amazon S3 */
-	uploader, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
+	s3, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
 	if err != nil {
 		return err
 	}
@@ -122,10 +122,7 @@ func action(ctx *cli.Context) error {
 	authMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
 	/* Facebook's crawler middleware */
-	openGraphTemplate, err := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	if err != nil {
-		return err
-	}
+	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
 
 	facebookMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
 	if err != nil {
@@ -138,7 +135,9 @@ func action(ctx *cli.Context) error {
 	r.Use(gziphandler.GzipHandler)
 	r.Use(authMiddleware.Handler)
 
-	storage.Register(r.PathPrefix("/v1/storage").Subrouter(), uploader)
+	// Storage handlers require the downloader and uploader which already implemented in the Amazon S3 client
+	storage.Register(r.PathPrefix("/api/v1/storage").Subrouter(), s3, s3)
+
 	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
 	r.PathPrefix("/").Handler(facebookMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))

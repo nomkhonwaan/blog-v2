@@ -6,22 +6,39 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 	"io"
 	"path/filepath"
 )
 
+// Service helps co-working between data-layer and control-layer
+type Service interface {
+	// A file repository
+	File() FileRepository
+}
+
+type service struct {
+	fileRepo FileRepository
+}
+
+func (s service) File() FileRepository {
+	return s.fileRepo
+}
+
 // AmazonS3 is a storage manager which talks to Amazon S3 service for uploading and listing uploaded files
 type AmazonS3 struct {
-	repo FileRepository
-	sess *session.Session
+	service Service
 
-	// The default bucket name requires when uploading file to Amazon S3 which keep all files in the bucket storage
+	// Amazon Web Service session
+	session *session.Session
+
+	// The default bucket name requires when uploading file to Amazon S3
 	defaultBucketName string
 }
 
 // NewAmazonS3 returns a new storage manager which configures default bucket name and session inside
-func NewAmazonS3(accessKey, secretKey string, repo FileRepository) (AmazonS3, error) {
+func NewAmazonS3(accessKey, secretKey string, fileRepo FileRepository) (AmazonS3, error) {
 	sess, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
@@ -34,7 +51,13 @@ func NewAmazonS3(accessKey, secretKey string, repo FileRepository) (AmazonS3, er
 		return AmazonS3{}, err
 	}
 
-	return AmazonS3{repo: repo, sess: sess, defaultBucketName: "nomkhonwaan-com"}, nil
+	return AmazonS3{
+		service: service{
+			fileRepo: fileRepo,
+		},
+		session:           sess,
+		defaultBucketName: "nomkhonwaan-com",
+	}, nil
 }
 
 // SetDefaultBucketName allows to override the default bucket name
@@ -42,10 +65,33 @@ func (s AmazonS3) SetDefaultBucketName(newBucketName string) {
 	s.defaultBucketName = newBucketName
 }
 
-func (s AmazonS3) Upload(ctx context.Context, path string, body io.Reader) (File, error) {
-	u := s3manager.NewUploader(s.sess)
+func (s AmazonS3) Download(ctx context.Context, path string) (File, error) {
+	file, err := s.service.File().FindByPath(ctx, path)
+	if err != nil {
+		return File{}, err
+	}
 
-	result, err := u.Upload(&s3manager.UploadInput{
+	// TODO: will checking the local cache storage before performing download request to Amazon S3
+
+	downloader := s3manager.NewDownloader(s.session)
+
+	buf := aws.NewWriteAtBuffer([]byte{})
+	_, err = downloader.DownloadWithContext(ctx, buf, &s3.GetObjectInput{
+		Bucket: aws.String(s.defaultBucketName),
+		Key:    aws.String(path),
+	})
+	if err != nil {
+		return File{}, err
+	}
+
+	file.Body = buf.Bytes()
+	return file, nil
+}
+
+func (s AmazonS3) Upload(ctx context.Context, path string, body io.Reader) (File, error) {
+	uploader := s3manager.NewUploader(s.session)
+
+	result, err := uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(s.defaultBucketName),
 		Key:    aws.String(path),
 		Body:   body,
@@ -54,7 +100,7 @@ func (s AmazonS3) Upload(ctx context.Context, path string, body io.Reader) (File
 		return File{}, err
 	}
 
-	file, err := s.repo.Create(ctx, File{
+	file, err := s.service.File().Create(ctx, File{
 		Path:           path,
 		FileName:       filepath.Base(path),
 		OptionalField1: fmt.Sprintf("%T", s),
