@@ -2,12 +2,18 @@ package storage
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/sirupsen/logrus"
 	"net/http"
 )
 
-func Handler(u Uploader) http.Handler {
+// Register allows the register HTTP handlers for each sub-router
+func Register(r *mux.Router, uploader Uploader) {
+	r.Handle("/upload", uploadFileHandler(uploader)).Methods(http.MethodPost)
+}
+
+func uploadFileHandler(u Uploader) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
