@@ -9,5 +9,4 @@ RUN make build
 FROM scratch
 COPY --from=builder /etc/ssl/certs/* /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/nomkhonwaan/myblog/bin/myblog .
-RUN mkdir -p /var/cache/myblog
 ENTRYPOINT ["/myblog"]
