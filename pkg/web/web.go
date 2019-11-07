@@ -12,14 +12,14 @@ import (
 // serve the SPA in the given static directory.
 type SPAHandler struct {
 	staticFilesPath string
-	indexPath       string
+	indexFile       string
 }
 
 // NewSPAHandler returns an SPA handler instance
 func NewSPAHandler(staticFilesPath string) SPAHandler {
 	return SPAHandler{
 		staticFilesPath: staticFilesPath,
-		indexPath:       "index.html",
+		indexFile:       "index.html",
 	}
 }
 
@@ -44,7 +44,7 @@ func (h SPAHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	_, err = os.Stat(path)
 	if os.IsNotExist(err) {
 		// file does not exist, serve index.html
-		http.ServeFile(w, r, filepath.Join(h.staticFilesPath, h.indexPath))
+		http.ServeFile(w, r, filepath.Join(h.staticFilesPath, h.indexFile))
 		return
 	} else if err != nil {
 		// if we got an error (that wasn't that the file doesn't exist) stating the

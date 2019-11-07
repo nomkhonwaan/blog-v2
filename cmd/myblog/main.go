@@ -43,12 +43,18 @@ func init() {
 
 func main() {
 	app := cli.NewApp()
+	app.Name = "myblog"
 	app.Version = version
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:   "listen-address",
 			EnvVar: "LISTEN_ADDRESS",
 			Value:  "0.0.0.0:8080",
+		},
+		cli.StringFlag{
+			Name:   "cache-files-path",
+			EnvVar: "CACHE_FILES_PATH",
+			Value:  "/var/cache/myblog",
 		},
 		cli.StringFlag{
 			Name:   "static-files-path",
@@ -96,50 +102,64 @@ func main() {
 }
 
 func action(ctx *cli.Context) error {
-	/* Connect to MongoDB */
+	/* MongoDB Connection */
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(ctx.String("mongodb-uri")))
 	if err != nil {
 		return err
 	}
 	db := client.Database("nomkhonwaan_com")
 
+	/* Repositories */
 	catRepo := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
 	fileRepo := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
 	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
-	/* Connect to Amazon S3 */
-	s3, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
+	/* Disk Storage Cache */
+	cache, err := storage.NewDiskCache(ctx.String("cache-files-path"))
 	if err != nil {
 		return err
 	}
 
-	/* Build GraphQL schema */
+	/* Amazon S3 */
+	s3, err := storage.NewAmazonS3(
+		ctx.String("amazon-s3-access-key"),
+		ctx.String("amazon-s3-secret-key"),
+		cache,
+		fileRepo,
+	)
+	if err != nil {
+		return err
+	}
+
+	/* GraphQL Schema */
 	schema := graphql.NewServer(catRepo, fileRepo, postRepo, tagRepo).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
-	/* New authentication middleware */
+	/* Auth0 JWT Middleware */
 	authMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
 
-	/* Facebook's crawler middleware */
+	/* Facebook Sharing */
 	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-
 	facebookMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
 	if err != nil {
 		return err
 	}
 
-	/* Define HTTP routes */
+	/* Gorilla Routes */
 	r := mux.NewRouter()
 	r.Use(logRequest)
 	r.Use(gziphandler.GzipHandler)
 	r.Use(authMiddleware.Handler)
 
-	// Storage handlers require the downloader and uploader which already implemented in the Amazon S3 client
-	storage.Register(r.PathPrefix("/api/v1/storage").Subrouter(), s3, s3)
+	/* RESTfuls Endpoints */
+	storage.Register(r.PathPrefix("/api/v2/storage").Subrouter(), s3, s3)
 
-	r.HandleFunc("/graphiql", playground.HandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
+	/* GraphQL Endpoints */
+	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
+
+	/* Static Files Endpoints */
 	r.PathPrefix("/").Handler(facebookMiddleware.Handler(web.NewSPAHandler(ctx.String("static-files-path"))))
 
 	/* Instantiate an HTTP server */

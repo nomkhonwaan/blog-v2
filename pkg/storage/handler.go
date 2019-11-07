@@ -11,7 +11,7 @@ import (
 	"path/filepath"
 )
 
-// Register allows the register HTTP handlers for each sub-router
+// Register uses to registering HTTP handlers for each sub-router of storage API (prefix: /api/v1/storage)
 func Register(r *mux.Router, downloader Downloader, uploader Uploader) {
 	r.Path("/{authorizedID}/{fileName}").Handler(downloadFileHandler(downloader)).Methods(http.MethodGet)
 	r.Path("/upload").Handler(uploadFileHandler(uploader)).Methods(http.MethodPost)
