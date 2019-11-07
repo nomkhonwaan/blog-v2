@@ -1,5 +1,11 @@
 package storage
 
+import (
+	"io/ioutil"
+	"os"
+	"path/filepath"
+)
+
 // Cache uses to keeping or retrieving the uploaded files from the cache storage
 type Cache interface {
 	// Exist checks the existence of the file
@@ -12,24 +18,46 @@ type Cache interface {
 	Store(file File) error
 }
 
-// NewDiskCache returns new disk storage cache instance
-func NewDiskCache(cachePath string) DiskCache {
-	return DiskCache{cachePath: cachePath}
-}
-
 // DiskCache uses the hard-disk drive as a cache storage
 type DiskCache struct {
-	cachePath string
+	cacheFilesPath string
 }
 
 func (c DiskCache) Exist(path string) bool {
-	return false
+	_, err := os.Stat(c.cacheFilesPath + string(filepath.Separator) + path)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return true
 }
 
 func (c DiskCache) Retrieve(path string) (File, error) {
-	return File{}, nil
+	f, err := os.Open(c.cacheFilesPath + string(filepath.Separator) + path)
+	if err != nil {
+		return File{}, err
+	}
+
+	body, _ := ioutil.ReadAll(f)
+
+	return File{
+		Path:     path,
+		FileName: f.Name(),
+		Body:     body,
+	}, nil
 }
 
 func (c DiskCache) Store(file File) error {
-	return nil
+	dir := filepath.Dir(c.cacheFilesPath + string(filepath.Separator) + file.Path)
+	err := os.MkdirAll(dir, 0755)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(c.cacheFilesPath+string(filepath.Separator)+file.Path, os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return err
+	}
+
+	_, err = f.Write(file.Body)
+	return err
 }
