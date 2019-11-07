@@ -8,27 +8,18 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
-	"github.com/sirupsen/logrus"
 	"io"
 	"path/filepath"
 )
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
-	// The cache service
-	Cache() Cache
-
 	// A file repository
 	File() FileRepository
 }
 
 type service struct {
-	cache    Cache
 	fileRepo FileRepository
-}
-
-func (s service) Cache() Cache {
-	return s.cache
 }
 
 func (s service) File() FileRepository {
@@ -47,7 +38,7 @@ type AmazonS3 struct {
 }
 
 // NewAmazonS3 returns a new storage manager which configures default bucket name and session inside
-func NewAmazonS3(accessKey, secretKey string, cache Cache, fileRepo FileRepository) (AmazonS3, error) {
+func NewAmazonS3(accessKey, secretKey string, fileRepo FileRepository) (AmazonS3, error) {
 	sess, err := session.NewSessionWithOptions(
 		session.Options{
 			Config: aws.Config{
@@ -62,7 +53,6 @@ func NewAmazonS3(accessKey, secretKey string, cache Cache, fileRepo FileReposito
 
 	return AmazonS3{
 		service: service{
-			cache:    cache,
 			fileRepo: fileRepo,
 		},
 		session:           sess,
@@ -81,15 +71,6 @@ func (s AmazonS3) Download(ctx context.Context, path string) (File, error) {
 		return File{}, err
 	}
 
-	if s.service.Cache().Exist(path) {
-		file, err = s.service.Cache().Retrieve(path)
-		if err != nil {
-			logrus.Errorf("unable to retrieve file from %s due to error: %s", path, err)
-		}
-
-		return file, nil
-	}
-
 	downloader := s3manager.NewDownloader(s.session)
 
 	buf := aws.NewWriteAtBuffer([]byte{})
@@ -102,11 +83,6 @@ func (s AmazonS3) Download(ctx context.Context, path string) (File, error) {
 	}
 
 	file.Body = buf.Bytes()
-
-	if err = s.service.Cache().Store(file); err != nil {
-		logrus.Errorf("unable to store file on %s due to error: %s", path, err)
-	}
-
 	return file, nil
 }
 

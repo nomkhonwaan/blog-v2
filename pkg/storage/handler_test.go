@@ -23,11 +23,12 @@ func TestHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	cache := mock_storage.NewMockCache(ctrl)
 	downloader := mock_storage.NewMockDownloader(ctrl)
 	uploader := mock_storage.NewMockUploader(ctrl)
 	router := mux.NewRouter()
 
-	Register(router.PathPrefix("/v1/storage").Subrouter(), downloader, uploader)
+	Register(router.PathPrefix("/v1/storage").Subrouter(), cache, downloader, uploader)
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}

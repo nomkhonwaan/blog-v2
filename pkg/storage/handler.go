@@ -11,23 +11,41 @@ import (
 	"path/filepath"
 )
 
-// Register uses to registering HTTP handlers for each sub-router of storage API (prefix: /api/v1/storage)
-func Register(r *mux.Router, downloader Downloader, uploader Uploader) {
-	r.Path("/{authorizedID}/{fileName}").Handler(downloadFileHandler(downloader)).Methods(http.MethodGet)
-	r.Path("/upload").Handler(uploadFileHandler(uploader)).Methods(http.MethodPost)
+// Register uses to registering HTTP handlers for each sub-router of storage API (prefix: /api/v2/storage)
+func Register(r *mux.Router, cache Cache, downloader Downloader, uploader Uploader) {
+	r.Path("/{authorizedID}/{fileName}").Handler(downloadHandler(cache, downloader)).Methods(http.MethodGet)
+	r.Path("/upload").Handler(uploadHandler(uploader)).Methods(http.MethodPost)
 }
 
-func downloadFileHandler(downloader Downloader) http.Handler {
+func downloadHandler(cache Cache, downloader Downloader) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		vars := mux.Vars(r)
+		var (
+			file File
+			err  error
+		)
 
-		file, err := downloader.Download(r.Context(), vars["authorizedID"]+"/"+vars["fileName"])
-		if err != nil {
-			responseError(w, err.Error(), http.StatusNotFound)
-			return
+		vars := mux.Vars(r)
+		path := vars["authorizedID"] + "/" + vars["fileName"]
+
+		if cache.Exist(path) {
+			file, err = cache.Retrieve(path)
+			if err != nil {
+				logrus.Errorf("unable to retrieve file from %s due to error: %s", path, err)
+			}
 		}
 
-		mimeType := mime.TypeByExtension(filepath.Ext(file.Path))
+		if file.Body == nil {
+			file, err = downloader.Download(r.Context(), path)
+			if err != nil {
+				responseError(w, err.Error(), http.StatusNotFound)
+				return
+			}
+			if err := cache.Store(file); err != nil {
+				logrus.Errorf("unable to store file on %s due to error: %s", path, err)
+			}
+		}
+
+		mimeType := mime.TypeByExtension(filepath.Ext(path))
 
 		w.Header().Set("Content-Type", mimeType)
 		w.Header().Set("Content-Length", fmt.Sprintf("%d", len(file.Body)))
@@ -36,7 +54,7 @@ func downloadFileHandler(downloader Downloader) http.Handler {
 	})
 }
 
-func uploadFileHandler(uploader Uploader) http.Handler {
+func uploadHandler(uploader Uploader) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
