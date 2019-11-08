@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
+	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -44,6 +45,12 @@ type Post struct {
 
 	// List of tags that the post belonging to
 	Tags []mongo.DBRef `bson:"tags" json:"-" graphql:"-"`
+
+	// A featured image to be shown in the social network as a cover image
+	FeaturedImage mongo.DBRef `bson:"featuredImage" json:"-" graphql:"-"`
+
+	// List of attachments are belonging to the post
+	Attachments []mongo.DBRef `bson:"attachments" json:"-" graphql:"-"`
 
 	// Date-time that the post was created
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
@@ -187,6 +194,24 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 			)
 		}
 	}
+	if featuredImage := q.FeaturedImage(); !featuredImage.ID.IsZero() {
+		update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{
+			Ref: "files",
+			ID:  featuredImage.ID,
+		}
+	}
+	if attachments := q.Attachments(); attachments != nil {
+		update["$set"].(bson.M)["attachments"] = make(primitive.A, 0)
+		for _, atm := range attachments {
+			update["$set"].(bson.M)["attachments"] = append(
+				update["$set"].(bson.M)["attachments"].(primitive.A),
+				mongo.DBRef{
+					Ref: "files",
+					ID:  atm.ID,
+				},
+			)
+		}
+	}
 
 	_, err := repo.col.UpdateOne(ctx, bson.M{"_id": id.(primitive.ObjectID)}, update)
 	if err != nil {
@@ -221,6 +246,12 @@ type PostQueryBuilder interface {
 
 	// WithTags allows to set tags to the post query object
 	WithTags(tags []Tag) PostQueryBuilder
+
+	// WithFeaturedImage allows to set featured image to the post query object
+	WithFeaturedImage(featuredImage storage.File) PostQueryBuilder
+
+	// WithAttachments allows to set list of attachments to the post query object
+	WithAttachments(attachments []storage.File) PostQueryBuilder
 
 	// WithOffset allows to set returned result offset
 	WithOffset(offset int64) PostQueryBuilder
@@ -286,6 +317,16 @@ func (qb *MongoPostQueryBuilder) WithTags(tags []Tag) PostQueryBuilder {
 	return qb
 }
 
+func (qb *MongoPostQueryBuilder) WithFeaturedImage(featuredImage storage.File) PostQueryBuilder {
+	qb.MongoPostQuery.featuredImage = featuredImage
+	return qb
+}
+
+func (qb *MongoPostQueryBuilder) WithAttachments(attachments []storage.File) PostQueryBuilder {
+	qb.MongoPostQuery.attachments = attachments
+	return qb
+}
+
 func (qb *MongoPostQueryBuilder) WithOffset(offset int64) PostQueryBuilder {
 	qb.MongoPostQuery.offset = offset
 	return qb
@@ -326,6 +367,12 @@ type PostQuery interface {
 	// Tags returns a list of tags field
 	Tags() []Tag
 
+	// FeaturedImage returns a featured image field
+	FeaturedImage() storage.File
+
+	// Attachments returns a list of attachments field
+	Attachments() []storage.File
+
 	// Offset returns an offset of the returned result
 	Offset() int64
 
@@ -334,14 +381,16 @@ type PostQuery interface {
 }
 
 type MongoPostQuery struct {
-	title      string
-	markdown   string
-	html       string
-	status     Status
-	category   Category
-	categories []Category
-	tag        Tag
-	tags       []Tag
+	title         string
+	markdown      string
+	html          string
+	status        Status
+	category      Category
+	categories    []Category
+	tag           Tag
+	tags          []Tag
+	featuredImage storage.File
+	attachments   []storage.File
 
 	offset int64
 	limit  int64
@@ -377,6 +426,14 @@ func (q *MongoPostQuery) Tag() Tag {
 
 func (q *MongoPostQuery) Tags() []Tag {
 	return q.tags
+}
+
+func (q *MongoPostQuery) FeaturedImage() storage.File {
+	return q.featuredImage
+}
+
+func (q *MongoPostQuery) Attachments() []storage.File {
+	return q.attachments
 }
 
 func (q *MongoPostQuery) Offset() int64 {
