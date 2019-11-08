@@ -49,6 +49,36 @@ func (mr *MockFileRepositoryMockRecorder) Create(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockFileRepository)(nil).Create), arg0, arg1)
 }
 
+// FindAllByIDs mocks base method
+func (m *MockFileRepository) FindAllByIDs(arg0 context.Context, arg1 interface{}) ([]storage.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllByIDs", arg0, arg1)
+	ret0, _ := ret[0].([]storage.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllByIDs indicates an expected call of FindAllByIDs
+func (mr *MockFileRepositoryMockRecorder) FindAllByIDs(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllByIDs", reflect.TypeOf((*MockFileRepository)(nil).FindAllByIDs), arg0, arg1)
+}
+
+// FindAllByPaths mocks base method
+func (m *MockFileRepository) FindAllByPaths(arg0 context.Context, arg1 []string) ([]storage.File, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "FindAllByPaths", arg0, arg1)
+	ret0, _ := ret[0].([]storage.File)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// FindAllByPaths indicates an expected call of FindAllByPaths
+func (mr *MockFileRepositoryMockRecorder) FindAllByPaths(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllByPaths", reflect.TypeOf((*MockFileRepository)(nil).FindAllByPaths), arg0, arg1)
+}
+
 // FindByID mocks base method
 func (m *MockFileRepository) FindByID(arg0 context.Context, arg1 interface{}) (storage.File, error) {
 	m.ctrl.T.Helper()
@@ -77,18 +107,4 @@ func (m *MockFileRepository) FindByPath(arg0 context.Context, arg1 string) (stor
 func (mr *MockFileRepositoryMockRecorder) FindByPath(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByPath", reflect.TypeOf((*MockFileRepository)(nil).FindByPath), arg0, arg1)
-}
-
-// IsErrorRecordNotFound mocks base method
-func (m *MockFileRepository) IsErrorRecordNotFound(arg0 error) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsErrorRecordNotFound", arg0)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// IsErrorRecordNotFound indicates an expected call of IsErrorRecordNotFound
-func (mr *MockFileRepositoryMockRecorder) IsErrorRecordNotFound(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsErrorRecordNotFound", reflect.TypeOf((*MockFileRepository)(nil).IsErrorRecordNotFound), arg0)
 }
