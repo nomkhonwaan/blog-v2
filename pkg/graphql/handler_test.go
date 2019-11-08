@@ -452,6 +452,82 @@ func TestHandler(t *testing.T) {
 		})
 	})
 
+	t.Run("Update post categories", func(t *testing.T) {
+		t.Run("When successful updating post categories", func(t *testing.T) {
+			id := primitive.NewObjectID()
+			catID := primitive.NewObjectID()
+			categories := []blog.Category{{ID: catID}}
+			q := query{
+				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":          "test-post-" + id.Hex(),
+					"categorySlugs": []string{"test-category-" + catID.Hex()},
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(categories, nil)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithCategories(categories).Build()).Return(blog.Post{}, nil)
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+
+		})
+
+		t.Run("When unable to retrieve list of categories", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			catID := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":          "test-post-" + id.Hex(),
+					"categorySlugs": []string{"test-category-" + catID.Hex()},
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(nil, errors.New("test unable to retrieve list of categories"))
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostCategories: test unable to retrieve list of categories", result["errors"].([]interface{})[0].(string))
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			catID := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":          "test-post-" + id.Hex(),
+					"categorySlugs": []string{"test-category-" + catID.Hex()},
+				},
+			}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostCategories: Unauthorized", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
 	t.Run("Update post tags", func(t *testing.T) {
 		t.Run("When successful updating post tags", func(t *testing.T) {
 			// Given
@@ -469,7 +545,7 @@ func TestHandler(t *testing.T) {
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
 			tagRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(tags, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTags(tags).Build())
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTags(tags).Build()).Return(blog.Post{}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))

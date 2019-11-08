@@ -118,7 +118,10 @@ func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 	obj.FieldFunc("createPost", s.createPostMutation)
 	obj.FieldFunc("updatePostTitle", s.updatePostTitleMutation)
 	obj.FieldFunc("updatePostContent", s.updatePostContentMutation)
+	obj.FieldFunc("updatePostCategories", s.updatePostCategoriesMutation)
 	obj.FieldFunc("updatePostTags", s.updatePostTagsMutation)
+	obj.FieldFunc("updatePostFeaturedImage", s.updatePostFeaturedImageMutation)
+	obj.FieldFunc("updatePostAttachments", s.updatePostAttachmentsMutation)
 }
 
 func (s *Server) registerCategory(schema *schemabuilder.Schema) {
@@ -226,6 +229,30 @@ func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
+func (s *Server) updatePostCategoriesMutation(ctx context.Context, args struct {
+	Slug          Slug
+	CategorySlugs []Slug
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	var ids []primitive.ObjectID
+	for _, slug := range args.CategorySlugs {
+		ids = append(ids, slug.MustGetID().(primitive.ObjectID))
+	}
+
+	categories, err := s.service.Category().FindAllByIDs(ctx, ids)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithCategories(categories).Build())
+}
+
 func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	Slug     Slug
 	TagSlugs []Slug
@@ -248,6 +275,14 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	}
 
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
+}
+
+func (s *Server) updatePostFeaturedImageMutation(ctx context.Context) {
+
+}
+
+func (s *Server) updatePostAttachmentsMutation(ctx context.Context) {
+
 }
 
 func (s *Server) categoryLatestPublishedPostsFieldFunc(ctx context.Context, cat blog.Category, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
