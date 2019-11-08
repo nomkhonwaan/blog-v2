@@ -142,6 +142,7 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj.FieldFunc("categories", s.postCategoriesFieldFunc)
 	obj.FieldFunc("tags", s.postTagsFieldFunc)
 	obj.FieldFunc("featuredImage", s.postFeaturedImageFieldFunc)
+	obj.FieldFunc("attachments", s.postAttachmentsFieldFunc)
 }
 
 func (s *Server) findCategoryBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Category, error) {
@@ -297,8 +298,23 @@ func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struc
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build())
 }
 
-func (s *Server) updatePostAttachmentsMutation(ctx context.Context) {
+func (s *Server) updatePostAttachmentsMutation(ctx context.Context, args struct {
+	Slug            Slug
+	AttachmentPaths []string
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
 
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	files, err := s.service.File().FindAllByPaths(ctx, args.AttachmentPaths)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithAttachments(files).Build())
 }
 
 func (s *Server) categoryLatestPublishedPostsFieldFunc(ctx context.Context, cat blog.Category, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
@@ -330,14 +346,18 @@ func (s *Server) postTagsFieldFunc(ctx context.Context, p blog.Post) ([]blog.Tag
 }
 
 func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) (storage.File, error) {
-	file, err := s.service.File().FindByID(ctx, p.FeaturedImage.ID)
-	if err != nil {
-		if s.service.File().IsErrorRecordNotFound(err) {
-			return storage.File{}, nil
-		}
-		return storage.File{}, err
-	}
+	file, _ := s.service.File().FindByID(ctx, p.FeaturedImage.ID)
 	return file, nil
+}
+
+func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]storage.File, error) {
+	ids := make([]primitive.ObjectID, len(p.Attachments))
+
+	for i, atm := range p.Attachments {
+		ids[i] = atm.ID
+	}
+
+	return s.service.File().FindAllByIDs(ctx, ids)
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
