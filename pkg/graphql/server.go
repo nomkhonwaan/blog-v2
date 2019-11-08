@@ -95,6 +95,7 @@ func (s *Server) Schema() *graphql.Schema {
 	s.registerQuery(s.schema)
 	s.registerMutation(s.schema)
 	s.registerCategory(s.schema)
+	s.registerTag(s.schema)
 	s.registerPost(s.schema)
 
 	return s.schema.MustBuild()
@@ -124,6 +125,12 @@ func (s *Server) registerCategory(schema *schemabuilder.Schema) {
 	obj := schema.Object("Category", blog.Category{})
 
 	obj.FieldFunc("latestPublishedPosts", s.categoryLatestPublishedPostsFieldFunc)
+}
+
+func (s *Server) registerTag(schema *schemabuilder.Schema) {
+	obj := schema.Object("Tag", blog.Tag{})
+
+	obj.FieldFunc("latestPublishedPosts", s.tagLatestPublishedPostsFieldFunc)
 }
 
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
