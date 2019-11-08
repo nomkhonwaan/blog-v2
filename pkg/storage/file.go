@@ -53,11 +53,17 @@ func (f File) MarshalJSON() ([]byte, error) {
 
 // FileRepository is a repository interface of file which defines all file entity related functions
 type FileRepository interface {
-	// Create or replace (if the file name is exists)
+	// Create inserts a new file record whether exist or not
 	Create(ctx context.Context, file File) (File, error)
 
-	// Find a single file from its path
+	// FindByID returns a single file from its ID
+	FindByID(ctx context.Context, id interface{}) (File, error)
+
+	// FindByPath finds a single file from its path
 	FindByPath(ctx context.Context, path string) (File, error)
+
+	// IsRecordNotFound checks against the error object is it record not found or not
+	IsErrorRecordNotFound(err error) bool
 }
 
 // NewFileRepository returns file repository which connects to MongoDB
@@ -83,6 +89,19 @@ func (repo MongoFileRepository) Create(ctx context.Context, file File) (File, er
 	}
 
 	return file, nil
+}
+
+func (repo MongoFileRepository) IsErrorRecordNotFound(err error) bool {
+	return mongo.IsErrorRecordNotFound(err)
+}
+
+func (repo MongoFileRepository) FindByID(ctx context.Context, id interface{}) (File, error) {
+	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
+
+	var file File
+	err := r.Decode(&file)
+
+	return file, err
 }
 
 func (repo MongoFileRepository) FindByPath(ctx context.Context, path string) (File, error) {

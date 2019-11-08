@@ -141,6 +141,7 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 
 	obj.FieldFunc("categories", s.postCategoriesFieldFunc)
 	obj.FieldFunc("tags", s.postTagsFieldFunc)
+	obj.FieldFunc("featuredImage", s.postFeaturedImageFieldFunc)
 }
 
 func (s *Server) findCategoryBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Category, error) {
@@ -277,8 +278,23 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
 }
 
-func (s *Server) updatePostFeaturedImageMutation(ctx context.Context) {
+func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struct {
+	Slug              Slug
+	FeaturedImagePath string
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
 
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	file, err := s.service.File().FindByPath(ctx, args.FeaturedImagePath)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build())
 }
 
 func (s *Server) updatePostAttachmentsMutation(ctx context.Context) {
@@ -311,6 +327,17 @@ func (s *Server) postTagsFieldFunc(ctx context.Context, p blog.Post) ([]blog.Tag
 	}
 
 	return s.service.Tag().FindAllByIDs(ctx, ids)
+}
+
+func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) (storage.File, error) {
+	file, err := s.service.File().FindByID(ctx, p.FeaturedImage.ID)
+	if err != nil {
+		if s.service.File().IsErrorRecordNotFound(err) {
+			return storage.File{}, nil
+		}
+		return storage.File{}, err
+	}
+	return file, nil
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
