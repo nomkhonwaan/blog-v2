@@ -221,167 +221,103 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 	return repo.FindByID(ctx, id.(primitive.ObjectID))
 }
 
-// PostQueryBuilder is a builder for building query object that repository can use to find all posts
-type PostQueryBuilder interface {
-	// WithTitle allows to set title to the post query object
-	WithTitle(title string) PostQueryBuilder
-
-	//WithMarkdown allows to set markdown to the post query object
-	WithMarkdown(markdown string) PostQueryBuilder
-
-	// WithHTML allows to set HTML to the post query object
-	WithHTML(html string) PostQueryBuilder
-
-	// WithStatus allows to set status to the post query object
-	WithStatus(status Status) PostQueryBuilder
-
-	// WithCategory allows to set category to the post query object
-	WithCategory(category Category) PostQueryBuilder
-
-	// WithCategories allows to set categories to the post query object
-	WithCategories(categories []Category) PostQueryBuilder
-
-	// WithTag allows to set tag to the post query object
-	WithTag(tag Tag) PostQueryBuilder
-
-	// WithTags allows to set tags to the post query object
-	WithTags(tags []Tag) PostQueryBuilder
-
-	// WithFeaturedImage allows to set featured image to the post query object
-	WithFeaturedImage(featuredImage storage.File) PostQueryBuilder
-
-	// WithAttachments allows to set list of attachments to the post query object
-	WithAttachments(attachments []storage.File) PostQueryBuilder
-
-	// WithOffset allows to set returned result offset
-	WithOffset(offset int64) PostQueryBuilder
-
-	// WithLimit allows to set maximum returned result
-	WithLimit(limit int64) PostQueryBuilder
-
-	// Build returns a post query object
-	Build() PostQuery
-}
-
 // NewPostQueryBuilder returns a query builder for building post query object
-func NewPostQueryBuilder() *MongoPostQueryBuilder {
-	return &MongoPostQueryBuilder{
-		MongoPostQuery: &MongoPostQuery{
-			offset: 0,
-			limit:  5,
-		},
-	}
+func NewPostQueryBuilder() *PostQueryBuilder {
+	return &PostQueryBuilder{postQuery: PostQuery{offset: 0, limit: 5}}
 }
 
-type MongoPostQueryBuilder struct {
-	*MongoPostQuery
+// PostQueryBuilder a post object specific query builder
+type PostQueryBuilder struct {
+	postQuery PostQuery
 }
 
-func (qb *MongoPostQueryBuilder) WithTitle(title string) PostQueryBuilder {
-	qb.MongoPostQuery.title = title
+// WithTitle allows to set title to the post query object
+func (qb *PostQueryBuilder) WithTitle(title string) *PostQueryBuilder {
+	qb.postQuery.title = title
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithMarkdown(markdown string) PostQueryBuilder {
-	qb.MongoPostQuery.markdown = markdown
+// WithSlug allows to set slug to the post query object
+func (qb *PostQueryBuilder) WithSlug(slug string) *PostQueryBuilder {
+	qb.postQuery.slug = slug
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithHTML(html string) PostQueryBuilder {
-	qb.MongoPostQuery.html = html
+// WithMarkdown allows to set markdown to the post query object
+func (qb *PostQueryBuilder) WithMarkdown(markdown string) *PostQueryBuilder {
+	qb.postQuery.markdown = markdown
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithStatus(status Status) PostQueryBuilder {
-	qb.MongoPostQuery.status = status
+// WithHTML allows to set HTML to the post query object
+func (qb *PostQueryBuilder) WithHTML(html string) *PostQueryBuilder {
+	qb.postQuery.html = html
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithCategory(category Category) PostQueryBuilder {
-	qb.MongoPostQuery.category = category
+// WithStatus allows to set status to the post query object
+func (qb *PostQueryBuilder) WithStatus(status Status) *PostQueryBuilder {
+	qb.postQuery.status = status
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithCategories(categories []Category) PostQueryBuilder {
-	qb.MongoPostQuery.categories = categories
+// WithCategory allows to set category to the post query object
+func (qb *PostQueryBuilder) WithCategory(category Category) *PostQueryBuilder {
+	qb.postQuery.category = category
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithTag(tag Tag) PostQueryBuilder {
-	qb.MongoPostQuery.tag = tag
+// WithCategories allows to set list of categories to the post query object
+func (qb *PostQueryBuilder) WithCategories(categories []Category) *PostQueryBuilder {
+	qb.postQuery.categories = categories
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithTags(tags []Tag) PostQueryBuilder {
-	qb.MongoPostQuery.tags = tags
+// WithTag allows to set tag to the post query object
+func (qb *PostQueryBuilder) WithTag(tag Tag) *PostQueryBuilder {
+	qb.postQuery.tag = tag
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithFeaturedImage(featuredImage storage.File) PostQueryBuilder {
-	qb.MongoPostQuery.featuredImage = featuredImage
+// WithTags allows to set list of tags to the post query object
+func (qb *PostQueryBuilder) WithTags(tags []Tag) *PostQueryBuilder {
+	qb.postQuery.tags = tags
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithAttachments(attachments []storage.File) PostQueryBuilder {
-	qb.MongoPostQuery.attachments = attachments
+// WithFeaturedImage allows to set featured image to the post query object
+func (qb *PostQueryBuilder) WithFeaturedImage(featuredImage storage.File) *PostQueryBuilder {
+	qb.postQuery.featuredImage = featuredImage
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithOffset(offset int64) PostQueryBuilder {
-	qb.MongoPostQuery.offset = offset
+// WithAttachments allows to set list of attachments to the post query object
+func (qb *PostQueryBuilder) WithAttachments(attachments []storage.File) *PostQueryBuilder {
+	qb.postQuery.attachments = attachments
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) WithLimit(limit int64) PostQueryBuilder {
-	qb.MongoPostQuery.limit = limit
+// WithOffset allows to set offset to the post query object
+func (qb *PostQueryBuilder) WithOffset(offset int64) *PostQueryBuilder {
+	qb.postQuery.offset = offset
 	return qb
 }
 
-func (qb *MongoPostQueryBuilder) Build() PostQuery {
-	return qb.MongoPostQuery
+// WithLimit allows to set limit the post query object
+func (qb *PostQueryBuilder) WithLimit(limit int64) *PostQueryBuilder {
+	qb.postQuery.limit = limit
+	return qb
 }
 
-// PostQuery is a query object which will be used for filtering list of posts
-type PostQuery interface {
-	// Title returns a title field
-	Title() string
-
-	// Markdown returns markdown field
-	Markdown() string
-
-	// HTML returns an HTML field
-	HTML() string
-
-	// Status returns a status field
-	Status() Status
-
-	// Category returns a single category field
-	Category() Category
-
-	// Categories returns a list of categories field
-	Categories() []Category
-
-	// Tag returns a single tag field
-	Tag() Tag
-
-	// Tags returns a list of tags field
-	Tags() []Tag
-
-	// FeaturedImage returns a featured image field
-	FeaturedImage() storage.File
-
-	// Attachments returns a list of attachments field
-	Attachments() []storage.File
-
-	// Offset returns an offset of the returned result
-	Offset() int64
-
-	// Limit returns  maximum number of the returned result
-	Limit() int64
+// Build returns a post query object
+func (qb *PostQueryBuilder) Build() PostQuery {
+	return qb.postQuery
 }
 
-type MongoPostQuery struct {
+// PostQuery uses as medium for communicating between repository and data-access object (DAO)
+type PostQuery struct {
 	title         string
+	slug          string
 	markdown      string
 	html          string
 	status        Status
@@ -396,50 +332,67 @@ type MongoPostQuery struct {
 	limit  int64
 }
 
-func (q *MongoPostQuery) Title() string {
+// Title returns title value
+func (q PostQuery) Title() string {
 	return q.title
 }
 
-func (q *MongoPostQuery) Markdown() string {
+// Slug returns slug value
+func (q PostQuery) Slug() string {
+	return q.slug
+}
+
+// Markdown returns markdown value
+func (q PostQuery) Markdown() string {
 	return q.markdown
 }
 
-func (q *MongoPostQuery) HTML() string {
+// HTML returns HTML value
+func (q PostQuery) HTML() string {
 	return q.html
 }
 
-func (q *MongoPostQuery) Status() Status {
+// Status return status value
+func (q PostQuery) Status() Status {
 	return q.status
 }
 
-func (q *MongoPostQuery) Category() Category {
+// Category returns category object
+func (q PostQuery) Category() Category {
 	return q.category
 }
 
-func (q *MongoPostQuery) Categories() []Category {
+// Categories returns list of categories
+func (q PostQuery) Categories() []Category {
 	return q.categories
 }
 
-func (q *MongoPostQuery) Tag() Tag {
+// Tag returns tag object
+func (q PostQuery) Tag() Tag {
 	return q.tag
 }
 
-func (q *MongoPostQuery) Tags() []Tag {
+// Tags return list of tags
+func (q PostQuery) Tags() []Tag {
 	return q.tags
 }
 
-func (q *MongoPostQuery) FeaturedImage() storage.File {
+// FeaturedImage returns file object
+func (q PostQuery) FeaturedImage() storage.File {
 	return q.featuredImage
 }
 
-func (q *MongoPostQuery) Attachments() []storage.File {
+// Attachments returns list of files object
+func (q PostQuery) Attachments() []storage.File {
 	return q.attachments
 }
 
-func (q *MongoPostQuery) Offset() int64 {
+// Offset returns offset value
+func (q PostQuery) Offset() int64 {
 	return q.offset
 }
 
-func (q *MongoPostQuery) Limit() int64 {
+// Limit returns limit value
+func (q PostQuery) Limit() int64 {
 	return q.limit
 }

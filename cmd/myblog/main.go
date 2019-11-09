@@ -136,7 +136,7 @@ func action(ctx *cli.Context) error {
 
 	/* Facebook Sharing */
 	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	facebookMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo)
+	facebookMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo, fileRepo)
 	if err != nil {
 		return err
 	}

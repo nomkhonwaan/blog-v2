@@ -160,7 +160,7 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 			},
 		},
 		"When an error has occurred while finding the result": {
-			q:      &MongoPostQuery{},
+			q:      PostQuery{},
 			filter: bson.M{},
 			options: func() *options.FindOptions {
 				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
