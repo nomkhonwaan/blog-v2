@@ -23,6 +23,19 @@ type DiskCache struct {
 	cacheFilesPath string
 }
 
+// NewDiskCache returns new disk storage cache instance
+func NewDiskCache(cacheFilesPath string) (DiskCache, error) {
+	c := DiskCache{
+		cacheFilesPath: cacheFilesPath,
+	}
+	if !c.Exist(cacheFilesPath) {
+		if err := os.MkdirAll(cacheFilesPath, 0755); err != nil {
+			return DiskCache{}, err
+		}
+	}
+	return c, nil
+}
+
 func (c DiskCache) Exist(path string) bool {
 	_, err := os.Stat(c.cacheFilesPath + string(filepath.Separator) + path)
 	if os.IsNotExist(err) {
@@ -41,8 +54,7 @@ func (c DiskCache) Retrieve(path string) (io.Reader, error) {
 
 func (c DiskCache) Store(body io.Reader, path string) error {
 	dir := filepath.Dir(c.cacheFilesPath + string(filepath.Separator) + path)
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
+	if err := os.MkdirAll(dir, 0755); err != nil {
 		return err
 	}
 
