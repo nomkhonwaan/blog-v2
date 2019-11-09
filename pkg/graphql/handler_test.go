@@ -613,7 +613,7 @@ func TestHandler(t *testing.T) {
 			featuredImageID := primitive.NewObjectID()
 			file := storage.File{ID: featuredImageID}
 			q := query{
-				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { slug } }`,
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { featuredImage { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":              "test-post-" + id.Hex(),
 					"featuredImageSlug": fmt.Sprintf("featured-image-%s.jpg", featuredImageID.Hex()),
@@ -622,8 +622,8 @@ func TestHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build()).Return(blog.Post{}, nil)
+			fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil).Times(2)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build()).Return(blog.Post{FeaturedImage: mongo.DBRef{ID: featuredImageID}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -637,7 +637,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			featuredImageID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { slug } }`,
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { featuredImage { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":              "test-post-" + id.Hex(),
 					"featuredImageSlug": fmt.Sprintf("featured-image-%s.jpg", featuredImageID.Hex()),
@@ -663,7 +663,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			featuredImageID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { slug } }`,
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { featuredImage { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":              "test-post-" + id.Hex(),
 					"featuredImageSlug": fmt.Sprintf("featured-image-%s.jpg", featuredImageID.Hex()),
@@ -679,6 +679,88 @@ func TestHandler(t *testing.T) {
 			_ = json.NewDecoder(w.Body).Decode(&result)
 
 			assert.Equal(t, "updatePostFeaturedImage: Unauthorized", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
+	t.Run("Update post attachments", func(t *testing.T) {
+		t.Run("With successful updating post attachments", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			attachmentID := primitive.NewObjectID()
+			attachments := []storage.File{{ID: attachmentID}}
+			q := query{
+				Query: `mutation { updatePostAttachments(slug: $slug, attachmentSlugs: $attachmentSlugs) { attachments { slug } } }`,
+				Variables: map[string]interface{}{
+					"slug": "test-post-" + id.Hex(),
+					"attachmentSlugs": []string{
+						fmt.Sprintf("test-image-%s.jpg", attachmentID.Hex()),
+					},
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			fileRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{attachmentID}).Return(attachments, nil).Times(2)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithAttachments(attachments).Build()).Return(blog.Post{Attachments: []mongo.DBRef{{ID: attachmentID}}}, nil)
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When unable to retrieve list of attachments", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			attachmentID := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostAttachments(slug: $slug, attachmentSlugs: $attachmentSlugs) { attachments { slug } } }`,
+				Variables: map[string]interface{}{
+					"slug": "test-post-" + id.Hex(),
+					"attachmentSlugs": []string{
+						fmt.Sprintf("test-image-%s.jpg", attachmentID.Hex()),
+					},
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			fileRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{attachmentID}).Return(nil, errors.New("test unable to retrieve list of attachments"))
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostAttachments: test unable to retrieve list of attachments", result["errors"].([]interface{})[0].(string))
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			attachmentID := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostAttachments(slug: $slug, attachmentSlugs: $attachmentSlugs) { attachments { slug } } }`,
+				Variables: map[string]interface{}{
+					"slug": "test-post-" + id.Hex(),
+					"attachmentSlugs": []string{
+						fmt.Sprintf("test-image-%s.jpg", attachmentID.Hex()),
+					},
+				},
+			}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostAttachments: Unauthorized", result["errors"].([]interface{})[0].(string))
 		})
 	})
 }
