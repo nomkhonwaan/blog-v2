@@ -18,6 +18,7 @@ RUN make install-web && \
 COPY . .
 RUN make build-web
 FROM scratch
+VOLUME ./.cache
 COPY --from=builder /etc/ssl/certs/* /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/nomkhonwaan/myblog/bin/myblog .
 COPY --from=web-builder /opt/app-root/web/dist/ ./dist/

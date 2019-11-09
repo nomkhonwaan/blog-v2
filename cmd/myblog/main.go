@@ -54,7 +54,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "cache-files-path",
 			EnvVar: "CACHE_FILES_PATH",
-			Value:  "/var/cache/myblog",
+			Value:  "./.cache",
 		},
 		cli.StringFlag{
 			Name:   "static-files-path",

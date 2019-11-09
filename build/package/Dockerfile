@@ -7,6 +7,7 @@ RUN make install
 COPY . .
 RUN make build
 FROM scratch
+VOLUME ./.cache
 COPY --from=builder /etc/ssl/certs/* /etc/ssl/certs/
 COPY --from=builder /go/src/github.com/nomkhonwaan/myblog/bin/myblog .
 ENTRYPOINT ["/myblog"]
