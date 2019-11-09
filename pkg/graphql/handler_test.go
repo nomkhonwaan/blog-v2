@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
@@ -607,23 +608,45 @@ func TestHandler(t *testing.T) {
 
 	t.Run("Update post featured image", func(t *testing.T) {
 		t.Run("With successful updating post featured image", func(t *testing.T) {
-
-		})
-
-		t.Run("When unable to retrieve featured image by path", func(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
+			featuredImageID := primitive.NewObjectID()
+			file := storage.File{ID: featuredImageID}
 			q := query{
-				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImagePath: $featuredImagePath) { slug } }`,
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { slug } }`,
 				Variables: map[string]interface{}{
 					"slug":              "test-post-" + id.Hex(),
-					"featuredImagePath": "authorizedID/test-featured-image.jpg",
+					"featuredImageSlug": fmt.Sprintf("featured-image-%s.jpg", featuredImageID.Hex()),
 				},
 			}
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			fileRepo.EXPECT().FindByPath(gomock.Any(), "authorizedID/test-featured-image.jpg").Return(storage.File{}, errors.New("test unable to retrieve featured image"))
+			fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build()).Return(blog.Post{}, nil)
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When unable to retrieve featured image by ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			featuredImageID := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":              "test-post-" + id.Hex(),
+					"featuredImageSlug": fmt.Sprintf("featured-image-%s.jpg", featuredImageID.Hex()),
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(storage.File{}, errors.New("test unable to retrieve featured image"))
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -638,11 +661,12 @@ func TestHandler(t *testing.T) {
 		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
+			featuredImageID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImagePath: $featuredImagePath) { slug } }`,
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { slug } }`,
 				Variables: map[string]interface{}{
 					"slug":              "test-post-" + id.Hex(),
-					"featuredImagePath": "authorizedID/test-featured-image.jpg",
+					"featuredImageSlug": fmt.Sprintf("featured-image-%s.jpg", featuredImageID.Hex()),
 				},
 			}
 			w := httptest.NewRecorder()

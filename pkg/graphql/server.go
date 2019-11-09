@@ -281,7 +281,7 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 
 func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struct {
 	Slug              Slug
-	FeaturedImagePath string
+	FeaturedImageSlug storage.Slug
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
 
@@ -290,7 +290,7 @@ func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struc
 		return blog.Post{}, err
 	}
 
-	file, err := s.service.File().FindByPath(ctx, args.FeaturedImagePath)
+	file, err := s.service.File().FindByID(ctx, args.FeaturedImageSlug.MustGetID())
 	if err != nil {
 		return blog.Post{}, err
 	}
@@ -300,7 +300,7 @@ func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struc
 
 func (s *Server) updatePostAttachmentsMutation(ctx context.Context, args struct {
 	Slug            Slug
-	AttachmentPaths []string
+	AttachmentSlugs []storage.Slug
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
 
@@ -309,7 +309,12 @@ func (s *Server) updatePostAttachmentsMutation(ctx context.Context, args struct 
 		return blog.Post{}, err
 	}
 
-	files, err := s.service.File().FindAllByPaths(ctx, args.AttachmentPaths)
+	var ids []primitive.ObjectID
+	for _, slug := range args.AttachmentSlugs {
+		ids = append(ids, slug.MustGetID().(primitive.ObjectID))
+	}
+
+	files, err := s.service.File().FindAllByIDs(ctx, ids)
 	if err != nil {
 		return blog.Post{}, err
 	}

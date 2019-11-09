@@ -59,14 +59,8 @@ type FileRepository interface {
 	// FindAllByIDs returns list of files from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error)
 
-	// FindAllByPaths returns list of files from list of paths
-	FindAllByPaths(ctx context.Context, paths []string) ([]File, error)
-
 	// FindByID returns a single file from its ID
 	FindByID(ctx context.Context, id interface{}) (File, error)
-
-	// FindByPath finds a single file from its path
-	FindByPath(ctx context.Context, path string) (File, error)
 }
 
 // NewFileRepository returns file repository which connects to MongoDB
@@ -111,34 +105,8 @@ func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{
 	return files, err
 }
 
-func (repo MongoFileRepository) FindAllByPaths(ctx context.Context, paths []string) ([]File, error) {
-	cur, err := repo.col.Find(ctx, bson.M{
-		"path": bson.M{
-			"$in": paths,
-		},
-	})
-	if err != nil {
-		return nil, err
-	}
-	defer cur.Close(ctx)
-
-	var files []File
-	err = cur.Decode(&files)
-
-	return files, err
-}
-
 func (repo MongoFileRepository) FindByID(ctx context.Context, id interface{}) (File, error) {
 	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
-
-	var file File
-	err := r.Decode(&file)
-
-	return file, err
-}
-
-func (repo MongoFileRepository) FindByPath(ctx context.Context, path string) (File, error) {
-	r := repo.col.FindOne(ctx, bson.M{"path": path})
 
 	var file File
 	err := r.Decode(&file)

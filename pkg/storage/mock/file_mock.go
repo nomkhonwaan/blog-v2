@@ -64,21 +64,6 @@ func (mr *MockFileRepositoryMockRecorder) FindAllByIDs(arg0, arg1 interface{}) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllByIDs", reflect.TypeOf((*MockFileRepository)(nil).FindAllByIDs), arg0, arg1)
 }
 
-// FindAllByPaths mocks base method
-func (m *MockFileRepository) FindAllByPaths(arg0 context.Context, arg1 []string) ([]storage.File, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindAllByPaths", arg0, arg1)
-	ret0, _ := ret[0].([]storage.File)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindAllByPaths indicates an expected call of FindAllByPaths
-func (mr *MockFileRepositoryMockRecorder) FindAllByPaths(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindAllByPaths", reflect.TypeOf((*MockFileRepository)(nil).FindAllByPaths), arg0, arg1)
-}
-
 // FindByID mocks base method
 func (m *MockFileRepository) FindByID(arg0 context.Context, arg1 interface{}) (storage.File, error) {
 	m.ctrl.T.Helper()
@@ -92,19 +77,4 @@ func (m *MockFileRepository) FindByID(arg0 context.Context, arg1 interface{}) (s
 func (mr *MockFileRepositoryMockRecorder) FindByID(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByID", reflect.TypeOf((*MockFileRepository)(nil).FindByID), arg0, arg1)
-}
-
-// FindByPath mocks base method
-func (m *MockFileRepository) FindByPath(arg0 context.Context, arg1 string) (storage.File, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "FindByPath", arg0, arg1)
-	ret0, _ := ret[0].(storage.File)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// FindByPath indicates an expected call of FindByPath
-func (mr *MockFileRepositoryMockRecorder) FindByPath(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FindByPath", reflect.TypeOf((*MockFileRepository)(nil).FindByPath), arg0, arg1)
 }
