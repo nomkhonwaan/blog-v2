@@ -122,7 +122,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	/* Amazon S3 */
-	s3, err := storage.NewAmazonS3(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"), fileRepo)
+	s3, err := storage.NewCustomizedAmazonS3Client(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"))
 	if err != nil {
 		return err
 	}
@@ -148,7 +148,7 @@ func action(ctx *cli.Context) error {
 	r.Use(authMiddleware.Handler)
 
 	/* RESTfuls Endpoints */
-	storage.Register(r.PathPrefix("/api/v2/storage").Subrouter(), cache, s3, s3)
+	storage.NewHandler(cache, fileRepo, s3, s3).Register(r.PathPrefix("/api/v2/storage").Subrouter())
 
 	/* GraphQL Endpoints */
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))

@@ -20,8 +20,8 @@ type File struct {
 	// An original file name
 	FileName string `bson:"fileName" json:"fileName" graphql:"fileName"`
 
-	// A file content
-	Body []byte `bson:"-" json:"-" graphql:"-"`
+	// Valid URL string composes with file name and ID
+	Slug string `bson:"slug" json:"slug" graphql:"slug"`
 
 	// An optional field #1 for using in some storage server
 	OptionalField1 string `bson:"optionalField1" json:"optionalField1,omitempty" graphql:"optionalField1"`

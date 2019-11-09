@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/golang/mock/gomock"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/storage"
@@ -22,6 +23,7 @@ func TestFile_MarshalJSON(t *testing.T) {
 		ID:             id,
 		Path:           "/path/to/the/file.txt",
 		FileName:       "file.txt",
+		Slug:           fmt.Sprintf("file-%s.txt", id.Hex()),
 		OptionalField1: "",
 		OptionalField2: "",
 		OptionalField3: "",
@@ -34,7 +36,7 @@ func TestFile_MarshalJSON(t *testing.T) {
 
 	// Then
 	assert.Nil(t, err)
-	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"path\":\"/path/to/the/file.txt\",\"fileName\":\"file.txt\",\"createdAt\":\""+createdAt.Format(time.RFC3339Nano)+"\",\"updatedAt\":\"0001-01-01T00:00:00Z\"}", string(result))
+	assert.Equal(t, "{\"id\":\""+id.Hex()+"\",\"path\":\"/path/to/the/file.txt\",\"fileName\":\"file.txt\",\"slug\":\"file-"+id.Hex()+".txt\",\"createdAt\":\""+createdAt.Format(time.RFC3339Nano)+"\",\"updatedAt\":\"0001-01-01T00:00:00Z\"}", string(result))
 }
 
 func TestMongoFileRepository_Create(t *testing.T) {

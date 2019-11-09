@@ -7,7 +7,6 @@ package mock_storage
 import (
 	context "context"
 	gomock "github.com/golang/mock/gomock"
-	storage "github.com/nomkhonwaan/myblog/pkg/storage"
 	io "io"
 	reflect "reflect"
 )
@@ -50,10 +49,10 @@ func (mr *MockCacheMockRecorder) Exist(arg0 interface{}) *gomock.Call {
 }
 
 // Retrieve mocks base method
-func (m *MockCache) Retrieve(arg0 string) (storage.File, error) {
+func (m *MockCache) Retrieve(arg0 string) (io.Reader, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Retrieve", arg0)
-	ret0, _ := ret[0].(storage.File)
+	ret0, _ := ret[0].(io.Reader)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -65,17 +64,17 @@ func (mr *MockCacheMockRecorder) Retrieve(arg0 interface{}) *gomock.Call {
 }
 
 // Store mocks base method
-func (m *MockCache) Store(arg0 storage.File) error {
+func (m *MockCache) Store(arg0 io.Reader, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Store", arg0)
+	ret := m.ctrl.Call(m, "Store", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Store indicates an expected call of Store
-func (mr *MockCacheMockRecorder) Store(arg0 interface{}) *gomock.Call {
+func (mr *MockCacheMockRecorder) Store(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCache)(nil).Store), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Store", reflect.TypeOf((*MockCache)(nil).Store), arg0, arg1)
 }
 
 // MockDownloader is a mock of Downloader interface
@@ -102,10 +101,10 @@ func (m *MockDownloader) EXPECT() *MockDownloaderMockRecorder {
 }
 
 // Download mocks base method
-func (m *MockDownloader) Download(arg0 context.Context, arg1 string) (storage.File, error) {
+func (m *MockDownloader) Download(arg0 context.Context, arg1 string) (io.Reader, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Download", arg0, arg1)
-	ret0, _ := ret[0].(storage.File)
+	ret0, _ := ret[0].(io.Reader)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -140,12 +139,11 @@ func (m *MockUploader) EXPECT() *MockUploaderMockRecorder {
 }
 
 // Upload mocks base method
-func (m *MockUploader) Upload(arg0 context.Context, arg1 string, arg2 io.Reader) (storage.File, error) {
+func (m *MockUploader) Upload(arg0 context.Context, arg1 string, arg2 io.Reader) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Upload", arg0, arg1, arg2)
-	ret0, _ := ret[0].(storage.File)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // Upload indicates an expected call of Upload

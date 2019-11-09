@@ -12,23 +12,65 @@ import (
 	. "github.com/nomkhonwaan/myblog/pkg/storage"
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"testing"
 )
+
+func TestSlug_GetID(t *testing.T) {
+	// Given
+	id := primitive.NewObjectID()
+	slug := Slug("test-featured-image-" + id.Hex() + ".jpg")
+
+	// When
+	result, err := slug.GetID()
+
+	// Then
+	assert.Nil(t, err)
+	assert.Equal(t, id, result)
+}
+
+func TestSlug_MustGetID(t *testing.T) {
+	t.Run("With valid ObjectID string", func(t *testing.T) {
+		// Given
+		id := primitive.NewObjectID()
+		slug := Slug("test-featured-image-" + id.Hex() + ".jpg")
+
+		// When
+		result := slug.MustGetID()
+
+		// Then
+		assert.Equal(t, id, result)
+	})
+
+	t.Run("With invalid ObjectID string", func(t *testing.T) {
+		// Given
+		slug := Slug("test-featured-image-invalid-object-id.jpg")
+
+		// When
+		result := slug.MustGetID()
+
+		// Then
+		assert.IsType(t, primitive.ObjectID{}, result)
+		assert.NotEmpty(t, result.(primitive.ObjectID).Hex())
+	})
+}
 
 func TestHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cache := mock_storage.NewMockCache(ctrl)
 	downloader := mock_storage.NewMockDownloader(ctrl)
 	uploader := mock_storage.NewMockUploader(ctrl)
+	cache := mock_storage.NewMockCache(ctrl)
+	fileRepo := mock_storage.NewMockFileRepository(ctrl)
 	router := mux.NewRouter()
 
-	Register(router.PathPrefix("/v1/storage").Subrouter(), cache, downloader, uploader)
+	NewHandler(cache, fileRepo, downloader, uploader).Register(router.PathPrefix("/v1/storage").Subrouter())
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}
@@ -60,7 +102,22 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		uploader.EXPECT().Upload(gomock.Any(), "authorizedID/"+fileName, gomock.Any()).Return(File{}, nil)
+		uploader.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, path string, _ io.Reader) error {
+			id, err := Slug(path).GetID()
+
+			assert.Nil(t, err)
+			assert.False(t, id.(primitive.ObjectID).IsZero())
+
+			fileRepo.EXPECT().Create(gomock.Any(), File{
+				ID:             id.(primitive.ObjectID),
+				Path:           path,
+				FileName:       "test.txt",
+				Slug:           filepath.Base(path),
+				OptionalField1: "CustomizedAmazonS3Client",
+			}).Return(File{}, nil)
+
+			return nil
+		})
 
 		// When
 		router.ServeHTTP(w, r)
@@ -111,7 +168,7 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		uploader.EXPECT().Upload(gomock.Any(), "authorizedID/"+fileName, gomock.Any()).Return(File{}, errors.New("test upload file error"))
+		uploader.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("test upload file error"))
 
 		// When
 		router.ServeHTTP(w, r)
