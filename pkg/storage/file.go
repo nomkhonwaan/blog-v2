@@ -20,8 +20,8 @@ type File struct {
 	// An original file name
 	FileName string `bson:"fileName" json:"fileName" graphql:"fileName"`
 
-	// A file content
-	Body []byte `bson:"-" json:"-" graphql:"-"`
+	// Valid URL string composes with file name and ID
+	Slug string `bson:"slug" json:"slug" graphql:"slug"`
 
 	// An optional field #1 for using in some storage server
 	OptionalField1 string `bson:"optionalField1" json:"optionalField1,omitempty" graphql:"optionalField1"`
@@ -53,11 +53,14 @@ func (f File) MarshalJSON() ([]byte, error) {
 
 // FileRepository is a repository interface of file which defines all file entity related functions
 type FileRepository interface {
-	// Create or replace (if the file name is exists)
+	// Create inserts a new file record whether exist or not
 	Create(ctx context.Context, file File) (File, error)
 
-	// Find a single file from its path
-	FindByPath(ctx context.Context, path string) (File, error)
+	// FindAllByIDs returns list of files from list of IDs
+	FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error)
+
+	// FindByID returns a single file from its ID
+	FindByID(ctx context.Context, id interface{}) (File, error)
 }
 
 // NewFileRepository returns file repository which connects to MongoDB
@@ -85,8 +88,25 @@ func (repo MongoFileRepository) Create(ctx context.Context, file File) (File, er
 	return file, nil
 }
 
-func (repo MongoFileRepository) FindByPath(ctx context.Context, path string) (File, error) {
-	r := repo.col.FindOne(ctx, bson.M{"path": path})
+func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error) {
+	cur, err := repo.col.Find(ctx, bson.M{
+		"_id": bson.M{
+			"$in": ids.([]primitive.ObjectID),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	var files []File
+	err = cur.Decode(&files)
+
+	return files, err
+}
+
+func (repo MongoFileRepository) FindByID(ctx context.Context, id interface{}) (File, error) {
+	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
 
 	var file File
 	err := r.Decode(&file)

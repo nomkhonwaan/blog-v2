@@ -95,6 +95,7 @@ func (s *Server) Schema() *graphql.Schema {
 	s.registerQuery(s.schema)
 	s.registerMutation(s.schema)
 	s.registerCategory(s.schema)
+	s.registerTag(s.schema)
 	s.registerPost(s.schema)
 
 	return s.schema.MustBuild()
@@ -117,7 +118,10 @@ func (s *Server) registerMutation(schema *schemabuilder.Schema) {
 	obj.FieldFunc("createPost", s.createPostMutation)
 	obj.FieldFunc("updatePostTitle", s.updatePostTitleMutation)
 	obj.FieldFunc("updatePostContent", s.updatePostContentMutation)
+	obj.FieldFunc("updatePostCategories", s.updatePostCategoriesMutation)
 	obj.FieldFunc("updatePostTags", s.updatePostTagsMutation)
+	obj.FieldFunc("updatePostFeaturedImage", s.updatePostFeaturedImageMutation)
+	obj.FieldFunc("updatePostAttachments", s.updatePostAttachmentsMutation)
 }
 
 func (s *Server) registerCategory(schema *schemabuilder.Schema) {
@@ -126,11 +130,19 @@ func (s *Server) registerCategory(schema *schemabuilder.Schema) {
 	obj.FieldFunc("latestPublishedPosts", s.categoryLatestPublishedPostsFieldFunc)
 }
 
+func (s *Server) registerTag(schema *schemabuilder.Schema) {
+	obj := schema.Object("Tag", blog.Tag{})
+
+	obj.FieldFunc("latestPublishedPosts", s.tagLatestPublishedPostsFieldFunc)
+}
+
 func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj := schema.Object("Post", blog.Post{})
 
 	obj.FieldFunc("categories", s.postCategoriesFieldFunc)
 	obj.FieldFunc("tags", s.postTagsFieldFunc)
+	obj.FieldFunc("featuredImage", s.postFeaturedImageFieldFunc)
+	obj.FieldFunc("attachments", s.postAttachmentsFieldFunc)
 }
 
 func (s *Server) findCategoryBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Category, error) {
@@ -219,6 +231,30 @@ func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
+func (s *Server) updatePostCategoriesMutation(ctx context.Context, args struct {
+	Slug          Slug
+	CategorySlugs []Slug
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	var ids []primitive.ObjectID
+	for _, slug := range args.CategorySlugs {
+		ids = append(ids, slug.MustGetID().(primitive.ObjectID))
+	}
+
+	categories, err := s.service.Category().FindAllByIDs(ctx, ids)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithCategories(categories).Build())
+}
+
 func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	Slug     Slug
 	TagSlugs []Slug
@@ -241,6 +277,49 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	}
 
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
+}
+
+func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struct {
+	Slug              Slug
+	FeaturedImageSlug storage.Slug
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	file, err := s.service.File().FindByID(ctx, args.FeaturedImageSlug.MustGetID())
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build())
+}
+
+func (s *Server) updatePostAttachmentsMutation(ctx context.Context, args struct {
+	Slug            Slug
+	AttachmentSlugs []storage.Slug
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	var ids []primitive.ObjectID
+	for _, slug := range args.AttachmentSlugs {
+		ids = append(ids, slug.MustGetID().(primitive.ObjectID))
+	}
+
+	files, err := s.service.File().FindAllByIDs(ctx, ids)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithAttachments(files).Build())
 }
 
 func (s *Server) categoryLatestPublishedPostsFieldFunc(ctx context.Context, cat blog.Category, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
@@ -269,6 +348,21 @@ func (s *Server) postTagsFieldFunc(ctx context.Context, p blog.Post) ([]blog.Tag
 	}
 
 	return s.service.Tag().FindAllByIDs(ctx, ids)
+}
+
+func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) (storage.File, error) {
+	file, _ := s.service.File().FindByID(ctx, p.FeaturedImage.ID)
+	return file, nil
+}
+
+func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]storage.File, error) {
+	ids := make([]primitive.ObjectID, len(p.Attachments))
+
+	for i, atm := range p.Attachments {
+		ids[i] = atm.ID
+	}
+
+	return s.service.File().FindAllByIDs(ctx, ids)
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
