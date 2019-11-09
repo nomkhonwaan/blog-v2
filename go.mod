@@ -15,7 +15,6 @@ require (
 	github.com/google/go-cmp v0.3.1 // indirect
 	github.com/gorilla/mux v1.7.3
 	github.com/gorilla/websocket v1.4.1 // indirect
-	github.com/gosimple/slug v1.9.0
 	github.com/graphql-go/graphql v0.7.8 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
@@ -34,6 +33,6 @@ require (
 	go.mongodb.org/mongo-driver v1.1.2
 	golang.org/x/crypto v0.0.0-20191011191535-87dc89f01550 // indirect
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e // indirect
-	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037
+	golang.org/x/sys v0.0.0-20191026070338-33540a1f6037 // indirect
 	golang.org/x/text v0.3.2 // indirect
 )
