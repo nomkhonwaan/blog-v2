@@ -12,6 +12,7 @@ import (
 	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
+	"github.com/nomkhonwaan/myblog/pkg/storage"
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -306,7 +307,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Update post title", func(t *testing.T) {
-		t.Run("When successful updating post title", func(t *testing.T) {
+		t.Run("With successful updating post title", func(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
 			title := "Test post"
@@ -404,7 +405,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Update post content", func(t *testing.T) {
-		t.Run("When successful updating post content", func(t *testing.T) {
+		t.Run("With successful updating post content", func(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
 			markdown := "test"
@@ -453,7 +454,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Update post categories", func(t *testing.T) {
-		t.Run("When successful updating post categories", func(t *testing.T) {
+		t.Run("With successful updating post categories", func(t *testing.T) {
 			id := primitive.NewObjectID()
 			catID := primitive.NewObjectID()
 			categories := []blog.Category{{ID: catID}}
@@ -529,7 +530,7 @@ func TestHandler(t *testing.T) {
 	})
 
 	t.Run("Update post tags", func(t *testing.T) {
-		t.Run("When successful updating post tags", func(t *testing.T) {
+		t.Run("With successful updating post tags", func(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
 			tagID := primitive.NewObjectID()
@@ -601,6 +602,59 @@ func TestHandler(t *testing.T) {
 			_ = json.NewDecoder(w.Body).Decode(&result)
 
 			assert.Equal(t, "updatePostTags: Unauthorized", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
+	t.Run("Update post featured image", func(t *testing.T) {
+		t.Run("With successful updating post featured image", func(t *testing.T) {
+
+		})
+
+		t.Run("When unable to retrieve featured image by path", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImagePath: $featuredImagePath) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":              "test-post-" + id.Hex(),
+					"featuredImagePath": "authorizedID/test-featured-image.jpg",
+				},
+			}
+			w := httptest.NewRecorder()
+
+			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			fileRepo.EXPECT().FindByPath(gomock.Any(), "authorizedID/test-featured-image.jpg").Return(storage.File{}, errors.New("test unable to retrieve featured image"))
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostFeaturedImage: test unable to retrieve featured image", result["errors"].([]interface{})[0].(string))
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImagePath: $featuredImagePath) { slug } }`,
+				Variables: map[string]interface{}{
+					"slug":              "test-post-" + id.Hex(),
+					"featuredImagePath": "authorizedID/test-featured-image.jpg",
+				},
+			}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostFeaturedImage: Unauthorized", result["errors"].([]interface{})[0].(string))
 		})
 	})
 }
