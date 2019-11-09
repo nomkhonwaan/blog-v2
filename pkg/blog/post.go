@@ -164,6 +164,9 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 	if title := q.Title(); title != "" {
 		update["$set"].(bson.M)["title"] = title
 	}
+	if slug := q.Slug(); slug != "" {
+		update["$set"].(bson.M)["slug"] = slug
+	}
 	if markdown := q.Markdown(); markdown != "" {
 		update["$set"].(bson.M)["markdown"] = markdown
 	}

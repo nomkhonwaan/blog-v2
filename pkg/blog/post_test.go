@@ -9,6 +9,7 @@ import (
 	. "github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
+	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -245,6 +246,8 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	repo := NewPostRepository(col)
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
+	featuredImageID := primitive.NewObjectID()
+	attachmentID := primitive.NewObjectID()
 
 	tests := map[string]struct {
 		q      PostQuery
@@ -262,6 +265,11 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"title": "Test update post title"}},
 		},
+		"When updating post's slug": {
+			q:      NewPostQueryBuilder().WithSlug("test-update-post-slug").Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"slug": "test-update-post-slug"}},
+		},
 		"When updating post's content": {
 			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
 			id:     primitive.NewObjectID(),
@@ -276,6 +284,16 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			q:      NewPostQueryBuilder().WithTags([]Tag{{ID: tagID, Name: "Blog", Slug: "blog-" + tagID.Hex()}}).Build(),
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"tags": bson.A{mongo.DBRef{Ref: "tags", ID: tagID}}}},
+		},
+		"When updating post's featured image": {
+			q:      NewPostQueryBuilder().WithFeaturedImage(storage.File{ID: featuredImageID, Slug: fmt.Sprintf("test-featured-image-%s.jpg", featuredImageID.Hex())}).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"featuredImage": mongo.DBRef{Ref: "files", ID: featuredImageID}}},
+		},
+		"When updating post's attachments": {
+			q:      NewPostQueryBuilder().WithAttachments([]storage.File{{ID: attachmentID}}).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"attachments": bson.A{mongo.DBRef{Ref: "files", ID: attachmentID}}}},
 		},
 		"When an error has occurred while updating the post": {
 			q:      NewPostQueryBuilder().Build(),
@@ -303,72 +321,3 @@ func TestMongoPostRepository_Save(t *testing.T) {
 		})
 	}
 }
-
-func TestNewPostQueryBuilder(t *testing.T) {
-	// Given
-
-	// When
-	qb := NewPostQueryBuilder()
-
-	// Then
-	q := qb.Build()
-	assert.Equal(t, int64(0), q.Offset())
-	assert.Equal(t, int64(5), q.Limit())
-}
-
-func TestPostQueryBuilder_WithStatus(t *testing.T) {
-	// Given
-
-	// When
-	qb := NewPostQueryBuilder().WithStatus(Published)
-
-	// Then
-	q := qb.Build()
-	assert.Equal(t, Published, q.Status())
-}
-
-func TestPostQueryBuilder_WithOffset(t *testing.T) {
-	// Given
-
-	// When
-	qb := NewPostQueryBuilder().WithOffset(99)
-
-	// Then
-	q := qb.Build()
-	assert.Equal(t, int64(99), q.Offset())
-}
-
-func TestPostQueryBuilder_WithLimit(t *testing.T) {
-	// Given
-
-	// When
-	qb := NewPostQueryBuilder().WithLimit(99)
-
-	// Then
-	q := qb.Build()
-	assert.Equal(t, int64(99), q.Limit())
-}
-
-func TestPostQueryBuilder_Build(t *testing.T) {
-	// Given
-	qb := NewPostQueryBuilder()
-
-	// When
-	q := qb.Build()
-
-	// Then
-	assert.Equal(t, int64(0), q.Offset())
-	assert.Equal(t, int64(5), q.Limit())
-}
-
-//func TestPostQuery_Status(t *testing.T) {
-//
-//}
-//
-//func TestPostQuery_Offset(t *testing.T) {
-//
-//}
-//
-//func TestPostQuery_Limit(t *testing.T) {
-//
-//}
