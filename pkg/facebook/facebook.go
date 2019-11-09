@@ -96,7 +96,7 @@ func (mw CrawlerMiddleware) Handler(next http.Handler) http.Handler {
 func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, id interface{}) {
 	p, err := mw.service.Post().FindByID(r.Context(), id)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
 		return
 	}
 
@@ -127,7 +127,5 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		FeaturedImage: featuredImage,
 	}
 
-	if err = mw.template.Execute(w, data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	_ = mw.template.Execute(w, data)
 }
