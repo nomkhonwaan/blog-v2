@@ -43,7 +43,10 @@ export class PostTitleComponent extends PostComponent implements OnInit {
   href: string[];
 
   ngOnInit(): void {
-    const publishedAt: Date = new Date(this.post.publishedAt);
+    const publishedAt: Date = new Date(
+      new Date('2016-04-01T17:00:00Z')
+        .toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
+    );
 
     if (this.link) {
       this.href = [
