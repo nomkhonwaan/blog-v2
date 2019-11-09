@@ -3,6 +3,8 @@ package graphql
 import (
 	"context"
 	"errors"
+	"fmt"
+	slugify "github.com/gosimple/slug"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
@@ -213,7 +215,8 @@ func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
 		return blog.Post{}, err
 	}
 
-	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).Build())
+	slug := fmt.Sprintf("%s-%s", slugify.Make(args.Title), id.(primitive.ObjectID).Hex())
+	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).WithSlug(slug).Build())
 }
 
 func (s *Server) updatePostContentMutation(ctx context.Context, args struct {

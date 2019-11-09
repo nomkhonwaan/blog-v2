@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
+	slugify "github.com/gosimple/slug"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
@@ -164,7 +165,7 @@ func TestHandler(t *testing.T) {
 				Tags:       []mongo.DBRef{{ID: tagID}},
 			}
 			q := query{
-				Query: `{ post(slug: $slug) { slug categories { slug } tags { slug } } }`,
+				Query: `{ post(slug: $slug) { slug } }`,
 				Variables: map[string]interface{}{
 					"slug": slug,
 				},
@@ -172,8 +173,6 @@ func TestHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
-			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(nil, nil)
-			tagRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(nil, nil)
 
 			// When
 			h.ServeHTTP(w, newGraphQLRequest(q))
@@ -312,8 +311,9 @@ func TestHandler(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
 			title := "Test post"
+			slug := fmt.Sprintf("%s-%s", slugify.Make(title), id.Hex())
 			q := query{
-				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { slug } }`,
+				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { title slug } }`,
 				Variables: map[string]interface{}{
 					"slug":  "test-post-" + id.Hex(),
 					"title": title,
@@ -322,7 +322,7 @@ func TestHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTitle(title).Build()).Return(blog.Post{}, nil)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTitle(title).WithSlug(slug).Build()).Return(blog.Post{}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -336,7 +336,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			title := "Test post"
 			q := query{
-				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { slug } }`,
+				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { title slug } }`,
 				Variables: map[string]interface{}{
 					"slug":  "test-post-" + id.Hex(),
 					"title": title,
@@ -359,7 +359,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			title := "Test post"
 			q := query{
-				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { slug } }`,
+				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { title slug } }`,
 				Variables: map[string]interface{}{
 					"slug":  "test-post-" + id.Hex(),
 					"title": title,
@@ -384,7 +384,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			title := "Test post"
 			q := query{
-				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { slug } }`,
+				Query: `mutation { updatePostTitle(slug: $slug, title: $title) { title slug } }`,
 				Variables: map[string]interface{}{
 					"slug":  "test-post-" + id.Hex(),
 					"title": title,
@@ -412,7 +412,7 @@ func TestHandler(t *testing.T) {
 			markdown := "test"
 			html := "<p>test</p>\n"
 			q := query{
-				Query: `mutation { updatePostContent(slug: $slug, markdown: $markdown) { slug } }`,
+				Query: `mutation { updatePostContent(slug: $slug, markdown: $markdown) { html markdown } }`,
 				Variables: map[string]interface{}{
 					"slug":     "test-post-" + id.Hex(),
 					"markdown": markdown,
@@ -435,7 +435,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			markdown := "test"
 			q := query{
-				Query: `mutation { updatePostContent(slug: $slug, markdown: $markdown) { slug } }`,
+				Query: `mutation { updatePostContent(slug: $slug, markdown: $markdown) { html markdown } }`,
 				Variables: map[string]interface{}{
 					"slug":     "test-post-" + id.Hex(),
 					"markdown": markdown,
@@ -460,7 +460,7 @@ func TestHandler(t *testing.T) {
 			catID := primitive.NewObjectID()
 			categories := []blog.Category{{ID: catID}}
 			q := query{
-				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { slug } }`,
+				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { categories { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":          "test-post-" + id.Hex(),
 					"categorySlugs": []string{"test-category-" + catID.Hex()},
@@ -469,8 +469,8 @@ func TestHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(categories, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithCategories(categories).Build()).Return(blog.Post{}, nil)
+			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(categories, nil).Times(2)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithCategories(categories).Build()).Return(blog.Post{Categories: []mongo.DBRef{{ID: catID}}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -485,7 +485,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			catID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { slug } }`,
+				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { categories { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":          "test-post-" + id.Hex(),
 					"categorySlugs": []string{"test-category-" + catID.Hex()},
@@ -511,7 +511,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			catID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { slug } }`,
+				Query: `mutation { updatePostCategories(slug: $slug, categorySlugs: $categorySlugs) { categories { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":          "test-post-" + id.Hex(),
 					"categorySlugs": []string{"test-category-" + catID.Hex()},
@@ -537,7 +537,7 @@ func TestHandler(t *testing.T) {
 			tagID := primitive.NewObjectID()
 			tags := []blog.Tag{{ID: tagID}}
 			q := query{
-				Query: `mutation { updatePostTags(slug: $slug, tagSlugs: $tagSlugs) { slug } }`,
+				Query: `mutation { updatePostTags(slug: $slug, tagSlugs: $tagSlugs) { tags { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":     "test-post-" + id.Hex(),
 					"tagSlugs": []string{"test-tag-" + tagID.Hex()},
@@ -546,8 +546,8 @@ func TestHandler(t *testing.T) {
 			w := httptest.NewRecorder()
 
 			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			tagRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(tags, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTags(tags).Build()).Return(blog.Post{}, nil)
+			tagRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(tags, nil).Times(2)
+			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTags(tags).Build()).Return(blog.Post{Tags: []mongo.DBRef{{ID: tagID}}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -561,7 +561,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			tagID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostTags(slug: $slug, tagSlugs: $tagSlugs) { slug } }`,
+				Query: `mutation { updatePostTags(slug: $slug, tagSlugs: $tagSlugs) { tags { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":     "test-post-" + id.Hex(),
 					"tagSlugs": []string{"test-tag-" + tagID.Hex()},
@@ -587,7 +587,7 @@ func TestHandler(t *testing.T) {
 			id := primitive.NewObjectID()
 			tagID := primitive.NewObjectID()
 			q := query{
-				Query: `mutation { updatePostTags(slug: $slug, tagSlugs: $tagSlugs) { slug } }`,
+				Query: `mutation { updatePostTags(slug: $slug, tagSlugs: $tagSlugs) { tags { slug } } }`,
 				Variables: map[string]interface{}{
 					"slug":     "test-post-" + id.Hex(),
 					"tagSlugs": []string{"test-tag-" + tagID.Hex()},
