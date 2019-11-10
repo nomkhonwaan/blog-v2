@@ -97,8 +97,13 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	path := file.Path
-	var body io.Reader
+	var (
+		length int64
+		body   io.Reader
+
+		path = file.Path
+	)
+
 	if h.service.Cache().Exist(path) {
 		body, err = h.service.Cache().Retrieve(path)
 		if err != nil {
@@ -112,12 +117,20 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 			h.responseError(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		if err = h.service.Cache().Store(body, path); err != nil {
-			logrus.Errorf("unable to store file on %s: %s", path, err)
-		}
+
+		rdr, wtr := io.Pipe()
+		body = io.TeeReader(body, wtr)
+
+		go func(wtr io.WriteCloser, rdr io.Reader) {
+			defer wtr.Close()
+
+			if err = h.service.Cache().Store(rdr, path); err != nil {
+				logrus.Errorf("unable to store file on %s: %s", path, err)
+			}
+		}(wtr, rdr)
 	}
 
-	length, _ := io.Copy(w, body)
+	length, _ = io.Copy(w, body)
 
 	w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(path)))
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
