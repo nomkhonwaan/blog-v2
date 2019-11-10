@@ -12,7 +12,8 @@ import (
 )
 
 var (
-	bangkokTimeZone, _ = time.LoadLocation("Asia/Bangkok")
+	// DefaultTimeZone uses to format date-time in the specific time zone, default is Asia/Bangkok which is GMT + 7
+	DefaultTimeZone, _ = time.LoadLocation("Asia/Bangkok")
 )
 
 // IsFacebookCrawlerRequest does checking the request user-agent strings.
@@ -120,7 +121,7 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		Description   string
 		FeaturedImage string
 	}{
-		URL:           "https://beta.nomkhonwaan.com/" + p.PublishedAt.In(bangkokTimeZone).Format("2006/1/2") + "/" + p.Slug,
+		URL:           "https://beta.nomkhonwaan.com/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
 		Type:          "article",
 		Title:         p.Title,
 		Description:   strings.Split(p.Markdown, "\n")[0],

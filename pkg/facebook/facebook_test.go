@@ -130,7 +130,7 @@ func TestCrawlerMiddleware_Handler(t *testing.T) {
 		// Given
 		id := primitive.NewObjectID()
 		featuredImageID := primitive.NewObjectID()
-		now := time.Now()
+		now := time.Now().In(DefaultTimeZone)
 		post := blog.Post{
 			ID:            id,
 			Title:         "Test post",
