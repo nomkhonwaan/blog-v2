@@ -74,6 +74,13 @@ func main() {
 			Value:  "./dist/web",
 		},
 
+		/* Database Options */
+		cli.StringFlag{
+			Name:   "mongodb-uri",
+			EnvVar: "MONGODB_URI",
+			Value:  "mongodb://localhost/nomkhonwaan_com",
+		},
+
 		/* Amazon S3 Options */
 		cli.StringFlag{
 			Name:   "amazon-s3-access-key",
@@ -84,14 +91,7 @@ func main() {
 			EnvVar: "AMAZON_S3_SECRET_KEY",
 		},
 
-		/* Database Options */
-		cli.StringFlag{
-			Name:   "mongodb-uri",
-			EnvVar: "MONGODB_URI",
-			Value:  "mongodb://localhost/nomkhonwaan_com",
-		},
-
-		/* Authentication Options */
+		/* Auth0 Options */
 		cli.StringFlag{
 			Name:   "auth0-audience",
 			EnvVar: "AUTH0_AUDIENCE",
@@ -106,6 +106,12 @@ func main() {
 			Name:   "auth0-jwks-uri",
 			EnvVar: "AUTH0_JWKS_URI",
 			Value:  "https://nomkhonwaan.auth0.com/.well-known/jwks.json",
+		},
+
+		/* Facebook Options */
+		cli.StringFlag{
+			Name:   "facebook-app-access-token",
+			EnvVar: "FACEBOOK_APP_ACCESS_TOKEN",
 		},
 	}
 	app.Action = action
