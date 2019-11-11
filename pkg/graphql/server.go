@@ -27,6 +27,9 @@ func (s Slug) GetID() (interface{}, error) {
 	return primitive.ObjectIDFromHex(sl[len(sl)-1])
 }
 
+// BlogService is an alias type to the `blog.Service` for avoiding name conflict
+type BlogService struct{ blog.Service }
+
 // MustGetID always return ID from the slug string
 func (s Slug) MustGetID() interface{} {
 	if id, err := s.GetID(); err == nil {
@@ -37,48 +40,31 @@ func (s Slug) MustGetID() interface{} {
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
-	// A Facebook client
-	Facebook() facebook.Client
+	/* Facebook Client */
+	FBClient() facebook.Client
 
-	// A Category repository
-	Category() blog.CategoryRepository
-
-	// A File repository
+	/* Storage Service */
 	File() storage.FileRepository
 
-	// A Post repository
+	/* Blog Service */
+	Category() blog.CategoryRepository
 	Post() blog.PostRepository
-
-	// A Tag repository
 	Tag() blog.TagRepository
 }
 
 type service struct {
+	BlogService
+
 	fbClient facebook.Client
-	catRepo  blog.CategoryRepository
 	fileRepo storage.FileRepository
-	postRepo blog.PostRepository
-	tagRepo  blog.TagRepository
 }
 
-func (s service) Facebook() facebook.Client {
+func (s service) FBClient() facebook.Client {
 	return s.fbClient
-}
-
-func (s service) Category() blog.CategoryRepository {
-	return s.catRepo
 }
 
 func (s service) File() storage.FileRepository {
 	return s.fileRepo
-}
-
-func (s service) Post() blog.PostRepository {
-	return s.postRepo
-}
-
-func (s service) Tag() blog.TagRepository {
-	return s.tagRepo
 }
 
 // Server is our GraphQL server
@@ -90,20 +76,12 @@ type Server struct {
 }
 
 // NewServer returns new GraphQL server
-func NewServer(
-	fbClient facebook.Client,
-	catRepo blog.CategoryRepository,
-	fileRepo storage.FileRepository,
-	postRepo blog.PostRepository,
-	tagRepo blog.TagRepository,
-) *Server {
+func NewServer(blogService BlogService, fbClient facebook.Client, fileRepo storage.FileRepository) *Server {
 	return &Server{
 		service: service{
-			fbClient: fbClient,
-			catRepo:  catRepo,
-			fileRepo: fileRepo,
-			postRepo: postRepo,
-			tagRepo:  tagRepo,
+			BlogService: blogService,
+			fbClient:    fbClient,
+			fileRepo:    fileRepo,
 		},
 		schema: schemabuilder.NewSchema(),
 	}
@@ -453,7 +431,7 @@ func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]s
 
 func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) facebook.Engagement {
 	id := "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug
-	url, err := s.service.Facebook().GetURL(id)
+	url, err := s.service.FBClient().GetURL(id)
 	if err != nil {
 		logrus.Errorf("an error has occurred while getting URL from Facebook Graph API: %s", err)
 	}

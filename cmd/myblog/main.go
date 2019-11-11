@@ -130,10 +130,15 @@ func action(ctx *cli.Context) error {
 	db := client.Database("nomkhonwaan_com")
 
 	/* Repositories */
-	catRepo := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
 	fileRepo := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
 	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
-	tagRepo := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
+
+	/* Blog Service */
+	blogService := blog.Service{
+		CategoryRepository: blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories"))),
+		PostRepository:     blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts"))),
+		TagRepository:      blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags"))),
+	}
 
 	/* Disk Storage Cache */
 	cache, err := storage.NewDiskCache(ctx.String("cache-files-path"))
@@ -158,7 +163,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	/* GraphQL Schema */
-	schema := graphql.NewServer(fbClient, catRepo, fileRepo, postRepo, tagRepo).Schema()
+	schema := graphql.NewServer(graphql.BlogService{Service: blogService}, fbClient, fileRepo).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
 	/* Gorilla Routes */

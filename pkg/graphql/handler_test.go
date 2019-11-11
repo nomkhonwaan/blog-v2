@@ -41,7 +41,12 @@ func TestHandler(t *testing.T) {
 		tagRepo   = mock_blog.NewMockTagRepository(ctrl)
 		transport = mock_http.NewMockRoundTripper(ctrl)
 
-		fbClient, _ = facebook.NewClient("", "", "", postRepo, fileRepo, transport)
+		blogService = blog.Service{
+			CategoryRepository: catRepo,
+			PostRepository:     postRepo,
+			TagRepository:      tagRepo,
+		}
+		fbClient, _ = facebook.NewClient("", "", "", fileRepo, postRepo, transport)
 	)
 
 	newGraphQLRequest := func(q query) *http.Request {
@@ -57,7 +62,7 @@ func TestHandler(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(fbClient, catRepo, fileRepo, postRepo, tagRepo)
+	server := NewServer(BlogService{Service: blogService}, fbClient, fileRepo)
 	h := Handler(server.Schema())
 
 	t.Run("With successful querying category by its ID", func(t *testing.T) {
