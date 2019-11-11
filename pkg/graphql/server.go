@@ -147,28 +147,58 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj.FieldFunc("attachments", s.postAttachmentsFieldFunc)
 }
 
+// query {
+//	category(slug: sting!) {
+//		...
+//	}
+// }
 func (s *Server) findCategoryBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Category, error) {
 	id := args.Slug.MustGetID()
 	return s.service.Category().FindByID(ctx, id)
 }
 
+// query {
+//	categories {
+//		...
+//	}
+// }
 func (s *Server) findAllCategoriesQuery(ctx context.Context) ([]blog.Category, error) {
 	return s.service.Category().FindAll(ctx)
 }
 
+// query {
+//	tag(slug: string!) {
+//		...
+//	}
+// }
 func (s *Server) findTagBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Tag, error) {
 	id := args.Slug.MustGetID()
 	return s.service.Tag().FindByID(ctx, id)
 }
 
+// query {
+//	tags {
+//		...
+//	}
+// }
 func (s *Server) findAllTagsQuery(ctx context.Context) ([]blog.Tag, error) {
 	return s.service.Tag().FindAll(ctx)
 }
 
+// query {
+//	latestPublishedPosts(offset: int!, limit: int!) {
+//		...
+//	}
+// }
 func (s *Server) findLatestPublishedPostsQuery(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
 	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).WithOffset(args.Offset).WithLimit(args.Limit).Build())
 }
 
+// query {
+//	post(slug: string!) {
+//		...
+//	}
+// }
 func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 	Slug Slug `graphql:"slug"`
 }) (blog.Post, error) {
@@ -195,6 +225,11 @@ func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 	return blog.Post{}, errors.New(http.StatusText(http.StatusForbidden))
 }
 
+// mutation {
+//	createPost {
+//		...
+//	}
+// }
 func (s *Server) createPostMutation(ctx context.Context) (blog.Post, error) {
 	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
@@ -204,6 +239,11 @@ func (s *Server) createPostMutation(ctx context.Context) (blog.Post, error) {
 	return s.service.Post().Create(ctx, authorizedID.(string))
 }
 
+// mutation {
+//	updatePostTitle(slug: string!, title: string!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
 	Slug  Slug
 	Title string
@@ -219,6 +259,11 @@ func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).WithSlug(slug).Build())
 }
 
+// mutation {
+//	updatePostContent(slug: string!, markdown: string!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	Slug     Slug
 	Markdown string
@@ -234,6 +279,11 @@ func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
+// mutation {
+//	updatePostCategories(slug: string!, categorySlugs: [string!]!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostCategoriesMutation(ctx context.Context, args struct {
 	Slug          Slug
 	CategorySlugs []Slug
@@ -258,6 +308,11 @@ func (s *Server) updatePostCategoriesMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithCategories(categories).Build())
 }
 
+// mutation {
+//	updatePostTags(slug: string!, tags: [string!]!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	Slug     Slug
 	TagSlugs []Slug
@@ -282,6 +337,11 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
 }
 
+// mutation {
+//	updatePostFeaturedImage(slug: string!, featuredImageSlug: string!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struct {
 	Slug              Slug
 	FeaturedImageSlug storage.Slug
@@ -301,6 +361,11 @@ func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struc
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build())
 }
 
+// mutation {
+//	updatePostAttachments(slug: string!, attachmentSlugs: [string!]!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostAttachmentsMutation(ctx context.Context, args struct {
 	Slug            Slug
 	AttachmentSlugs []storage.Slug
