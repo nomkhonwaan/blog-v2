@@ -45,11 +45,11 @@ clean:
 
 .PHONY: mockgen
 mockgen:
-	$(MOCKGEN) -destination ./pkg/auth/mock/client_mock.go net/http RoundTripper
 	$(MOCKGEN) -destination ./pkg/blog/mock/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
 	$(MOCKGEN) -destination ./pkg/blog/mock/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
 	$(MOCKGEN) -destination ./pkg/blog/mock/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
 	$(MOCKGEN) -destination ./pkg/graphql/mock/service_mock.go github.com/nomkhonwaan/myblog/pkg/graphql Service
+	$(MOCKGEN) -destination ./pkg/http/mock/client_mock.go net/http RoundTripper
 	$(MOCKGEN) -destination ./pkg/mongo/mock/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
 	$(MOCKGEN) -destination ./pkg/mongo/mock/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
 	$(MOCKGEN) -destination ./pkg/mongo/mock/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult

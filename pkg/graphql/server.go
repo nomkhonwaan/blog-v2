@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/russross/blackfriday/v2"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"strings"
@@ -25,6 +27,9 @@ func (s Slug) GetID() (interface{}, error) {
 	return primitive.ObjectIDFromHex(sl[len(sl)-1])
 }
 
+// BlogService is an alias type to the `blog.Service` for avoiding name conflict
+type BlogService struct{ blog.Service }
+
 // MustGetID always return ID from the slug string
 func (s Slug) MustGetID() interface{} {
 	if id, err := s.GetID(); err == nil {
@@ -35,40 +40,31 @@ func (s Slug) MustGetID() interface{} {
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
-	// A Category repository
-	Category() blog.CategoryRepository
+	/* Facebook Client */
+	FBClient() facebook.Client
 
-	// A File repository
+	/* Storage Service */
 	File() storage.FileRepository
 
-	// A Post repository
+	/* Blog Service */
+	Category() blog.CategoryRepository
 	Post() blog.PostRepository
-
-	// A Tag repository
 	Tag() blog.TagRepository
 }
 
 type service struct {
-	catRepo  blog.CategoryRepository
+	BlogService
+
+	fbClient facebook.Client
 	fileRepo storage.FileRepository
-	postRepo blog.PostRepository
-	tagRepo  blog.TagRepository
 }
 
-func (s service) Category() blog.CategoryRepository {
-	return s.catRepo
+func (s service) FBClient() facebook.Client {
+	return s.fbClient
 }
 
 func (s service) File() storage.FileRepository {
 	return s.fileRepo
-}
-
-func (s service) Post() blog.PostRepository {
-	return s.postRepo
-}
-
-func (s service) Tag() blog.TagRepository {
-	return s.tagRepo
 }
 
 // Server is our GraphQL server
@@ -80,13 +76,12 @@ type Server struct {
 }
 
 // NewServer returns new GraphQL server
-func NewServer(catRepo blog.CategoryRepository, fileRepo storage.FileRepository, postRepo blog.PostRepository, tagRepo blog.TagRepository) *Server {
+func NewServer(blogService BlogService, fbClient facebook.Client, fileRepo storage.FileRepository) *Server {
 	return &Server{
 		service: service{
-			catRepo:  catRepo,
-			fileRepo: fileRepo,
-			postRepo: postRepo,
-			tagRepo:  tagRepo,
+			BlogService: blogService,
+			fbClient:    fbClient,
+			fileRepo:    fileRepo,
 		},
 		schema: schemabuilder.NewSchema(),
 	}
@@ -145,30 +140,61 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj.FieldFunc("tags", s.postTagsFieldFunc)
 	obj.FieldFunc("featuredImage", s.postFeaturedImageFieldFunc)
 	obj.FieldFunc("attachments", s.postAttachmentsFieldFunc)
+	obj.FieldFunc("engagement", s.postEngagementFieldFunc)
 }
 
+// query {
+//	category(slug: sting!) {
+//		...
+//	}
+// }
 func (s *Server) findCategoryBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Category, error) {
 	id := args.Slug.MustGetID()
 	return s.service.Category().FindByID(ctx, id)
 }
 
+// query {
+//	categories {
+//		...
+//	}
+// }
 func (s *Server) findAllCategoriesQuery(ctx context.Context) ([]blog.Category, error) {
 	return s.service.Category().FindAll(ctx)
 }
 
+// query {
+//	tag(slug: string!) {
+//		...
+//	}
+// }
 func (s *Server) findTagBySlugQuery(ctx context.Context, args struct{ Slug Slug }) (blog.Tag, error) {
 	id := args.Slug.MustGetID()
 	return s.service.Tag().FindByID(ctx, id)
 }
 
+// query {
+//	tags {
+//		...
+//	}
+// }
 func (s *Server) findAllTagsQuery(ctx context.Context) ([]blog.Tag, error) {
 	return s.service.Tag().FindAll(ctx)
 }
 
+// query {
+//	latestPublishedPosts(offset: int!, limit: int!) {
+//		...
+//	}
+// }
 func (s *Server) findLatestPublishedPostsQuery(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
 	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).WithOffset(args.Offset).WithLimit(args.Limit).Build())
 }
 
+// query {
+//	post(slug: string!) {
+//		...
+//	}
+// }
 func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 	Slug Slug `graphql:"slug"`
 }) (blog.Post, error) {
@@ -195,6 +221,11 @@ func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 	return blog.Post{}, errors.New(http.StatusText(http.StatusForbidden))
 }
 
+// mutation {
+//	createPost {
+//		...
+//	}
+// }
 func (s *Server) createPostMutation(ctx context.Context) (blog.Post, error) {
 	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
 	if err != nil {
@@ -204,6 +235,11 @@ func (s *Server) createPostMutation(ctx context.Context) (blog.Post, error) {
 	return s.service.Post().Create(ctx, authorizedID.(string))
 }
 
+// mutation {
+//	updatePostTitle(slug: string!, title: string!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
 	Slug  Slug
 	Title string
@@ -219,6 +255,11 @@ func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).WithSlug(slug).Build())
 }
 
+// mutation {
+//	updatePostContent(slug: string!, markdown: string!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	Slug     Slug
 	Markdown string
@@ -234,6 +275,11 @@ func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
 
+// mutation {
+//	updatePostCategories(slug: string!, categorySlugs: [string!]!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostCategoriesMutation(ctx context.Context, args struct {
 	Slug          Slug
 	CategorySlugs []Slug
@@ -258,6 +304,11 @@ func (s *Server) updatePostCategoriesMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithCategories(categories).Build())
 }
 
+// mutation {
+//	updatePostTags(slug: string!, tags: [string!]!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	Slug     Slug
 	TagSlugs []Slug
@@ -282,6 +333,11 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTags(tags).Build())
 }
 
+// mutation {
+//	updatePostFeaturedImage(slug: string!, featuredImageSlug: string!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struct {
 	Slug              Slug
 	FeaturedImageSlug storage.Slug
@@ -301,6 +357,11 @@ func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struc
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build())
 }
 
+// mutation {
+//	updatePostAttachments(slug: string!, attachmentSlugs: [string!]!) {
+//		...
+//	}
+// }
 func (s *Server) updatePostAttachmentsMutation(ctx context.Context, args struct {
 	Slug            Slug
 	AttachmentSlugs []storage.Slug
@@ -353,9 +414,9 @@ func (s *Server) postTagsFieldFunc(ctx context.Context, p blog.Post) ([]blog.Tag
 	return s.service.Tag().FindAllByIDs(ctx, ids)
 }
 
-func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) (storage.File, error) {
+func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) storage.File {
 	file, _ := s.service.File().FindByID(ctx, p.FeaturedImage.ID)
-	return file, nil
+	return file
 }
 
 func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]storage.File, error) {
@@ -366,6 +427,16 @@ func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]s
 	}
 
 	return s.service.File().FindAllByIDs(ctx, ids)
+}
+
+func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) facebook.Engagement {
+	id := "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug
+	url, err := s.service.FBClient().GetURL(id)
+	if err != nil {
+		logrus.Errorf("an error has occurred while getting URL from Facebook Graph API: %s", err)
+	}
+
+	return url.Engagement
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),

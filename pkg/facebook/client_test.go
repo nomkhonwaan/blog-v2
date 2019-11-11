@@ -1,6 +1,7 @@
 package facebook_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -8,11 +9,13 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/facebook"
+	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -80,35 +83,36 @@ func TestIsSingle(t *testing.T) {
 	// Then
 }
 
-func TestNewCrawlerMiddleware(t *testing.T) {
+func TestNewClient(t *testing.T) {
 	t.Run("When unable to parse open graph template", func(t *testing.T) {
 		// Given
 		invalidOpenGraphTemplate := "{{.URL}"
 
 		// When
-		_, err := NewCrawlerMiddleware(invalidOpenGraphTemplate, nil, nil)
+		_, err := NewClient("", "", invalidOpenGraphTemplate, nil, nil, http.DefaultTransport)
 
 		// Then
-		assert.EqualError(t, err, "template: facebook-opengraph-template:1: unexpected \"}\" in operand")
+		assert.EqualError(t, err, "template: facebook-open-graph-template:1: unexpected \"}\" in operand")
 	})
 }
 
-func TestCrawlerMiddleware_Handler(t *testing.T) {
+func TestClient_CrawlerHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
 	var (
-		postRepo = mock_blog.NewMockPostRepository(ctrl)
 		fileRepo = mock_storage.NewMockFileRepository(ctrl)
+		postRepo = mock_blog.NewMockPostRepository(ctrl)
 
+		baseURL           = "http://localhost:8080"
 		openGraphTemplate = `{"url":"{{.URL}}","title":"{{.Title}}","description":"{{.Description}}","featuredImage":"{{.FeaturedImage}}"}`
-		mw, _             = NewCrawlerMiddleware(openGraphTemplate, postRepo, fileRepo)
+		client, _         = NewClient(baseURL, "", openGraphTemplate, fileRepo, postRepo, http.DefaultTransport)
 		nextHandler       = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			_, _ = w.Write([]byte("OK"))
 		})
 	)
 
-	h := mw.Handler(nextHandler)
+	h := client.CrawlerHandler(nextHandler)
 
 	newSinglePageRequest := func(slug string) *http.Request {
 		return httptest.NewRequest(http.MethodGet, "/2006/1/2/"+slug, nil)
@@ -150,10 +154,10 @@ but not this line`,
 		fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil)
 
 		expected := renderedOpenGraphTemplate{
-			URL:           fmt.Sprintf("https://beta.nomkhonwaan.com/%s/test-post-%s", now.Format("2006/1/2"), id.Hex()),
+			URL:           fmt.Sprintf("%s/%s/test-post-%s", baseURL, now.Format("2006/1/2"), id.Hex()),
 			Title:         "Test post",
 			Description:   "this should be a post description",
-			FeaturedImage: fmt.Sprintf("https://beta.nomkhonwaan.com/api/v2/storage/test-featured-image-%s.jpg", featuredImageID.Hex()),
+			FeaturedImage: fmt.Sprintf("%s/api/v2/storage/test-featured-image-%s.jpg", baseURL, featuredImageID.Hex()),
 		}
 
 		// When
@@ -209,5 +213,59 @@ but not this line`,
 
 		// Then
 		assert.Equal(t, "403 Forbidden", w.Result().Status)
+	})
+}
+
+func TestClient_GetURL(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var (
+		transport = mock_http.NewMockRoundTripper(ctrl)
+
+		baseURL        = "http://localhost:8080"
+		appAccessToken = "test-app-access-token"
+	)
+
+	client, _ := NewClient(baseURL, appAccessToken, "", nil, nil, transport)
+
+	t.Run("With successful getting URL result from the Facebook Graph API", func(t *testing.T) {
+		// Given
+		id := primitive.NewObjectID()
+		expected := URL{
+			Engagement: Engagement{
+				CommentCount:       1,
+				CommentPluginCount: 2,
+				ReactionCount:      3,
+				ShareCount:         4,
+			},
+		}
+
+		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
+			assert.Equal(t, "/v5.0/", r.URL.Path)
+			assert.Equal(t, "access_token=test-app-access-token&fields=engagement&id=http%3A%2F%2Flocalhost%3A8080%2F2006%2F1%2F2%2Ftest-post-"+id.Hex(), r.URL.RawQuery)
+
+			return &http.Response{
+				Body: ioutil.NopCloser(bytes.NewBufferString(`{"engagement":{"comment_count":1,"comment_plugin_count":2,"reaction_count":3,"share_count":4}}`)),
+			}, nil
+		})
+
+		// When
+		url, err := client.GetURL("/2006/1/2/test-post-" + id.Hex())
+
+		// Then
+		assert.Nil(t, err)
+		assert.Equal(t, expected, url)
+	})
+
+	t.Run("When unable to connect to the Facebook Graph API", func(t *testing.T) {
+		// Given
+		transport.EXPECT().RoundTrip(gomock.Any()).Return(nil, errors.New("test unable to connect to Facebook Graph API"))
+
+		// When
+		_, err := client.GetURL("")
+
+		// Then
+		assert.EqualError(t, err, "test unable to connect to Facebook Graph API")
 	})
 }
