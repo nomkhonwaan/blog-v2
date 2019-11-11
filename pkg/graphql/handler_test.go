@@ -11,7 +11,9 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	mock_blog "github.com/nomkhonwaan/myblog/pkg/blog/mock"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	. "github.com/nomkhonwaan/myblog/pkg/graphql"
+	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
@@ -33,10 +35,13 @@ func TestHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		catRepo  = mock_blog.NewMockCategoryRepository(ctrl)
-		fileRepo = mock_storage.NewMockFileRepository(ctrl)
-		postRepo = mock_blog.NewMockPostRepository(ctrl)
-		tagRepo  = mock_blog.NewMockTagRepository(ctrl)
+		catRepo   = mock_blog.NewMockCategoryRepository(ctrl)
+		fileRepo  = mock_storage.NewMockFileRepository(ctrl)
+		postRepo  = mock_blog.NewMockPostRepository(ctrl)
+		tagRepo   = mock_blog.NewMockTagRepository(ctrl)
+		transport = mock_http.NewMockRoundTripper(ctrl)
+
+		fbClient, _ = facebook.NewClient("", "", "", postRepo, fileRepo, transport)
 	)
 
 	newGraphQLRequest := func(q query) *http.Request {
@@ -52,7 +57,7 @@ func TestHandler(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(catRepo, fileRepo, postRepo, tagRepo)
+	server := NewServer(fbClient, catRepo, fileRepo, postRepo, tagRepo)
 	h := Handler(server.Schema())
 
 	t.Run("With successful querying category by its ID", func(t *testing.T) {

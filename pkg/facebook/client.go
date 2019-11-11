@@ -1,6 +1,7 @@
 package facebook
 
 import (
+	"encoding/json"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -9,6 +10,11 @@ import (
 	"strings"
 	"text/template"
 	"time"
+)
+
+const (
+	// GraphAPIEndpoint is an endpoint to the Facebook Graph API
+	GraphAPIEndpoint = "https://graph.facebook.com"
 )
 
 var (
@@ -43,23 +49,23 @@ type Service interface {
 }
 
 type service struct {
-	postRepo blog.PostRepository
 	fileRepo storage.FileRepository
-}
-
-func (s service) Post() blog.PostRepository {
-	return s.postRepo
+	postRepo blog.PostRepository
 }
 
 func (s service) File() storage.FileRepository {
 	return s.fileRepo
 }
 
+func (s service) Post() blog.PostRepository {
+	return s.postRepo
+}
+
 // Client uses to handling with Facebook services
 // such as: crawler bot on the single-page application or engagement querying
 type Client struct {
-	// A website URL to be composed with sharing URL on the open-graph tag
-	url string
+	// A base URL to be composed with sharing URL on the open-graph tag
+	baseURL string
 
 	// A permanent application access_token for querying engagement object via Facebook Graph API
 	appAccessToken string
@@ -67,28 +73,31 @@ type Client struct {
 	// A text template instance which parses the open-graph HTML template already
 	openGraphTemplate *template.Template
 
-	service Service
+	service   Service
+	transport http.RoundTripper
 }
 
 // NewClient returns a new Facebook client instance
-func NewClient(url string, appAccessToken string, openGraphTemplate string, postRepo blog.PostRepository, fileRepo storage.FileRepository) (Client, error) {
+func NewClient(baseURL string, appAccessToken string, openGraphTemplate string, fileRepo storage.FileRepository, postRepo blog.PostRepository, transport http.RoundTripper) (Client, error) {
 	tmpl, err := template.New("facebook-open-graph-template").Parse(openGraphTemplate)
 	if err != nil {
 		return Client{}, err
 	}
 
 	return Client{
-		url:               url,
+		baseURL:           baseURL,
 		appAccessToken:    appAccessToken,
 		openGraphTemplate: tmpl,
 		service: service{
-			postRepo: postRepo,
 			fileRepo: fileRepo,
+			postRepo: postRepo,
 		},
+		transport: transport,
 	}, nil
 }
 
-// CrawlerHandler uses to handling Facebook sharing bot crawler for rendering static HTML which will be uses to display on the Facebook feed
+// CrawlerHandler uses to handling Facebook sharing bot crawler
+// for rendering static HTML which will be uses to display on the Facebook feed
 func (c Client) CrawlerHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if IsFacebookCrawlerRequest(r.UserAgent()) {
@@ -117,11 +126,11 @@ func (c Client) serveSingle(w http.ResponseWriter, r *http.Request, id interface
 		return
 	}
 
-	featuredImage := c.url + "/assets/images/303589.webp"
+	featuredImage := c.baseURL + "/assets/images/303589.webp"
 	if !p.FeaturedImage.ID.IsZero() {
 		file, _ := c.service.File().FindByID(r.Context(), p.FeaturedImage.ID)
 		if file.Slug != "" {
-			featuredImage = c.url + "/api/v2/storage/" + file.Slug
+			featuredImage = c.baseURL + "/api/v2/storage/" + file.Slug
 		}
 	}
 
@@ -132,7 +141,7 @@ func (c Client) serveSingle(w http.ResponseWriter, r *http.Request, id interface
 		Description   string
 		FeaturedImage string
 	}{
-		URL:           c.url + "/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
+		URL:           c.baseURL + "/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
 		Type:          "article",
 		Title:         p.Title,
 		Description:   strings.Split(p.Markdown, "\n")[0],
@@ -142,80 +151,38 @@ func (c Client) serveSingle(w http.ResponseWriter, r *http.Request, id interface
 	_ = c.openGraphTemplate.Execute(w, data)
 }
 
-// Deprecated: CrawlerMiddleware is a Facebook specific middleware
-// for rendering server-side HTML which contains only Facebook's extra meta tags but empty content
-type CrawlerMiddleware struct {
-	url      string
-	service  Service
-	template *template.Template
-}
+// GetURL returns a URL shared on a timeline on in a comment
+func (c Client) GetURL(id string) (URL, error) {
+	req, _ := http.NewRequest(http.MethodGet, GraphAPIEndpoint+"/v5.0/", nil)
+	q := req.URL.Query()
+	q.Add("id", c.baseURL+id)
+	q.Add("access_token", c.appAccessToken)
+	q.Add("fields", "engagement")
+	req.URL.RawQuery = q.Encode()
 
-// Deprecated: NewCrawlerMiddleware returns a Facebook's crawler specific middleware instance
-func NewCrawlerMiddleware(url string, openGraphTemplate string, postRepo blog.PostRepository, fileRepo storage.FileRepository) (CrawlerMiddleware, error) {
-	t, err := template.New("facebook-opengraph-template").Parse(openGraphTemplate)
+	res, err := c.transport.RoundTrip(req)
 	if err != nil {
-		return CrawlerMiddleware{}, err
+		return URL{}, err
+	}
+	defer res.Body.Close()
+
+	var body struct {
+		Engagement struct {
+			CommentCount       int `json:"comment_count"`
+			CommentPluginCount int `json:"comment_plugin_count"`
+			ReactionCount      int `json:"reaction_count"`
+			ShareCount         int `json:"share_count"`
+		} `json:"engagement"`
 	}
 
-	return CrawlerMiddleware{
-		url: url,
-		service: service{
-			postRepo: postRepo,
-			fileRepo: fileRepo,
+	_ = json.NewDecoder(res.Body).Decode(&body)
+
+	return URL{
+		Engagement: Engagement{
+			CommentCount:       body.Engagement.CommentCount,
+			CommentPluginCount: body.Engagement.CommentPluginCount,
+			ReactionCount:      body.Engagement.ReactionCount,
+			ShareCount:         body.Engagement.ShareCount,
 		},
-		template: t,
 	}, nil
-}
-
-func (mw CrawlerMiddleware) Handler(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if IsFacebookCrawlerRequest(r.UserAgent()) {
-			if id, yes := IsSingle(r.URL.Path); yes {
-				if postID, err := primitive.ObjectIDFromHex(id); err == nil {
-					mw.serveSingle(w, r, postID)
-					return
-				}
-
-			}
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
-func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, id interface{}) {
-	p, err := mw.service.Post().FindByID(r.Context(), id)
-	if err != nil {
-		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
-		return
-	}
-
-	if p.Status != blog.Published {
-		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
-		return
-	}
-
-	featuredImage := mw.url + "/assets/images/303589.webp"
-	if !p.FeaturedImage.ID.IsZero() {
-		file, _ := mw.service.File().FindByID(r.Context(), p.FeaturedImage.ID)
-		if file.Slug != "" {
-			featuredImage = mw.url + "/api/v2/storage/" + file.Slug
-		}
-	}
-
-	data := struct {
-		URL           string
-		Type          string
-		Title         string
-		Description   string
-		FeaturedImage string
-	}{
-		URL:           mw.url + "/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
-		Type:          "article",
-		Title:         p.Title,
-		Description:   strings.Split(p.Markdown, "\n")[0],
-		FeaturedImage: featuredImage,
-	}
-
-	_ = mw.template.Execute(w, data)
 }

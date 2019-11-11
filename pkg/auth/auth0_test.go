@@ -9,7 +9,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
 	. "github.com/nomkhonwaan/myblog/pkg/auth"
-	mock_http "github.com/nomkhonwaan/myblog/pkg/auth/mock"
+	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"

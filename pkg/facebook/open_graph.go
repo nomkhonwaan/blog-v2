@@ -1,5 +1,10 @@
 package facebook
 
+// URL represents a URL shared on a timeline or in a comment
+type URL struct {
+	Engagement Engagement `json:"engagement" graphql:"-"`
+}
+
 // Engagement is struct which contains number of counts of different ways people interacted with the URL
 type Engagement struct {
 	// Number of comments on the URL

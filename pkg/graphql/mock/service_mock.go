@@ -7,6 +7,7 @@ package mock_graphql
 import (
 	gomock "github.com/golang/mock/gomock"
 	blog "github.com/nomkhonwaan/myblog/pkg/blog"
+	facebook "github.com/nomkhonwaan/myblog/pkg/facebook"
 	storage "github.com/nomkhonwaan/myblog/pkg/storage"
 	reflect "reflect"
 )
@@ -46,6 +47,20 @@ func (m *MockService) Category() blog.CategoryRepository {
 func (mr *MockServiceMockRecorder) Category() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Category", reflect.TypeOf((*MockService)(nil).Category))
+}
+
+// Facebook mocks base method
+func (m *MockService) Facebook() facebook.Client {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Facebook")
+	ret0, _ := ret[0].(facebook.Client)
+	return ret0
+}
+
+// Facebook indicates an expected call of Facebook
+func (mr *MockServiceMockRecorder) Facebook() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Facebook", reflect.TypeOf((*MockService)(nil).Facebook))
 }
 
 // File mocks base method

@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/russross/blackfriday/v2"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 	"strings"
@@ -35,6 +37,9 @@ func (s Slug) MustGetID() interface{} {
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
+	// A Facebook client
+	Facebook() facebook.Client
+
 	// A Category repository
 	Category() blog.CategoryRepository
 
@@ -49,10 +54,15 @@ type Service interface {
 }
 
 type service struct {
+	fbClient facebook.Client
 	catRepo  blog.CategoryRepository
 	fileRepo storage.FileRepository
 	postRepo blog.PostRepository
 	tagRepo  blog.TagRepository
+}
+
+func (s service) Facebook() facebook.Client {
+	return s.fbClient
 }
 
 func (s service) Category() blog.CategoryRepository {
@@ -80,9 +90,16 @@ type Server struct {
 }
 
 // NewServer returns new GraphQL server
-func NewServer(catRepo blog.CategoryRepository, fileRepo storage.FileRepository, postRepo blog.PostRepository, tagRepo blog.TagRepository) *Server {
+func NewServer(
+	fbClient facebook.Client,
+	catRepo blog.CategoryRepository,
+	fileRepo storage.FileRepository,
+	postRepo blog.PostRepository,
+	tagRepo blog.TagRepository,
+) *Server {
 	return &Server{
 		service: service{
+			fbClient: fbClient,
 			catRepo:  catRepo,
 			fileRepo: fileRepo,
 			postRepo: postRepo,
@@ -145,6 +162,7 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj.FieldFunc("tags", s.postTagsFieldFunc)
 	obj.FieldFunc("featuredImage", s.postFeaturedImageFieldFunc)
 	obj.FieldFunc("attachments", s.postAttachmentsFieldFunc)
+	obj.FieldFunc("engagement", s.postEngagementFieldFunc)
 }
 
 // query {
@@ -418,9 +436,9 @@ func (s *Server) postTagsFieldFunc(ctx context.Context, p blog.Post) ([]blog.Tag
 	return s.service.Tag().FindAllByIDs(ctx, ids)
 }
 
-func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) (storage.File, error) {
+func (s *Server) postFeaturedImageFieldFunc(ctx context.Context, p blog.Post) storage.File {
 	file, _ := s.service.File().FindByID(ctx, p.FeaturedImage.ID)
-	return file, nil
+	return file
 }
 
 func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]storage.File, error) {
@@ -431,6 +449,16 @@ func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]s
 	}
 
 	return s.service.File().FindAllByIDs(ctx, ids)
+}
+
+func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) facebook.Engagement {
+	id := "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug
+	url, err := s.service.Facebook().GetURL(id)
+	if err != nil {
+		logrus.Errorf("an error has occurred while getting URL from Facebook Graph API: %s", err)
+	}
+
+	return url.Engagement
 }
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
