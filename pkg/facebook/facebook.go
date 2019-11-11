@@ -55,7 +55,94 @@ func (s service) File() storage.FileRepository {
 	return s.fileRepo
 }
 
-// CrawlerMiddleware is a Facebook specific middleware
+// Client uses to handling with Facebook services
+// such as: crawler bot on the single-page application or engagement querying
+type Client struct {
+	// A website URL to be composed with sharing URL on the open-graph tag
+	url string
+
+	// A permanent application access_token for querying engagement object via Facebook Graph API
+	appAccessToken string
+
+	// A text template instance which parses the open-graph HTML template already
+	openGraphTemplate *template.Template
+
+	service Service
+}
+
+// NewClient returns a new Facebook client instance
+func NewClient(url string, appAccessToken string, openGraphTemplate string, postRepo blog.PostRepository, fileRepo storage.FileRepository) (Client, error) {
+	tmpl, err := template.New("facebook-open-graph-template").Parse(openGraphTemplate)
+	if err != nil {
+		return Client{}, err
+	}
+
+	return Client{
+		url:               url,
+		appAccessToken:    appAccessToken,
+		openGraphTemplate: tmpl,
+		service: service{
+			postRepo: postRepo,
+			fileRepo: fileRepo,
+		},
+	}, nil
+}
+
+// CrawlerHandler uses to handling Facebook sharing bot crawler for rendering static HTML which will be uses to display on the Facebook feed
+func (c Client) CrawlerHandler(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if IsFacebookCrawlerRequest(r.UserAgent()) {
+			if id, yes := IsSingle(r.URL.Path); yes {
+				if postID, err := primitive.ObjectIDFromHex(id); err == nil {
+					c.serveSingle(w, r, postID)
+					return
+				}
+
+			}
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (c Client) serveSingle(w http.ResponseWriter, r *http.Request, id interface{}) {
+	p, err := c.service.Post().FindByID(r.Context(), id)
+	if err != nil {
+		http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+		return
+	}
+
+	if p.Status != blog.Published {
+		http.Error(w, http.StatusText(http.StatusForbidden), http.StatusForbidden)
+		return
+	}
+
+	featuredImage := c.url + "/assets/images/303589.webp"
+	if !p.FeaturedImage.ID.IsZero() {
+		file, _ := c.service.File().FindByID(r.Context(), p.FeaturedImage.ID)
+		if file.Slug != "" {
+			featuredImage = c.url + "/api/v2/storage/" + file.Slug
+		}
+	}
+
+	data := struct {
+		URL           string
+		Type          string
+		Title         string
+		Description   string
+		FeaturedImage string
+	}{
+		URL:           c.url + "/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
+		Type:          "article",
+		Title:         p.Title,
+		Description:   strings.Split(p.Markdown, "\n")[0],
+		FeaturedImage: featuredImage,
+	}
+
+	_ = c.openGraphTemplate.Execute(w, data)
+}
+
+// Deprecated: CrawlerMiddleware is a Facebook specific middleware
 // for rendering server-side HTML which contains only Facebook's extra meta tags but empty content
 type CrawlerMiddleware struct {
 	url      string
@@ -63,7 +150,7 @@ type CrawlerMiddleware struct {
 	template *template.Template
 }
 
-// NewCrawlerMiddleware returns a Facebook's crawler specific middleware instance
+// Deprecated: NewCrawlerMiddleware returns a Facebook's crawler specific middleware instance
 func NewCrawlerMiddleware(url string, openGraphTemplate string, postRepo blog.PostRepository, fileRepo storage.FileRepository) (CrawlerMiddleware, error) {
 	t, err := template.New("facebook-opengraph-template").Parse(openGraphTemplate)
 	if err != nil {
