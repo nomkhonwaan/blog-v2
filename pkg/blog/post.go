@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson"
@@ -57,6 +58,9 @@ type Post struct {
 
 	// Date-time that the post was updated
 	UpdatedAt time.Time `bson:"updatedAt" json:"updatedAt" graphql:"updatedAt"`
+
+	// Counts of different ways people interacted with the post
+	Engagement facebook.Engagement `bson:"-" json:"engagement" graphql:"engagement"`
 }
 
 // MarshalJSON is a custom JSON marshaling function of post entity
