@@ -46,11 +46,23 @@ func main() {
 	app.Name = "myblog"
 	app.Version = version
 	app.Flags = []cli.Flag{
+		/* HTTP Server Options */
 		cli.StringFlag{
 			Name:   "listen-address",
 			EnvVar: "LISTEN_ADDRESS",
 			Value:  "0.0.0.0:8080",
 		},
+		cli.BoolFlag{
+			Name:   "allow-cors",
+			EnvVar: "ALLOW_CORS",
+		},
+		cli.StringFlag{
+			Name:   "url",
+			EnvVar: "URL",
+			Value:  "https://beta.nomkhonwaan.com",
+		},
+
+		/* Volume Options */
 		cli.StringFlag{
 			Name:   "cache-files-path",
 			EnvVar: "CACHE_FILES_PATH",
@@ -61,11 +73,25 @@ func main() {
 			EnvVar: "STATIC_FILES_PATH",
 			Value:  "./dist/web",
 		},
+
+		/* Amazon S3 Options */
+		cli.StringFlag{
+			Name:   "amazon-s3-access-key",
+			EnvVar: "AMAZON_S3_ACCESS_KEY",
+		},
+		cli.StringFlag{
+			Name:   "amazon-s3-secret-key",
+			EnvVar: "AMAZON_S3_SECRET_KEY",
+		},
+
+		/* Database Options */
 		cli.StringFlag{
 			Name:   "mongodb-uri",
 			EnvVar: "MONGODB_URI",
 			Value:  "mongodb://localhost/nomkhonwaan_com",
 		},
+
+		/* Authentication Options */
 		cli.StringFlag{
 			Name:   "auth0-audience",
 			EnvVar: "AUTH0_AUDIENCE",
@@ -80,18 +106,6 @@ func main() {
 			Name:   "auth0-jwks-uri",
 			EnvVar: "AUTH0_JWKS_URI",
 			Value:  "https://nomkhonwaan.auth0.com/.well-known/jwks.json",
-		},
-		cli.StringFlag{
-			Name:   "amazon-s3-access-key",
-			EnvVar: "AMAZON_S3_ACCESS_KEY",
-		},
-		cli.StringFlag{
-			Name:   "amazon-s3-secret-key",
-			EnvVar: "AMAZON_S3_SECRET_KEY",
-		},
-		cli.BoolFlag{
-			Name:   "allow-cors",
-			EnvVar: "ALLOW_CORS",
 		},
 	}
 	app.Action = action
@@ -136,7 +150,7 @@ func action(ctx *cli.Context) error {
 
 	/* Facebook Sharing */
 	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	facebookMiddleware, err := facebook.NewCrawlerMiddleware(string(openGraphTemplate), postRepo, fileRepo)
+	facebookMiddleware, err := facebook.NewCrawlerMiddleware(ctx.String("url"), string(openGraphTemplate), postRepo, fileRepo)
 	if err != nil {
 		return err
 	}

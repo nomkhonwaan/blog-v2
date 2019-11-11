@@ -86,7 +86,7 @@ func TestNewCrawlerMiddleware(t *testing.T) {
 		invalidOpenGraphTemplate := "{{.URL}"
 
 		// When
-		_, err := NewCrawlerMiddleware(invalidOpenGraphTemplate, nil, nil)
+		_, err := NewCrawlerMiddleware("", invalidOpenGraphTemplate, nil, nil)
 
 		// Then
 		assert.EqualError(t, err, "template: facebook-opengraph-template:1: unexpected \"}\" in operand")
@@ -101,8 +101,9 @@ func TestCrawlerMiddleware_Handler(t *testing.T) {
 		postRepo = mock_blog.NewMockPostRepository(ctrl)
 		fileRepo = mock_storage.NewMockFileRepository(ctrl)
 
+		url               = "http://localhost:8080"
 		openGraphTemplate = `{"url":"{{.URL}}","title":"{{.Title}}","description":"{{.Description}}","featuredImage":"{{.FeaturedImage}}"}`
-		mw, _             = NewCrawlerMiddleware(openGraphTemplate, postRepo, fileRepo)
+		mw, _             = NewCrawlerMiddleware(url, openGraphTemplate, postRepo, fileRepo)
 		nextHandler       = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			_, _ = w.Write([]byte("OK"))
 		})
@@ -150,10 +151,10 @@ but not this line`,
 		fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil)
 
 		expected := renderedOpenGraphTemplate{
-			URL:           fmt.Sprintf("https://beta.nomkhonwaan.com/%s/test-post-%s", now.Format("2006/1/2"), id.Hex()),
+			URL:           fmt.Sprintf("%s/%s/test-post-%s", url, now.Format("2006/1/2"), id.Hex()),
 			Title:         "Test post",
 			Description:   "this should be a post description",
-			FeaturedImage: fmt.Sprintf("https://beta.nomkhonwaan.com/api/v2/storage/test-featured-image-%s.jpg", featuredImageID.Hex()),
+			FeaturedImage: fmt.Sprintf("%s/api/v2/storage/test-featured-image-%s.jpg", url, featuredImageID.Hex()),
 		}
 
 		// When

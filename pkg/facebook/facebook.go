@@ -58,18 +58,20 @@ func (s service) File() storage.FileRepository {
 // CrawlerMiddleware is a Facebook specific middleware
 // for rendering server-side HTML which contains only Facebook's extra meta tags but empty content
 type CrawlerMiddleware struct {
+	url      string
 	service  Service
 	template *template.Template
 }
 
 // NewCrawlerMiddleware returns a Facebook's crawler specific middleware instance
-func NewCrawlerMiddleware(openGraphTemplate string, postRepo blog.PostRepository, fileRepo storage.FileRepository) (CrawlerMiddleware, error) {
+func NewCrawlerMiddleware(url string, openGraphTemplate string, postRepo blog.PostRepository, fileRepo storage.FileRepository) (CrawlerMiddleware, error) {
 	t, err := template.New("facebook-opengraph-template").Parse(openGraphTemplate)
 	if err != nil {
 		return CrawlerMiddleware{}, err
 	}
 
 	return CrawlerMiddleware{
+		url: url,
 		service: service{
 			postRepo: postRepo,
 			fileRepo: fileRepo,
@@ -106,11 +108,11 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		return
 	}
 
-	featuredImage := "https://beta.nomkhonwaan.com/assets/images/303589.webp"
+	featuredImage := mw.url + "/assets/images/303589.webp"
 	if !p.FeaturedImage.ID.IsZero() {
 		file, _ := mw.service.File().FindByID(r.Context(), p.FeaturedImage.ID)
 		if file.Slug != "" {
-			featuredImage = "https://beta.nomkhonwaan.com/api/v2/storage/" + file.Slug
+			featuredImage = mw.url + "/api/v2/storage/" + file.Slug
 		}
 	}
 
@@ -121,7 +123,7 @@ func (mw CrawlerMiddleware) serveSingle(w http.ResponseWriter, r *http.Request, 
 		Description   string
 		FeaturedImage string
 	}{
-		URL:           "https://beta.nomkhonwaan.com/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
+		URL:           mw.url + "/" + p.PublishedAt.In(DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
 		Type:          "article",
 		Title:         p.Title,
 		Description:   strings.Split(p.Markdown, "\n")[0],
