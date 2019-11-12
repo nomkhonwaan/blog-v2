@@ -59,7 +59,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(BlogService{Service: blogService}, fbClient, fileRepo)
+	server := NewServer(blogService, fbClient, fileRepo)
 	h := Handler(server.Schema())
 
 	t.Run("With successful querying category by its ID", func(t *testing.T) {

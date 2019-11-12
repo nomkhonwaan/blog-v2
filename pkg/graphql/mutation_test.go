@@ -57,7 +57,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(BlogService{Service: blogService}, fbClient, fileRepo)
+	server := NewServer(blogService, fbClient, fileRepo)
 	h := Handler(server.Schema())
 
 	t.Run("Create a new post", func(t *testing.T) {
