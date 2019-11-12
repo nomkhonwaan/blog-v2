@@ -52,6 +52,9 @@ type Post struct {
 	// List of attachments are belonging to the post
 	Attachments []mongo.DBRef `bson:"attachments" json:"-" graphql:"-"`
 
+	// A social network engagement of the post
+	Engagement Engagement `bson:"-" json:"engagement" graphql:"engagement"`
+
 	// Date-time that the post was created
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
 

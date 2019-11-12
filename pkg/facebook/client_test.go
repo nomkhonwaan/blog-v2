@@ -232,14 +232,11 @@ func TestClient_GetURL(t *testing.T) {
 	t.Run("With successful getting URL result from the Facebook Graph API", func(t *testing.T) {
 		// Given
 		id := primitive.NewObjectID()
-		expected := URL{
-			Engagement: Engagement{
-				CommentCount:       1,
-				CommentPluginCount: 2,
-				ReactionCount:      3,
-				ShareCount:         4,
-			},
-		}
+		expected := URL{}
+		expected.Engagement.CommentCount = 1
+		expected.Engagement.CommentPluginCount = 2
+		expected.Engagement.ReactionCount = 3
+		expected.Engagement.ShareCount = 4
 
 		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
 			assert.Equal(t, "/v5.0/", r.URL.Path)

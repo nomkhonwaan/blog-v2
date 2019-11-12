@@ -166,23 +166,8 @@ func (c Client) GetURL(id string) (URL, error) {
 	}
 	defer res.Body.Close()
 
-	var body struct {
-		Engagement struct {
-			CommentCount       int `json:"comment_count"`
-			CommentPluginCount int `json:"comment_plugin_count"`
-			ReactionCount      int `json:"reaction_count"`
-			ShareCount         int `json:"share_count"`
-		} `json:"engagement"`
-	}
+	var body URL
+	err = json.NewDecoder(res.Body).Decode(&body)
 
-	_ = json.NewDecoder(res.Body).Decode(&body)
-
-	return URL{
-		Engagement: Engagement{
-			CommentCount:       body.Engagement.CommentCount,
-			CommentPluginCount: body.Engagement.CommentPluginCount,
-			ReactionCount:      body.Engagement.ReactionCount,
-			ShareCount:         body.Engagement.ShareCount,
-		},
-	}, nil
+	return body, err
 }

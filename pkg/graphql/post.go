@@ -55,16 +55,19 @@ func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]s
 	return s.service.File().FindAllByIDs(ctx, ids)
 }
 
-func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) facebook.Engagement {
+func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) blog.Engagement {
+	engagement := blog.Engagement{}
+
 	// Get engagement data from Facebook Graph API
 	id := "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug
 	url, err := s.service.FBClient().GetURL(id)
 	if err != nil {
 		logrus.Errorf("an error has occurred while getting URL from Facebook Graph API: %s", err)
 	}
+	engagement.ShareCount += url.Engagement.ShareCount
 
 	// Get engagement data from Twitter Search API
 	// TODO: the Twitter client is not implement yet
 
-	return url.Engagement
+	return engagement
 }
