@@ -134,7 +134,7 @@ func action(ctx *cli.Context) error {
 	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 
 	/* Blog Service */
-	blogService := blog.Service{
+	blogSvc := blog.Service{
 		CategoryRepository: blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories"))),
 		PostRepository:     blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts"))),
 		TagRepository:      blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags"))),
@@ -163,7 +163,7 @@ func action(ctx *cli.Context) error {
 	}
 
 	/* GraphQL Schema */
-	schema := graphql.NewServer(graphql.BlogService{Service: blogService}, fbClient, fileRepo).Schema()
+	schema := graphql.NewServer(blogSvc, fbClient, fileRepo).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
 	/* Gorilla Routes */

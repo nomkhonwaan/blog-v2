@@ -23,8 +23,7 @@ func (s Slug) GetID() (interface{}, error) {
 	return primitive.ObjectIDFromHex(sl[len(sl)-1])
 }
 
-// BlogService is an alias type to the `blog.Service` for avoiding name conflict
-type BlogService struct{ blog.Service }
+type blogService struct{ blog.Service }
 
 // MustGetID always return ID from the slug string
 func (s Slug) MustGetID() interface{} {
@@ -49,7 +48,7 @@ type Service interface {
 }
 
 type service struct {
-	BlogService
+	blogService
 
 	fbClient facebook.Client
 	fileRepo storage.FileRepository
@@ -72,10 +71,10 @@ type Server struct {
 }
 
 // NewServer returns new GraphQL server
-func NewServer(blogService BlogService, fbClient facebook.Client, fileRepo storage.FileRepository) *Server {
+func NewServer(blogSvc blog.Service, fbClient facebook.Client, fileRepo storage.FileRepository) *Server {
 	return &Server{
 		service: service{
-			BlogService: blogService,
+			blogService: blogService{blogSvc},
 			fbClient:    fbClient,
 			fileRepo:    fileRepo,
 		},
