@@ -17,6 +17,7 @@ import (
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -186,6 +187,104 @@ func TestServer_RegisterQuery(t *testing.T) {
 
 			// Then
 			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("With existing published post and has engagement field", func(t *testing.T) {
+			t.Run("With successful getting URL result from the Facebook Graph API", func(t *testing.T) {
+
+				// Given
+				id := primitive.NewObjectID()
+				catID := primitive.NewObjectID()
+				tagID := primitive.NewObjectID()
+				slug := "test-published-" + id.Hex()
+				post := blog.Post{
+					ID:         id,
+					Slug:       slug,
+					Status:     blog.Published,
+					Categories: []mongo.DBRef{{ID: catID}},
+					Tags:       []mongo.DBRef{{ID: tagID}},
+				}
+				q := query{
+					Query: `{ post(slug: $slug) { slug engagement { shareCount } } }`,
+					Variables: map[string]interface{}{
+						"slug": slug,
+					},
+				}
+				w := httptest.NewRecorder()
+
+				postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
+				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(_ *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Body: ioutil.NopCloser(bytes.NewBufferString(`{"engagement":{"comment_count":1,"comment_plugin_count":2,"reaction_count":3,"share_count":4}}`)),
+					}, nil
+				})
+
+				// When
+				h.ServeHTTP(w, newGraphQLRequest(q))
+
+				// Then
+				var res struct {
+					Data struct {
+						Post struct {
+							Engagement struct {
+								ShareCount int `json:"shareCount"`
+							} `json:"engagement"`
+						} `json:"post"`
+					} `json:"data"`
+				}
+				err := json.NewDecoder(w.Body).Decode(&res)
+
+				assert.Nil(t, err)
+				assert.Equal(t, "200 OK", w.Result().Status)
+				assert.Equal(t, 4, res.Data.Post.Engagement.ShareCount)
+			})
+
+			t.Run("When unable to connect to the Facebook Graph API", func(t *testing.T) {
+
+				// Given
+				id := primitive.NewObjectID()
+				catID := primitive.NewObjectID()
+				tagID := primitive.NewObjectID()
+				slug := "test-published-" + id.Hex()
+				post := blog.Post{
+					ID:         id,
+					Slug:       slug,
+					Status:     blog.Published,
+					Categories: []mongo.DBRef{{ID: catID}},
+					Tags:       []mongo.DBRef{{ID: tagID}},
+				}
+				q := query{
+					Query: `{ post(slug: $slug) { slug engagement { shareCount } } }`,
+					Variables: map[string]interface{}{
+						"slug": slug,
+					},
+				}
+				w := httptest.NewRecorder()
+
+				postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
+				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(_ *http.Request) (*http.Response, error) {
+					return nil, errors.New("unable to connect to Facebook Graph API")
+				})
+
+				// When
+				h.ServeHTTP(w, newGraphQLRequest(q))
+
+				// Then
+				var res struct {
+					Data struct {
+						Post struct {
+							Engagement struct {
+								ShareCount int `json:"shareCount"`
+							} `json:"engagement"`
+						} `json:"post"`
+					} `json:"data"`
+				}
+				err := json.NewDecoder(w.Body).Decode(&res)
+
+				assert.Nil(t, err)
+				assert.Equal(t, "200 OK", w.Result().Status)
+				assert.Equal(t, 0, res.Data.Post.Engagement.ShareCount)
+			})
 		})
 
 		t.Run("With existing draft post", func(t *testing.T) {
