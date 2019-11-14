@@ -34,7 +34,6 @@ jobs:
   build_docker_image:
     machine:
       image: ubuntu-1604:201903-01
-      docker_layer_caching: true
     working_directory: ~/repo
     steps:
       - checkout
@@ -44,7 +43,6 @@ jobs:
   deploy_to_docker_deploy_webhook:
     machine:
       image: ubuntu-1604:201903-01
-      docker_layer_caching: true
     steps:
       - run: |
           curl \
