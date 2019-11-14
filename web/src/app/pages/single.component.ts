@@ -50,4 +50,8 @@ export class SingleComponent implements OnInit {
     });
   }
 
+  hasFeaturedImage(): boolean {
+    return this.p.featuredImage.slug.length > 0;
+  }
+
 }
