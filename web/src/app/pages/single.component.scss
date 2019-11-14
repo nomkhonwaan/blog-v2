@@ -1,6 +1,16 @@
+@import '../../styles.scss';
+
 :host {
   display: block;
   width: 100vw;
+
+  > ._wide {
+    padding: 0;
+
+    @include md {
+      padding: 0 3.2rem;
+    }
+  }
 }
 
 app-post-title {
