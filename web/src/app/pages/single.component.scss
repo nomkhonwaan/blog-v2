@@ -17,12 +17,13 @@ app-post-title {
   margin-top: 8rem;
 }
 
-// app-post-title.-with-featured-image {
-//   background: center / cover no-repeat fixed;
-//   color: #fafafa;
-//   margin: 0 -3.2rem;
-//   padding: 8rem 3.2rem 3.2rem 3.2rem;
-// }
+app-post-featured-image {
+  @include md {
+    background-size: auto 100vw!important;
+    margin-left: calc((100vw / 2 * -1) + 25.6rem + 12.8rem)!important;
+    margin-right: calc((100vw / 2 * -1) + 25.6rem + 12.8rem)!important;
+  }
+}
 
 .horizontal-separator {
   /*

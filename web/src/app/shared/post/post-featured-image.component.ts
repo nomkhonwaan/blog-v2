@@ -12,32 +12,7 @@ import { Component, OnInit, Input, HostBinding } from '@angular/core';
       <img *ngIf="src" [src]="src">
     </ng-template>
   `,
-  styles: [
-    `
-      :host {
-        display: block;
-        background: center/cover no-repeat fixed;
-        background-image: url('http://placekitten.com/860/256');
-      }
-    `,
-    `
-      :host.-cover {
-        margin: -8rem -3.2rem 2.4rem -3.2rem;
-        padding: 0 3.2rem 3.2rem 3.2rem;
-      }
-    `,
-    `
-      :host.-cover ::ng-deep app-post-title,
-      :host.-cover ::ng-deep app-post-tags a {
-        color: #fafafa;
-      }
-    `,
-    `
-      img {
-        max-width: 100%;
-      }
-    `,
-  ],
+  styleUrls: ['./post-featured-image.component.scss'],
 })
 export class PostFeaturedImageComponent extends PostComponent implements OnInit {
 
@@ -45,17 +20,28 @@ export class PostFeaturedImageComponent extends PostComponent implements OnInit 
    * Used to indicate whether featured image should display as cover or not
    */
   @Input()
-  @HostBinding('class.-cover')
+  @HostBinding('class.-cover-mode')
   coverMode = false;
 
-  @HostBinding('style.background')
+  @HostBinding('class.-with-featured-image')
+  withFeaturedImage = false;
+
+  @HostBinding('style.background-image')
   src: string;
 
   ngOnInit(): void {
-    if (this.post.featuredImage.slug.length > 0) {
+    if (this.hasFeaturedImage()) {
       this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
-      this.src = 'http://localhost:8080' + this.src;
+      this.withFeaturedImage = true;
+
+      if (this.coverMode) {
+        this.src = `url(${this.src})`;
+      }
     }
+  }
+
+  hasFeaturedImage(): boolean {
+    return !!this.post && this.post.featuredImage.slug.length > 0;
   }
 
 }
