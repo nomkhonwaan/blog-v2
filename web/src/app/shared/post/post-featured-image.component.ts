@@ -14,6 +14,11 @@ import { Component, OnInit } from '@angular/core';
         display: block;
       }
     `,
+    `
+      img {
+        max-width: 100%;
+      }
+    `,
   ],
 })
 export class PostFeaturedImageComponent extends PostComponent implements OnInit {
@@ -22,7 +27,8 @@ export class PostFeaturedImageComponent extends PostComponent implements OnInit 
 
   ngOnInit(): void {
     if (this.post.featuredImage.slug.length > 0) {
-      this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
+      this.src = `http://localhost:8080/api/v2/storage/${this.post.featuredImage.slug}`;
+      // this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
     }
   }
 
