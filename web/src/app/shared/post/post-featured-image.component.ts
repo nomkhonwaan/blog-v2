@@ -5,7 +5,7 @@ import { Component, OnInit } from '@angular/core';
   selector: 'app-post-featured-image',
   template: `
     <div>
-      <img *ngIf="src" [src]="src">
+      <img [src]="src">
     </div>
   `,
   styles: [
@@ -26,10 +26,7 @@ export class PostFeaturedImageComponent extends PostComponent implements OnInit 
   src: string;
 
   ngOnInit(): void {
-    if (this.post.featuredImage.slug.length > 0) {
-      this.src = `http://localhost:8080/api/v2/storage/${this.post.featuredImage.slug}`;
-      // this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
-    }
+    this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
   }
 
 }
