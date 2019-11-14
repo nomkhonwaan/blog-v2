@@ -32,7 +32,9 @@ jobs:
       - codecov/upload:
           file: ./coverage.out
   build_docker_image:
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
+      docker_layer_caching: true
     working_directory: ~/repo
     steps:
       - checkout
@@ -40,7 +42,9 @@ jobs:
       - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run: docker push nomkhonwaan/myblog-all-in-one:latest
   deploy_to_docker_deploy_webhook:
-    machine: true
+    machine:
+      image: ubuntu-1604:201903-01
+      docker_layer_caching: true
     steps:
       - run: |
           curl \
