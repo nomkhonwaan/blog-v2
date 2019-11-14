@@ -46,6 +46,11 @@
   > .loading-animation {
     > div {
       height: 64%;
+
+      @include md {
+        height: auto;
+        width: 24%;
+      }
     }
   }
 }
@@ -146,6 +151,10 @@
           margin-top: 0;
         }
       }
+    }
+
+    > .cvar img {
+      margin-bottom: 1.6rem;
     }
   }
 }
