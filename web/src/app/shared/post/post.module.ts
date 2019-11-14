@@ -7,6 +7,7 @@ import { PostAuthorComponent } from './post-author.component';
 import { PostCategoriesComponent } from './post-categories.component';
 import { PostContentComponent, PostContentDirective } from './post-content.component';
 import { PostExcerptComponent } from './post-excerpt.component';
+import { PostFeaturedImageComponent } from './post-featured-image.component';
 import { PostMetadataComponent } from './post-metadata.component';
 import { PostShareToComponent } from './post-share-to.component';
 import { PostTagsComponent } from './post-tags.component';
@@ -26,6 +27,7 @@ import { TemplateModule } from '../template/template.module';
     PostCategoriesComponent,
     PostContentComponent,
     PostExcerptComponent,
+    PostFeaturedImageComponent,
     PostMetadataComponent,
     PostShareToComponent,
     PostTagsComponent,
@@ -37,6 +39,7 @@ import { TemplateModule } from '../template/template.module';
     PostCategoriesComponent,
     PostContentComponent,
     PostExcerptComponent,
+    PostFeaturedImageComponent,
     PostMetadataComponent,
     PostShareToComponent,
     PostTagsComponent,

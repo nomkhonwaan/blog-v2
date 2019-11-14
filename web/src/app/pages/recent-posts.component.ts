@@ -29,6 +29,9 @@ export class RecentPostsComponent implements OnInit {
             tags {
               name slug
             }
+            featuredImage {
+              slug
+            }
           }
         }
       `,
