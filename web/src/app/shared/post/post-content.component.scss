@@ -62,11 +62,6 @@
 
   p {
     margin: 2.4rem 0;
-    text-align: justify;
-
-    @include md {
-      text-align: left;
-    }
 
     &.fill-width {
       margin: 0 calc((100vw / 2 * -1) + 25.6rem + 12.8rem);
