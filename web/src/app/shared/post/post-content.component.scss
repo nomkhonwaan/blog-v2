@@ -54,10 +54,14 @@
   }
 
   img {
+    border-radius: 0.2rem;
     display: block;
     max-width: 100%;
-    margin: 0.8rem auto;
-    padding-top: 0.8rem;
+    margin-top: 3.2rem;
+  }
+
+  img + div.caption {
+    margin-bottom: 3.2rem;
   }
 
   p {
@@ -77,7 +81,7 @@
       }
 
       & > img {
-        border-radius: 0.2rem;
+        border-radius: 0;
         width: 100%;
       }
     }
