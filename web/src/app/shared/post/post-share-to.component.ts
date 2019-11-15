@@ -11,13 +11,13 @@ import { environment } from '../../../environments/environment';
   template: `
       <a
         href="https://www.facebook.com/sharer/sharer.php?u={{getEncodedURL()}}&amp;src=sdkpreparse"
-        class="icon"
+        class="icon -facebook"
         target="_blank">
         <fa-icon [icon]="faFacebookF"></fa-icon>
       </a>
 
       <a
-        class="icon"
+        class="icon -twitter"
         href="https://twitter.com/intent/tweet?text={{getURL()}}"
         target="_blank">
         <fa-icon [icon]="faTwitter"></fa-icon>
@@ -46,6 +46,17 @@ import { environment } from '../../../environments/environment';
     `
       .icon:last-child {
         margin-right: 0;
+      }
+    `,
+    `
+      .icon > fa-icon {
+        display: block;
+      }
+    `,
+    `
+      .icon.-twitter > fa-icon {
+        margin-top: .3rem;
+        margin-left: .2rem;
       }
     `,
   ],
