@@ -21,6 +21,16 @@
     @content;
   }
 }
+@mixin xxl {
+  @media screen and (min-width: 1440px) {
+    @content;
+  }
+}
+@mixin xxxl {
+  @media screen and (min-width: 2560px) {
+    @content;
+  }
+}
 
 ._flex { display: flex!important; }
 ._flex-inline { display: inline-flex!important; }
