@@ -14,14 +14,14 @@
       <!-- <li *ngIf="!auth.isAuthenticated()">
         <a (click)="auth.login(router.url)">Login / Register</a>
       </li> -->
-      <li *ngFor="let cat of (categories$ | async)" (click)="toggleSidebar()">
+      <li *ngFor="let cat of categories$ | async" (click)="toggleSidebar()">
         <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>
       </li>
     </ul>
   </nav>
 </div>
 
-<app-dialog *ngIf="(sidebarExpanded$ | async)"></app-dialog>
+<app-dialog *ngIf="sidebarExpanded$ | async"></app-dialog>
 
 <div class="navbar">
   <app-button [icon]="faBars" (click)="toggleSidebar()"></app-button>
@@ -31,13 +31,13 @@
 </div>
 
 <main class="main">
-  <div *ngIf="(isFetching$ | async);else content" class="loading-animation _flex _flex-horizontal-align-center">
+  <!-- <div *ngIf="isFetching$ | async;else content" class="loading-animation _flex _flex-horizontal-align-center">
     <div appAnimation class="_flex _flex-horizontal-align-center" [data]="loadingAnimationData"></div>
-  </div>
+  </div> -->
 
-  <ng-template #content>
+  <!-- <ng-template #content> -->
     <router-outlet></router-outlet>
-  </ng-template>
+  <!-- </ng-template> -->
 </main>
 
 <div class="pre-footer"></div>

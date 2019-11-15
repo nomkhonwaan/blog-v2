@@ -1,21 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-recent-posts',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './recent-posts.component.html',
   styleUrls: ['./recent-posts.component.scss'],
 })
 export class RecentPostsComponent implements OnInit {
 
-  latestPublishedPosts: Post[];
+  /**
+   * Used to display as list of recent posts
+   */
+  latestPublishedPosts$: Observable<Post[]>;
 
   constructor(private apollo: Apollo) { }
 
   ngOnInit(): void {
-    this.apollo.watchQuery({
+    this.latestPublishedPosts$ = this.apollo.watchQuery({
       query: gql`
         {
           latestPublishedPosts(offset: 0, limit: 5) {
@@ -35,9 +41,9 @@ export class RecentPostsComponent implements OnInit {
           }
         }
       `,
-    }).valueChanges.subscribe((result: ApolloQueryResult<{ latestPublishedPosts: Post[] }>): void => {
-      this.latestPublishedPosts = result.data.latestPublishedPosts;
-    });
+    }).valueChanges.pipe(
+      map((result: ApolloQueryResult<{ latestPublishedPosts: Post[] }>): Post[] => result.data.latestPublishedPosts),
+    );
   }
 
 }

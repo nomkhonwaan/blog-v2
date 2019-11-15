@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, HostBinding, OnInit, Directive, ElementRef, Input, NgZone } from '@angular/core';
+import { Component, HostBinding, OnInit, Directive, ElementRef, Input, ChangeDetectionStrategy } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
 
 import { environment } from '../environments/environment';
 
-const coffeeCup = require('../assets/lottie-files/lf30_editor_pohhBA.json');
+// const coffeeCup = require('../assets/lottie-files/lf30_editor_pohhBA.json');
 
 @Directive({ selector: '[appAnimation]' })
 export class AnimationDirective implements OnInit {
@@ -68,6 +68,7 @@ export class AppComponent implements OnInit {
    */
   @HostBinding('@slideInOut')
   sidebarExpanded: boolean;
+
   sidebarExpanded$: Observable<boolean>;
 
   /**
@@ -115,7 +116,7 @@ export class AppComponent implements OnInit {
     // For some reason, the `@HostBinding` decoration does not work with observable property
     this.sidebarExpanded$.subscribe((sidebarExpanded: boolean) => this.sidebarExpanded = sidebarExpanded);
 
-    this.loadingAnimationData = coffeeCup;
+    // this.loadingAnimationData = coffeeCup;
   }
 
   ngOnInit(): void {
