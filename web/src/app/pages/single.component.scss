@@ -7,7 +7,7 @@
   > ._wide {
     padding: 0;
 
-    @include md {
+    @include lg {
       padding: 0 3.2rem;
     }
   }
@@ -18,7 +18,7 @@ app-post-title {
 }
 
 app-post-featured-image {
-  @include md {
+  @include lg {
     background-size: auto 100vw!important;
     margin-left: calc((100vw / 2 * -1) + 25.6rem + 12.8rem)!important;
     margin-right: calc((100vw / 2 * -1) + 25.6rem + 12.8rem)!important;
