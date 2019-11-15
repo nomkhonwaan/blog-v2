@@ -1,27 +1,31 @@
-<div *ngIf="p" class="_flex _flex-direction-column _wide">
+<div *ngIf="p" class="_wide">
   <!-- <div>
-    <app-post-author [displayName]="false"></app-post-author>
+      <app-post-author [displayName]="false"></app-post-author>
 
-    <div class="facebook-share-count"></div>
+      <div class="facebook-share-count"></div>
 
-    <app-post-share-to [flow]="column"></app-post-share-to>
-  </div> -->
+      <app-post-share-to [flow]="column"></app-post-share-to>
+    </div> -->
 
   <div class="_narrow">
-    <app-post-title [post]="p" [link]="false">
-      <h1>{{p.title}}</h1>
-    </app-post-title>
+    <app-post-featured-image [post]="p" [coverMode]="true">
+      <div class="_narrow">
+        <app-post-title [post]="p" [link]="false">
+          <h1>{{p.title}}</h1>
+        </app-post-title>
 
-    <app-post-tags [post]="p"></app-post-tags>
+        <app-post-tags [post]="p"></app-post-tags>
+      </div>
+    </app-post-featured-image>
 
     <app-post-content [post]="p"></app-post-content>
 
     <hr class="horizontal-separator" />
 
-    <div class="_flex _flex-vertical-align-middle">
+    <div class="metadata-and-share-to mast">
       <app-post-metadata [post]="p"></app-post-metadata>
 
-      <app-post-share-to [post]="p" [style.margin-left]="'auto'"></app-post-share-to>
+      <app-post-share-to [post]="p"></app-post-share-to>
     </div>
   </div>
 </div>

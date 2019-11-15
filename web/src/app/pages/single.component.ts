@@ -35,6 +35,12 @@ export class SingleComponent implements OnInit {
             tags {
               name slug
             }
+            featuredImage {
+              slug
+            }
+            engagement {
+              shareCount
+            }
           }
         }
       `,

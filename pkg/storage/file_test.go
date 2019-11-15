@@ -9,6 +9,7 @@ import (
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/stretchr/testify/assert"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mgo "go.mongodb.org/mongo-driver/mongo"
 	"testing"
@@ -127,4 +128,95 @@ func TestMongoFileRepository_Create(t *testing.T) {
 		assert.EqualError(t, err, "something went wrong")
 		assert.Equal(t, expected, result)
 	})
+}
+
+func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var (
+		col = mock_mongo.NewMockCollection(ctrl)
+		cur = mock_mongo.NewMockCursor(ctrl)
+	)
+
+	t.Run("With successful finding all files by list of IDs", func(t *testing.T) {
+		// Given
+		ctx := context.Background()
+		ids := []primitive.ObjectID{primitive.NewObjectID()}
+
+		col.EXPECT().Find(ctx, bson.M{
+			"_id": bson.M{
+				"$in": ids,
+			},
+		}).Return(cur, nil)
+		cur.EXPECT().Close(ctx).Return(nil)
+		cur.EXPECT().Decode(gomock.Any()).Return(nil)
+
+		repo := NewFileRepository(col)
+
+		// When
+		_, err := repo.FindAllByIDs(ctx, ids)
+
+		// Then
+		assert.Nil(t, err)
+	})
+
+	t.Run("When unable to find all files by list of IDs", func(t *testing.T) {
+		// Given
+		ctx := context.Background()
+		ids := []primitive.ObjectID{primitive.NewObjectID()}
+
+		col.EXPECT().Find(gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all files by list of IDs"))
+
+		repo := NewFileRepository(col)
+
+		// When
+		_, err := repo.FindAllByIDs(ctx, ids)
+
+		// Then
+		assert.EqualError(t, err, "test unable to find all files by list of IDs")
+	})
+}
+
+func TestMongoFileRepository_FindByID(t *testing.T) {
+	// Given
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	singleResult := mock_mongo.NewMockSingleResult(ctrl)
+	col := mock_mongo.NewMockCollection(ctrl)
+
+	ctx := context.Background()
+	repo := NewFileRepository(col)
+
+	tests := map[string]struct {
+		id  interface{}
+		err error
+	}{
+		"With existing file ID": {
+			id: primitive.NewObjectID(),
+		},
+		"When an error has occurred while finding the result": {
+			id:  primitive.NewObjectID(),
+			err: errors.New("test find by ID error"),
+		},
+	}
+
+	// When
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			col.EXPECT().FindOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}, gomock.Any()).Return(singleResult)
+			singleResult.EXPECT().Decode(gomock.Any()).Return(test.err)
+
+			if test.err == nil {
+				_, err := repo.FindByID(ctx, test.id)
+				assert.Nil(t, err)
+			} else {
+				_, err := repo.FindByID(ctx, test.id)
+				assert.EqualError(t, err, test.err.Error())
+			}
+		})
+	}
+
+	// Then
 }

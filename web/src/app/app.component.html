@@ -31,11 +31,13 @@
 </div>
 
 <main class="main">
-  <div *ngIf="isFetching" class="loading-animation _flex _flex-horizontal-align-center">
+  <div *ngIf="isFetching;else content" class="loading-animation _flex _flex-horizontal-align-center">
     <div appAnimation class="_flex _flex-horizontal-align-center" [data]="loadingAnimationData"></div>
   </div>
 
-  <router-outlet></router-outlet>
+  <ng-template #content>
+    <router-outlet></router-outlet>
+  </ng-template>
 </main>
 
 <div class="pre-footer"></div>

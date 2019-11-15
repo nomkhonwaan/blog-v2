@@ -50,6 +50,21 @@ interface Post {
   tags: Tag[]
 
   /**
+   * A featured image to be shown in the social network as a cover image
+   */
+  featuredImage: File
+
+  /**
+   * List of attachments are belonging to the post
+   */
+  Attachments: File[]
+
+  /**
+   * A social network engagement of the post
+   */
+  engagement: Engagement
+
+  /**
    * Date-time that the post was created
    */
   createdAt: Date

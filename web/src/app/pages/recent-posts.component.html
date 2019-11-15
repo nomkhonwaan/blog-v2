@@ -5,6 +5,8 @@
 
   <ul class="latest-published-posts _list-unstyled">
     <li *ngFor="let p of latestPublishedPosts">
+      <app-post-featured-image [post]="p"></app-post-featured-image>
+
       <app-post-title [post]="p">
         <h2>{{p.title}}</h2>
       </app-post-title>
