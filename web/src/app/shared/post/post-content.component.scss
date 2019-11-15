@@ -9,7 +9,7 @@
   }
 
   blockquote {
-    border-left: .8rem solid #ececec;
+    border-left: 0.8rem solid #ececec;
     display: block;
     margin: 3.2rem 0;
     padding: 0 1.6rem;
@@ -64,10 +64,20 @@
     margin: 2.4rem 0;
 
     &.fill-width {
-      margin: 0 calc((100vw / 2 * -1) + 25.6rem + 12.8rem);
-      /*                                Sidebar     N/A  */
+      margin: 0 -3.2rem !important;
+
+      @include sm {
+        margin: 0 calc((100vw / 2 * -1) + 25.6rem + 6.4rem) !important;
+        /*                                Sidebar   Padding */
+      }
+
+      @include lg {
+        margin: 0 calc((100vw / 2 * -1) + 25.6rem + 12.8rem) !important;
+        /*                                Sidebar   Padding  */
+      }
 
       & > img {
+        border-radius: 0.2rem;
         width: 100%;
       }
     }
