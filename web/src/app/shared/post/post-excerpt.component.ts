@@ -1,9 +1,10 @@
-import { OnInit, Component } from '@angular/core';
+import { OnInit, Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-excerpt',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <article [innerHTML]="summary"></article>
   `,

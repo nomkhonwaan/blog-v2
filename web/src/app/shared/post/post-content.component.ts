@@ -1,4 +1,4 @@
-import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
@@ -30,6 +30,7 @@ export class PostContentDirective implements AfterViewInit {
 
 @Component({
   selector: 'app-post-content',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <article appPostContent [innerHTML]="content"></article>
   `,

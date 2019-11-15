@@ -1,4 +1,4 @@
-import { Input, Component } from '@angular/core';
+import { Input } from '@angular/core';
 
 export abstract class PostComponent {
 

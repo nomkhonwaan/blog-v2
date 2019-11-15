@@ -1,9 +1,10 @@
-import { OnInit, Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-author',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <img src="assets/images/303589.webp" class="avatar" alt="Natcha Luangaroonchai" />
     <span *ngIf="displayName" class="display-name">Natcha Luangaroonchai</span>

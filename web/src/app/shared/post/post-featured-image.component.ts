@@ -1,8 +1,10 @@
+import { Component, OnInit, Input, HostBinding, ChangeDetectionStrategy } from '@angular/core';
+
 import { PostComponent } from './post.component';
-import { Component, OnInit, Input, HostBinding } from '@angular/core';
 
 @Component({
   selector: 'app-post-featured-image',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div *ngIf="coverMode; else nonCoverMode">
       <ng-content></ng-content>
