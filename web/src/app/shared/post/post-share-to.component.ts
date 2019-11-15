@@ -1,6 +1,5 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { faFacebookF, faTwitter, IconDefinition } from '@fortawesome/free-brands-svg-icons';
-import { faCopy, IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid';
 
 import { PostComponent } from './post.component';
 
@@ -9,6 +8,9 @@ import { environment } from '../../../environments/environment';
 @Component({
   selector: 'app-post-share-to',
   template: `
+      <span *ngIf="shareCount" class="share-count">
+        {{shareCount}}
+      </span>
       <a
         href="https://www.facebook.com/sharer/sharer.php?u={{getEncodedURL()}}&amp;src=sdkpreparse"
         class="icon -facebook"
@@ -25,11 +27,22 @@ import { environment } from '../../../environments/environment';
   `,
   styles: [
     `
+      :host {
+        color: #808080;
+      }
+    `,
+    `
+      .share-count {
+        display: inline-block;
+        font-size: 3.2rem;
+        text-transform: uppercase;
+      }
+    `,
+    `
       .icon {
         align-items: center;
         border: .1rem solid #b3b3b3;
         border-radius: 50%;
-        color: #808080;
         display: inline-flex;
         font-size: 2.2rem;
         height: 4.8rem;
@@ -54,6 +67,11 @@ import { environment } from '../../../environments/environment';
       }
     `,
     `
+      .icon.-facebook > fa-icon {
+        margin-top: .3rem;
+      }
+    `,
+    `
       .icon.-twitter > fa-icon {
         margin-top: .3rem;
         margin-left: .2rem;
@@ -61,7 +79,7 @@ import { environment } from '../../../environments/environment';
     `,
   ],
 })
-export class PostShareToComponent extends PostComponent {
+export class PostShareToComponent extends PostComponent implements OnInit {
 
   @Input()
   flow = 'row';
@@ -71,9 +89,21 @@ export class PostShareToComponent extends PostComponent {
    */
   url: string = environment.url;
 
+  /**
+   * Used to display number of social network engagement
+   */
+  shareCount: string;
+
   faFacebookF: IconDefinition = faFacebookF;
   faTwitter: IconDefinition = faTwitter;
-  faCopy: SolidIconDefinition = faCopy;
+
+  ngOnInit(): void {
+    if (this.flow === 'column') {
+      if (this.post.engagement.shareCount > 0) {
+        this.shareCount = this.post.engagement.shareCount.toString();
+      }
+    }
+  }
 
   getURL(): string {
     const publishedAt: Date = new Date(

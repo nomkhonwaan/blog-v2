@@ -38,6 +38,9 @@ export class SingleComponent implements OnInit {
             featuredImage {
               slug
             }
+            engagement {
+              shareCount
+            }
           }
         }
       `,
