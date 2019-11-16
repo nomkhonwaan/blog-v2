@@ -7,9 +7,9 @@ import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import Lottie from 'lottie-web';
 import { Observable } from 'rxjs';
-import { map, debounce, debounceTime } from 'rxjs/operators';
+import { map, debounceTime } from 'rxjs/operators';
 
-import { toggleSidebar, isFetching } from './app.actions';
+import { toggleSidebar } from './app.actions';
 import { ApolloQueryResult } from 'apollo-client';
 import { AuthService } from './auth/auth.service';
 import { Router } from '@angular/router';
@@ -111,7 +111,7 @@ export class AppComponent implements OnInit {
 
     store
       .pipe(select('app', 'isFetching'))
-      .pipe(debounceTime(1))
+      .pipe(debounceTime(0))
       .subscribe((isFetching: boolean): void => {
         this.isFetching = isFetching;
       });

@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
@@ -18,10 +19,10 @@ export class RecentPostsComponent implements OnInit {
    */
   latestPublishedPosts$: Observable<Post[]>;
 
-  constructor(private apollo: Apollo) { }
+  constructor(private apollo: Apollo, private store: Store<AppState>) { }
 
   ngOnInit(): void {
-    this.latestPublishedPosts$ = this.apollo.watchQuery({
+    this.latestPublishedPosts$ = this.apollo.query({
       query: gql`
         {
           latestPublishedPosts(offset: 0, limit: 5) {
@@ -41,7 +42,7 @@ export class RecentPostsComponent implements OnInit {
           }
         }
       `,
-    }).valueChanges.pipe(
+    }).pipe(
       map((result: ApolloQueryResult<{ latestPublishedPosts: Post[] }>): Post[] => result.data.latestPublishedPosts),
     );
   }
