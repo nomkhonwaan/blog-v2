@@ -28,7 +28,7 @@ export class SingleComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    this.post$ = this.apollo.query({
+    this.apollo.query({
       query: gql`
         {
           post(slug: $slug) {
