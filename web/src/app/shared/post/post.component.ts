@@ -15,7 +15,6 @@ export abstract class PostComponent {
    */
   innerHeight: number;
 
-
   constructor() {
     this.onResizeWindow();
   }
