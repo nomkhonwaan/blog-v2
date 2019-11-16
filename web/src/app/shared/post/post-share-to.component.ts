@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { faFacebookF, faTwitter, IconDefinition } from '@fortawesome/free-brands-svg-icons';
 
 import { PostComponent } from './post.component';
@@ -7,6 +7,7 @@ import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-post-share-to',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
       <span *ngIf="shareCount" class="share-count">
         {{shareCount}}

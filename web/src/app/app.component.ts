@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, HostBinding, OnInit, Directive, ElementRef, Input } from '@angular/core';
+import { Component, HostBinding, OnInit, Directive, ElementRef, Input, NgZone } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
@@ -7,6 +7,7 @@ import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import Lottie from 'lottie-web';
 import { Observable } from 'rxjs';
+import { map, debounceTime } from 'rxjs/operators';
 
 import { toggleSidebar } from './app.actions';
 import { ApolloQueryResult } from 'apollo-client';
@@ -23,15 +24,17 @@ export class AnimationDirective implements OnInit {
   @Input()
   data: any;
 
-  constructor(private el: ElementRef) { }
+  constructor(private el: ElementRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
-    Lottie.loadAnimation({
-      container: this.el.nativeElement,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      animationData: this.data,
+    this.ngZone.runOutsideAngular((): void => {
+      Lottie.loadAnimation({
+        container: this.el.nativeElement,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: this.data,
+      });
     });
   }
 
@@ -52,11 +55,9 @@ export class AnimationDirective implements OnInit {
   ],
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnInit {
-
-  app$: Observable<AppState>;
 
   faBars: IconDefinition = faBars;
   faSearch: IconDefinition = faSearch;
@@ -64,6 +65,9 @@ export class AppComponent implements OnInit {
   faGithubSquare: BrandIconDefinition = faGithubSquare;
   faMedium: BrandIconDefinition = faMedium;
 
+  /**
+   * Used to toggle sidebar pane for showing or hiding
+   */
   @HostBinding('@slideInOut')
   sidebarExpanded = false;
 
@@ -73,14 +77,14 @@ export class AppComponent implements OnInit {
   isFetching = false;
 
   /**
+   * Used to display at sidebar as a sub-menu to the group of posts
+   */
+  categories$: Observable<Category[]>;
+
+  /**
    * Used to render with animation directive
    */
   loadingAnimationData: any;
-
-  /**
-   * Used to display at sidebar as a sub-menu to the group of posts
-   */
-  categories: Category[];
 
   /**
    * Used to display at footer section as a build version number
@@ -103,12 +107,20 @@ export class AppComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
   ) {
-    this.app$ = store.pipe(select('app'));
-    this.app$.subscribe(({ isFetching, sidebar }: AppState): void => {
-      this.isFetching = isFetching;
-      this.sidebarExpanded = !sidebar.collapsed;
-    });
     this.loadingAnimationData = coffeeCup;
+
+    store
+      .pipe(select('app', 'isFetching'))
+      .pipe(debounceTime(0))
+      .subscribe((isFetching: boolean): void => {
+        this.isFetching = isFetching;
+      });
+
+    store
+      .pipe(select('app'))
+      .subscribe(({ sidebar }: AppState): void => {
+        this.sidebarExpanded = !sidebar.collapsed;
+      });
   }
 
   ngOnInit(): void {
@@ -130,18 +142,18 @@ export class AppComponent implements OnInit {
   }
 
   queryAllCategories(): void {
-    this.apollo.watchQuery({
+    this.categories$ = this.apollo.watchQuery({
       query: gql`
-        {
-          categories {
-            name
-            slug
+          {
+            categories {
+              name
+              slug
+            }
           }
-        }
-      `
-    }).valueChanges.subscribe((result: ApolloQueryResult<{ categories: Category[] }>): void => {
-      this.categories = result.data.categories;
-    });
+        `
+    }).valueChanges.pipe(
+      map((result: ApolloQueryResult<{ categories: Category[] }>): Category[] => result.data.categories),
+    );
   }
 
   toggleSidebar() {

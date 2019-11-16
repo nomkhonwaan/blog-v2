@@ -1,4 +1,4 @@
-import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2 } from '@angular/core';
+import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2, ChangeDetectionStrategy, Input } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
@@ -7,15 +7,39 @@ import { PostComponent } from './post.component';
 })
 export class PostContentDirective implements AfterViewInit {
 
+  @Input()
+  innerWidth: number;
+
+  @Input()
+  innerHeight: number;
+
   constructor(private el: ElementRef, private renderer: Renderer2) { }
 
   ngAfterViewInit(): void {
-    this.renderImageCaptionFromItsAltAttribute();
+    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img');
+
+    this.addExtraClassToImageClass(imgs);
+    this.addExtraQueryToImageSrc(imgs);
+    this.renderImageCaption(imgs);
   }
 
-  renderImageCaptionFromItsAltAttribute(): void {
-    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img[alt]');
+  addExtraClassToImageClass(imgs: NodeList): void {
+    imgs.forEach((node: Element): void => {
+      const classes: string = node.getAttribute('class');
 
+      node.setAttribute('class', `${classes} lazyload`);
+    })
+  }
+
+  addExtraQueryToImageSrc(imgs: NodeList): void {
+    imgs.forEach((node: Element): void => {
+      const src: string = node.getAttribute('src')
+
+      node.setAttribute('src', `${src}?width=${this.innerWidth}&height=${this.innerHeight}`);
+    });
+  }
+
+  renderImageCaption(imgs: NodeList): void {
     imgs.forEach((node: Element): void => {
       const alt: string = node.getAttribute('alt');
       const caption: Element = this.renderer.createElement('div');
@@ -30,8 +54,9 @@ export class PostContentDirective implements AfterViewInit {
 
 @Component({
   selector: 'app-post-content',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <article appPostContent [innerHTML]="content"></article>
+    <article appPostContent [innerHTML]="content" [innerWidth]="innerWidth" [innerHeight]="innerHeight"></article>
   `,
   styleUrls: ['./post-content.component.scss'],
 })

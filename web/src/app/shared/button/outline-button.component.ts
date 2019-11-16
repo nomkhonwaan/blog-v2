@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 @Component({
   selector: 'app-outline-button',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button>
       <ng-content></ng-content>

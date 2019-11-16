@@ -1,9 +1,10 @@
-import { OnInit, Component } from '@angular/core';
+import { OnInit, Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-categories',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="_list-unstyled">
       <li *ngFor="let cat of post.categories">

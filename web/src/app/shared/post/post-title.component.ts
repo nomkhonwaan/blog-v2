@@ -1,9 +1,10 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-title',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a [routerLink]="isDisabledLink() ? null : href">
       <ng-content></ng-content>

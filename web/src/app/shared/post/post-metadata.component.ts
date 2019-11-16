@@ -1,9 +1,10 @@
-import { OnInit, Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-metadata',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <app-post-author [post]="post"></app-post-author>
 

@@ -1,15 +1,17 @@
+import { Component, OnInit, Input, HostBinding, ChangeDetectionStrategy } from '@angular/core';
+
 import { PostComponent } from './post.component';
-import { Component, OnInit, Input, HostBinding } from '@angular/core';
 
 @Component({
   selector: 'app-post-featured-image',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div *ngIf="coverMode; else nonCoverMode">
       <ng-content></ng-content>
     </div>
 
     <ng-template #nonCoverMode>
-      <img *ngIf="src" [src]="src">
+      <img *ngIf="src" [src]="src" class="lazyload">
     </ng-template>
   `,
   styleUrls: ['./post-featured-image.component.scss'],
@@ -31,7 +33,7 @@ export class PostFeaturedImageComponent extends PostComponent implements OnInit 
 
   ngOnInit(): void {
     if (this.hasFeaturedImage()) {
-      this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
+      this.src = `/api/v2/storage/${this.post.featuredImage.slug}?width=${this.innerWidth}&height=${this.innerHeight}`;
       this.withFeaturedImage = true;
 
       if (this.coverMode) {

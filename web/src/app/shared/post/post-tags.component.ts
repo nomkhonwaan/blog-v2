@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
 @Component({
   selector: 'app-post-tags',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <ul class="_list-unstyled">
       <li *ngFor="let t of post.tags">
