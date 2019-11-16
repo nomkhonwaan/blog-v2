@@ -11,7 +11,7 @@ import { PostComponent } from './post.component';
     </div>
 
     <ng-template #nonCoverMode>
-      <img *ngIf="src" [src]="src">
+      <img *ngIf="src" [src]="src" class="lazyload">
     </ng-template>
   `,
   styleUrls: ['./post-featured-image.component.scss'],

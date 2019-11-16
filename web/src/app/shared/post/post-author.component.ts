@@ -6,7 +6,7 @@ import { PostComponent } from './post.component';
   selector: 'app-post-author',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <img src="assets/images/303589.webp" class="avatar" alt="Natcha Luangaroonchai" />
+    <img src="assets/images/303589.webp" class="avatar lazyload" alt="Natcha Luangaroonchai" />
     <span *ngIf="displayName" class="display-name">Natcha Luangaroonchai</span>
   `,
   styles: [

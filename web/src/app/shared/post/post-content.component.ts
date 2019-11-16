@@ -16,13 +16,22 @@ export class PostContentDirective implements AfterViewInit {
   constructor(private el: ElementRef, private renderer: Renderer2) { }
 
   ngAfterViewInit(): void {
-    this.modifyImageSrcWithInnerWidthAndHeight();
-    this.renderImageCaptionFromItsAltAttribute();
+    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img');
+
+    this.addExtraClassToImageClass(imgs);
+    this.addExtraQueryToImageSrc(imgs);
+    this.renderImageCaption(imgs);
   }
 
-  modifyImageSrcWithInnerWidthAndHeight(): void {
-    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img[src]');
+  addExtraClassToImageClass(imgs: NodeList): void {
+    imgs.forEach((node: Element): void => {
+      const classes: string = node.getAttribute('class');
 
+      node.setAttribute('class', `${classes} lazyload`);
+    })
+  }
+
+  addExtraQueryToImageSrc(imgs: NodeList): void {
     imgs.forEach((node: Element): void => {
       const src: string = node.getAttribute('src')
 
@@ -30,9 +39,7 @@ export class PostContentDirective implements AfterViewInit {
     });
   }
 
-  renderImageCaptionFromItsAltAttribute(): void {
-    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img[alt]');
-
+  renderImageCaption(imgs: NodeList): void {
     imgs.forEach((node: Element): void => {
       const alt: string = node.getAttribute('alt');
       const caption: Element = this.renderer.createElement('div');
