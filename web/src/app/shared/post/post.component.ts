@@ -1,6 +1,6 @@
 import { Input, OnInit, HostListener } from '@angular/core';
 
-export abstract class PostComponent implements OnInit {
+export abstract class PostComponent {
 
   @Input()
   post: Post;
@@ -16,7 +16,7 @@ export abstract class PostComponent implements OnInit {
   innerHeight: number;
 
 
-  ngOnInit(): void {
+  constructor() {
     this.onResizeWindow();
   }
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2, ChangeDetectionStrategy, Input } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
@@ -7,10 +7,29 @@ import { PostComponent } from './post.component';
 })
 export class PostContentDirective implements AfterViewInit {
 
-  constructor(private el: ElementRef, private renderer: Renderer2) { }
+  @Input()
+  innerWidth: number;
+
+  @Input()
+  innerHeight: number;
+
+  constructor(private el: ElementRef, private renderer: Renderer2) {
+    console.log(this.innerWidth, this.innerHeight);
+  }
 
   ngAfterViewInit(): void {
+    this.modifyImageSrcWithInnerWidthAndHeight();
     this.renderImageCaptionFromItsAltAttribute();
+  }
+
+  modifyImageSrcWithInnerWidthAndHeight(): void {
+    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img[src]');
+
+    imgs.forEach((node: Element): void => {
+      const src: string = node.getAttribute('src')
+
+      node.setAttribute('src', `${src}?width=${this.innerWidth}&height=${this.innerHeight}`);
+    });
   }
 
   renderImageCaptionFromItsAltAttribute(): void {
@@ -32,7 +51,7 @@ export class PostContentDirective implements AfterViewInit {
   selector: 'app-post-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <article appPostContent [innerHTML]="content"></article>
+    <article appPostContent [innerHTML]="content" [innerWidth]="innerWidth" [innerHeight]="innerHeight"></article>
   `,
   styleUrls: ['./post-content.component.scss'],
 })
