@@ -20,7 +20,7 @@ export abstract class PostComponent implements OnInit {
     this.onResizeWindow();
   }
 
-  @HostListener('window:resize', ['$event'])
+  @HostListener('window:resize', [])
   onResizeWindow() {
     this.innerWidth = window.innerWidth;
     this.innerHeight = window.innerHeight;
