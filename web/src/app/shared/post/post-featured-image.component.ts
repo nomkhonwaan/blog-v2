@@ -33,7 +33,7 @@ export class PostFeaturedImageComponent extends PostComponent implements OnInit 
 
   ngOnInit(): void {
     if (this.hasFeaturedImage()) {
-      this.src = `/api/v2/storage/${this.post.featuredImage.slug}`;
+      this.src = `/api/v2/storage/${this.post.featuredImage.slug}?width=${this.innerWidth}&height=${this.innerHeight}`;
       this.withFeaturedImage = true;
 
       if (this.coverMode) {

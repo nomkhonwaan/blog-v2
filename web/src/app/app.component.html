@@ -21,7 +21,7 @@
   </nav>
 </div>
 
-<app-dialog *ngIf="sidebarExpanded$ | async"></app-dialog>
+<app-dialog *ngIf="sidebarExpanded"></app-dialog>
 
 <div class="navbar">
   <app-button [icon]="faBars" (click)="toggleSidebar()"></app-button>
@@ -31,13 +31,13 @@
 </div>
 
 <main class="main">
-  <!-- <div *ngIf="isFetching$ | async;else content" class="loading-animation _flex _flex-horizontal-align-center">
+  <div *ngIf="isFetching;else main" class="loading-animation _flex _flex-horizontal-align-center">
     <div appAnimation class="_flex _flex-horizontal-align-center" [data]="loadingAnimationData"></div>
-  </div> -->
+  </div>
 
-  <!-- <ng-template #content> -->
+  <ng-template #main>
     <router-outlet></router-outlet>
-  <!-- </ng-template> -->
+  </ng-template>
 </main>
 
 <div class="pre-footer"></div>

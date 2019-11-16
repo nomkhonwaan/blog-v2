@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, HostBinding, OnInit, Directive, ElementRef, Input, ChangeDetectionStrategy } from '@angular/core';
+import { Component, HostBinding, OnInit, Directive, ElementRef, Input } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
@@ -16,7 +16,7 @@ import { Router } from '@angular/router';
 
 import { environment } from '../environments/environment';
 
-// const coffeeCup = require('../assets/lottie-files/lf30_editor_pohhBA.json');
+const coffeeCup = require('../assets/lottie-files/lf30_editor_pohhBA.json');
 
 @Directive({ selector: '[appAnimation]' })
 export class AnimationDirective implements OnInit {
@@ -67,14 +67,12 @@ export class AppComponent implements OnInit {
    * Used to toggle sidebar pane for showing or hiding
    */
   @HostBinding('@slideInOut')
-  sidebarExpanded: boolean;
-
-  sidebarExpanded$: Observable<boolean>;
+  sidebarExpanded = false;
 
   /**
    * Used to display loading animation while fetching resources
    */
-  isFetching$: Observable<boolean>;
+  isFetching = false;
 
   /**
    * Used to display at sidebar as a sub-menu to the group of posts
@@ -107,16 +105,12 @@ export class AppComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
   ) {
-    this.isFetching$ = store.pipe(select('app', 'isFetching'));
-    this.sidebarExpanded$ = store.pipe(
-      select('app', 'sidebar', 'collapsed'),
-      map((collapsed: boolean): boolean => !collapsed),
-    );
+    this.loadingAnimationData = coffeeCup;
 
-    // For some reason, the `@HostBinding` decoration does not work with observable property
-    this.sidebarExpanded$.subscribe((sidebarExpanded: boolean) => this.sidebarExpanded = sidebarExpanded);
-
-    // this.loadingAnimationData = coffeeCup;
+    store.pipe(select('app')).subscribe(({ isFetching, sidebar }: AppState): void => {
+      this.isFetching = isFetching;
+      this.sidebarExpanded = !sidebar.collapsed;
+    });
   }
 
   ngOnInit(): void {
