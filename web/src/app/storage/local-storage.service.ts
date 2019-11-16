@@ -56,7 +56,7 @@ export class LocalStorageService {
    * @param keyValuePair object
    */
   setAll(keyValuePair: { [name: string]: string }): void {
-    Object.keys(keyValuePair).map((key) => {
+    Object.keys(keyValuePair).forEach((key): void => {
       this.set(key, keyValuePair[key]);
     });
   }
