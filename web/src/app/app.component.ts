@@ -7,9 +7,9 @@ import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
 import Lottie from 'lottie-web';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, debounce, debounceTime } from 'rxjs/operators';
 
-import { toggleSidebar } from './app.actions';
+import { toggleSidebar, isFetching } from './app.actions';
 import { ApolloQueryResult } from 'apollo-client';
 import { AuthService } from './auth/auth.service';
 import { Router } from '@angular/router';
@@ -107,10 +107,18 @@ export class AppComponent implements OnInit {
   ) {
     this.loadingAnimationData = coffeeCup;
 
-    store.pipe(select('app')).subscribe(({ isFetching, sidebar }: AppState): void => {
-      this.isFetching = isFetching;
-      this.sidebarExpanded = !sidebar.collapsed;
-    });
+    store
+      .pipe(select('app', 'isFetching'))
+      .pipe(debounceTime(1))
+      .subscribe((isFetching: boolean): void => {
+        this.isFetching = isFetching;
+      });
+
+    store
+      .pipe(select('app'))
+      .subscribe(({ sidebar }: AppState): void => {
+        this.sidebarExpanded = !sidebar.collapsed;
+      });
   }
 
   ngOnInit(): void {
