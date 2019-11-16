@@ -1,5 +1,5 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, HostBinding, OnInit, Directive, ElementRef, Input } from '@angular/core';
+import { Component, HostBinding, OnInit, Directive, ElementRef, Input, NgZone } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
@@ -24,15 +24,17 @@ export class AnimationDirective implements OnInit {
   @Input()
   data: any;
 
-  constructor(private el: ElementRef) { }
+  constructor(private el: ElementRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
-    Lottie.loadAnimation({
-      container: this.el.nativeElement,
-      renderer: 'svg',
-      loop: true,
-      autoplay: true,
-      animationData: this.data,
+    this.ngZone.runOutsideAngular((): void => {
+      Lottie.loadAnimation({
+        container: this.el.nativeElement,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        animationData: this.data,
+      });
     });
   }
 
