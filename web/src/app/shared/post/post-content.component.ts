@@ -13,9 +13,7 @@ export class PostContentDirective implements AfterViewInit {
   @Input()
   innerHeight: number;
 
-  constructor(private el: ElementRef, private renderer: Renderer2) {
-    console.log(this.innerWidth, this.innerHeight);
-  }
+  constructor(private el: ElementRef, private renderer: Renderer2) { }
 
   ngAfterViewInit(): void {
     this.modifyImageSrcWithInnerWidthAndHeight();
