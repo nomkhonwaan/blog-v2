@@ -1,23 +1,26 @@
-import { OnInit, Component } from '@angular/core';
+import { OnInit, Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
+import { map, finalize } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-archive',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './archive.component.html',
   styleUrls: ['./archive.component.scss'],
 })
 export class ArchiveComponent implements OnInit {
 
-  archive: Category | Tag;
+  archive$: Observable<Category | Tag>;
 
-  constructor(private apollo: Apollo, private route: ActivatedRoute) { }
+  constructor(private apollo: Apollo, private route: ActivatedRoute, private changeDetectorRef: ChangeDetectorRef) { }
 
   ngOnInit(): void {
     const type: string = (this.route.snapshot.data as { type: string }).type;
-    this.apollo.watchQuery({
+    this.archive$ = this.apollo.query({
       query: gql`
         {
           ${type}(slug: $slug) {
@@ -41,9 +44,10 @@ export class ArchiveComponent implements OnInit {
       variables: {
         slug: this.route.snapshot.paramMap.get('slug'),
       },
-    }).valueChanges.subscribe((result: ApolloQueryResult<{ archive: Category | Tag }>): void => {
-      this.archive = result.data.archive;
-    });
+    }).pipe(
+      map((result: ApolloQueryResult<{ archive: Category | Tag }>): Category | Tag => result.data.archive),
+      finalize((): void => this.changeDetectorRef.markForCheck()),
+    );
   }
 
 }

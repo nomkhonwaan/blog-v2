@@ -5,7 +5,6 @@ import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { map, finalize } from 'rxjs/operators';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-single',

@@ -3,26 +3,27 @@ import { Routes, RouterModule } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: ':year/:month/:date/:slug', loadChildren: () => import('./single/single.module')
-      .then((m) => m.SingleModule),
+    path: ':year/:month/:date/:slug',
+    loadChildren: () => import('./single/single.module').then((m) => m.SingleModule),
   },
   {
-    path: 'category/:slug', loadChildren: () => import('./archive/archive.module')
-      .then((m) => m.ArchiveModule),
+    path: 'category/:slug',
+    data: { type: 'category' },
+    loadChildren: () => import('./archive/archive.module').then((m) => m.ArchiveModule),
   },
   {
-    path: 'tag/:slug', loadChildren: () => import('./archive/archive.module')
-      .then((m) => m.ArchiveModule),
+    path: 'tag/:slug',
+    data: { type: 'tag' },
+    loadChildren: () => import('./archive/archive.module').then((m) => m.ArchiveModule),
   },
   {
-    path: '', pathMatch: 'full', loadChildren: () => import('./recent-posts/recent-posts.module')
-      .then((m) => m.RecentPostsModule),
+    path: '', pathMatch: 'full',
+    loadChildren: () => import('./recent-posts/recent-posts.module').then((m) => m.RecentPostsModule),
   },
-
-  // {
-  //   path: '**', loadChildren: () => import('./page-not-found/page-not-found.module')
-  //     .then((m) => m.PageNotFoundModule),
-  // },
+  {
+    path: '**',
+    loadChildren: () => import('./page-not-found/page-not-found.module').then((m) => m.PageNotFoundModule),
+  },
 ];
 
 @NgModule({
