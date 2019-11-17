@@ -12,6 +12,7 @@ import { environment } from 'src/environments/environment';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './auth/auth.module';
 import { PagesModule } from './pages/pages.module';
+import { RecentPostsModule } from './recent-posts/recent-posts.module';
 import { SharedModule } from './shared/share.module';
 
 import { AppComponent, AnimationDirective } from './app.component';
@@ -39,6 +40,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
     AppRoutingModule,
     AuthModule,
     PagesModule,
+    RecentPostsModule,
     SharedModule,
   ],
   declarations: [
