@@ -11,8 +11,8 @@ import { PostTitleComponent } from './post-title.component';
     </div>
 
     <ng-template #nonCoverMode>
-      <a [routerLink]="href">
-        <img *ngIf="src" [src]="src" class="lazyload">
+      <a [routerLink]="href" [attr.aria-label]="post.title">
+        <img *ngIf="src" [src]="src" [alt]="post.title" class="lazyload">
       </a>
     </ng-template>
   `,

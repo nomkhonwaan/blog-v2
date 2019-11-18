@@ -1,9 +1,9 @@
 <div class="sidebar">
   <header>
-    <app-button (click)="toggleSidebar()" [style.margin-right]="'-1.6rem'">
+    <app-button ariaLabel="Close Sidebar" (click)="toggleSidebar()" [style.margin-right]="'-1.6rem'">
       {{'close' | uppercase}}
     </app-button>
-    <app-button [icon]="faTimes" (click)="toggleSidebar()"></app-button>
+    <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="toggleSidebar()"></app-button>
   </header>
 
   <nav>
@@ -24,9 +24,9 @@
 <app-dialog *ngIf="sidebarExpanded"></app-dialog>
 
 <div class="navbar">
-  <app-button [icon]="faBars" (click)="toggleSidebar()"></app-button>
+  <app-button ariaLabel="Open Sidebar" [icon]="faBars" (click)="toggleSidebar()"></app-button>
 
-  <app-button [icon]="faSearch" [style.margin-left]="'auto'">
+  <app-button ariaLabel="Search" [icon]="faSearch" [style.margin-left]="'auto'">
   </app-button>
 </div>
 
@@ -57,11 +57,11 @@
       <div class="copyright">www.nomkhonwaan.com &copy; {{fullYear}}</div>
 
       <div class="social-networks">
-        <a href="https://github.com/nomkhonwaan">
+        <a href="https://github.com/nomkhonwaan" aria-label="GitHub">
           <fa-icon [icon]="faGithubSquare"></fa-icon>
         </a>
 
-        <a href="https://medium.com/@nomkhonwaan">
+        <a href="https://medium.com/@nomkhonwaan" aria-label="Medium">
           <fa-icon [icon]="faMedium"></fa-icon>
         </a>
       </div>
