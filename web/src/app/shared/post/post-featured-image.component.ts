@@ -36,7 +36,7 @@ export class PostFeaturedImageComponent extends PostTitleComponent implements On
     super.ngOnInit();
 
     if (this.hasFeaturedImage()) {
-      this.src = `/api/v2/storage/${this.post.featuredImage.slug}?width=${this.innerWidth}&height=${this.innerHeight}`;
+      this.src = `/api/v2.1/storage/${this.post.featuredImage.slug}?width=${this.innerWidth}&height=${this.innerHeight}`;
       this.withFeaturedImage = true;
     }
   }

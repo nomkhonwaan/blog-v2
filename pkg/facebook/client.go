@@ -130,7 +130,7 @@ func (c Client) serveSingle(w http.ResponseWriter, r *http.Request, id interface
 	if !p.FeaturedImage.ID.IsZero() {
 		file, _ := c.service.File().FindByID(r.Context(), p.FeaturedImage.ID)
 		if file.Slug != "" {
-			featuredImage = c.baseURL + "/api/v2/storage/" + file.Slug
+			featuredImage = c.baseURL + "/api/v2.1/storage/" + file.Slug
 		}
 	}
 

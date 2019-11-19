@@ -157,7 +157,7 @@ but not this line`,
 			URL:           fmt.Sprintf("%s/%s/test-post-%s", baseURL, now.Format("2006/1/2"), id.Hex()),
 			Title:         "Test post",
 			Description:   "this should be a post description",
-			FeaturedImage: fmt.Sprintf("%s/api/v2/storage/test-featured-image-%s.jpg", baseURL, featuredImageID.Hex()),
+			FeaturedImage: fmt.Sprintf("%s/api/v2.1/storage/test-featured-image-%s.jpg", baseURL, featuredImageID.Hex()),
 		}
 
 		// When

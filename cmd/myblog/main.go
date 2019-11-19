@@ -173,7 +173,7 @@ func action(ctx *cli.Context) error {
 	r.Use(authMiddleware.Handler)
 
 	/* RESTfuls Endpoints */
-	storage.NewHandler(cache, fileRepo, s3, s3).Register(r.PathPrefix("/api/v2/storage").Subrouter())
+	storage.NewHandler(cache, fileRepo, s3, s3).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 
 	/* GraphQL Endpoints */
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
