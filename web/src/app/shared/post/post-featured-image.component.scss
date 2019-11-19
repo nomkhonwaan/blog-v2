@@ -4,13 +4,13 @@
   display: block;
 
   &.-cover-mode {
-    background: center / auto no-repeat fixed;
+    background: center top auto no-repeat fixed;
     margin: 0 -3.2rem 2.4rem -3.2rem;
     padding-top: 8rem;
 
-    // @include md {
-    //   background-size: cover!important;
-    // }
+    @include md {
+      background-position: center;
+    }
 
     ::ng-deep {
       app-post-title {
