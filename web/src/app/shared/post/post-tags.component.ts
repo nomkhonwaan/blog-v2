@@ -8,7 +8,7 @@ import { PostComponent } from './post.component';
   template: `
     <ul class="_list-unstyled">
       <li *ngFor="let t of post.tags">
-        <a [routerLink]="['tag', t.slug]">#{{t.name}}</a>
+        <a [routerLink]="['/', 'tag', t.slug]">#{{t.name}}</a>
       </li>
     </ul>
   `,
