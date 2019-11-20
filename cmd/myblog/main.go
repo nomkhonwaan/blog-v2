@@ -5,7 +5,6 @@ import (
 	"compress/gzip"
 	"context"
 	"fmt"
-	"github.com/NYTimes/gziphandler"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
@@ -169,7 +168,7 @@ func action(ctx *cli.Context) error {
 	/* Gorilla Routes */
 	r := mux.NewRouter()
 	r.Use(logRequest)
-	r.Use(gziphandler.GzipHandler)
+	//r.Use(gziphandler.GzipHandler)
 	r.Use(authMiddleware.Handler)
 
 	/* RESTfuls Endpoints */
