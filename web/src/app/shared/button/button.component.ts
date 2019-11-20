@@ -5,7 +5,7 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
   selector: 'app-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button>
+    <button [attr.aria-label]="ariaLabel">
       <fa-icon *ngIf="icon" [icon]="icon"></fa-icon>
 
       <ng-content></ng-content>
@@ -42,5 +42,8 @@ export class ButtonComponent {
 
   @Input()
   icon: IconDefinition;
+
+  @Input()
+  ariaLabel: string;
 
 }

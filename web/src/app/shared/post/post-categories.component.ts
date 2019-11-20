@@ -1,4 +1,4 @@
-import { OnInit, Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
@@ -8,7 +8,7 @@ import { PostComponent } from './post.component';
   template: `
     <ul class="_list-unstyled">
       <li *ngFor="let cat of post.categories">
-        <a [routerLink]="['category', cat.slug]">{{cat.name}}</a>
+        <a [routerLink]="['/', 'category', cat.slug]">{{cat.name}}</a>
       </li>
     </ul>
   `,
@@ -26,10 +26,4 @@ import { PostComponent } from './post.component';
     `,
   ],
 })
-export class PostCategoriesComponent extends PostComponent implements OnInit {
-
-  ngOnInit(): void {
-
-  }
-
-}
+export class PostCategoriesComponent extends PostComponent { }

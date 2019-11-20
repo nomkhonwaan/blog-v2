@@ -74,7 +74,7 @@ build-web:
 	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.prod.original.ts > $(WEBDIR)/src/environments/environment.prod.ts && \
 	cd $(WEBDIR) && \
 	$(NG) build --prod --buildOptimizer --aot --vendorChunk && \
-	cd $(CURDIR) && \
+	rm -f $(WEBDIR)/src/environments/environment.prod.ts && \
 	mv $(WEBDIR)/src/environments/environment.prod.original.ts $(WEBDIR)/src/environments/environment.prod.ts
 
 .PHONY: build-docker

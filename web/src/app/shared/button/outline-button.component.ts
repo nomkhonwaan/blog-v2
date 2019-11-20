@@ -1,10 +1,12 @@
 import { Component, ChangeDetectionStrategy } from '@angular/core';
 
+import { ButtonComponent } from './button.component';
+
 @Component({
   selector: 'app-outline-button',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <button>
+    <button [attr.aria-label]="ariaLabel">
       <ng-content></ng-content>
     </button>
   `,
@@ -32,4 +34,4 @@ import { Component, ChangeDetectionStrategy } from '@angular/core';
     `,
   ],
 })
-export class OutlineButtonComponent { }
+export class OutlineButtonComponent extends ButtonComponent { }
