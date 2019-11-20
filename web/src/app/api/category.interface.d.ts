@@ -11,4 +11,9 @@ interface Category {
    * Valid URL string composes with name and ID
    */
   slug: string
+
+  /**
+   * List of latest published posts are belongging to the category
+   */
+  latestPublishedPosts: Post[];
 }
