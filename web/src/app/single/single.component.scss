@@ -47,12 +47,18 @@ app-post-featured-image.-with-featured-image + app-post-title {
 }
 
 .mast {
+  background: #fafafa;
   display: flex;
   flex-direction: column;
+  margin: 0 -3.2rem;
+  padding: 3.2rem 0;
 
   @include md {
     align-items: center;
+    background: none;
     flex-direction: row;
+    margin: 0;
+    padding: 0;
   }
 
   app-post-metadata {
@@ -68,6 +74,43 @@ app-post-featured-image.-with-featured-image + app-post-title {
 
     @include md {
       margin: 0 0 0 auto;
+    }
+  }
+
+  ::ng-deep {
+    app-post-metadata {
+      display: block;
+
+      @include md {
+        display: grid;
+      }
+
+      app-post-author {
+        align-items: center;
+        flex-direction: column;
+
+        @include md {
+          align-items: flex-start;
+          flex-direction: row;
+          justify-content: flex-start;
+        }
+
+        .display-name {
+          margin: 2.4rem 0 0 0;
+
+          @include md {
+            margin: 0.8rem 0 0 1.6rem;
+          }
+        }
+      }
+
+      .published-at {
+        margin: 0.8rem 0 0 0;
+
+        @include md {
+          margin: -2.8rem 0 0 1.6rem;
+        }
+      }
     }
   }
 }
