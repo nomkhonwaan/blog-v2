@@ -2,4 +2,24 @@
   <div class="_section-title">
     {{ archive.name }}
   </div>
+
+  <ul class="latest-published-posts _list-unstyled">
+    <li *ngFor="let post of archive.latestPublishedPosts">
+      <app-post-featured-image [post]="post"></app-post-featured-image>
+
+      <app-post-title [post]="post">
+        <h2>{{post.title}}</h2>
+      </app-post-title>
+
+      <app-post-tags [post]="post"></app-post-tags>
+
+      <app-post-excerpt [post]="post"></app-post-excerpt>
+
+      <app-post-metadata [post]="post"></app-post-metadata>
+    </li>
+  </ul>
+
+  <div class="_text-right" [style.margin-top]="'6.4rem'">
+    <app-outline-button ariaLabel="Older Posts">Older Posts</app-outline-button>
+  </div>
 </div>

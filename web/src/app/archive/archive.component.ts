@@ -1,6 +1,6 @@
 import { OnInit, Component, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
@@ -28,8 +28,10 @@ export class ArchiveComponent implements OnInit {
 
   ngOnInit(): void {
     const type: string = (this.route.snapshot.data as { type: string }).type;
-    this.apollo.query({
-      query: gql`
+
+    this.route.paramMap.subscribe((paramMap: ParamMap): void => {
+      this.apollo.query({
+        query: gql`
         {
           ${type}(slug: $slug) {
             name
@@ -45,19 +47,23 @@ export class ArchiveComponent implements OnInit {
               tags {
                 name slug
               }
+              featuredImage {
+                slug
+              }
             }
           }
         }
       `,
-      variables: {
-        slug: this.route.snapshot.paramMap.get('slug'),
-      },
-    }).pipe(
-      map((result: ApolloQueryResult<{ archive: Category | Tag }>): Category | Tag => result.data[type]),
-      finalize((): void => this.changeDetectorRef.markForCheck()),
-    ).subscribe((archive: Category | Tag): void => {
-      this.title.setTitle(`${archive.name} - Nomkhonwaan | Trust me I'm Petdo`);
-      this.archive = archive;
+        variables: {
+          slug: paramMap.get('slug'),
+        },
+      }).pipe(
+        map((result: ApolloQueryResult<{ archive: Category | Tag }>): Category | Tag => result.data[type]),
+        finalize((): void => this.changeDetectorRef.markForCheck()),
+      ).subscribe((archive: Category | Tag): void => {
+        this.title.setTitle(`${archive.name} - Nomkhonwaan | Trust me I'm Petdo`);
+        this.archive = archive;
+      });
     });
   }
 

@@ -4,18 +4,18 @@
   </div>
 
   <ul class="latest-published-posts _list-unstyled">
-    <li *ngFor="let p of latestPublishedPosts$ | async">
-      <app-post-featured-image [post]="p"></app-post-featured-image>
+    <li *ngFor="let post of latestPublishedPosts$ | async">
+      <app-post-featured-image [post]="post"></app-post-featured-image>
 
-      <app-post-title [post]="p">
-        <h2>{{p.title}}</h2>
+      <app-post-title [post]="post">
+        <h2>{{post.title}}</h2>
       </app-post-title>
 
-      <app-post-tags [post]="p"></app-post-tags>
+      <app-post-tags [post]="post"></app-post-tags>
 
-      <app-post-excerpt [post]="p"></app-post-excerpt>
+      <app-post-excerpt [post]="post"></app-post-excerpt>
 
-      <app-post-metadata [post]="p"></app-post-metadata>
+      <app-post-metadata [post]="post"></app-post-metadata>
     </li>
   </ul>
 
