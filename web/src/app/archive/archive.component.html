@@ -1,3 +1,5 @@
-<div class="_narrow">
-  {{ archive$ | async | json }}
+<div *ngIf="archive" class="_narrow">
+  <div class="_section-title">
+    {{ archive.name }}
+  </div>
 </div>
