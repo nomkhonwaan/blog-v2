@@ -1,5 +1,5 @@
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { Store } from '@ngrx/store';
+import { Title } from '@angular/platform-browser';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
@@ -19,9 +19,10 @@ export class RecentPostsComponent implements OnInit {
    */
   latestPublishedPosts$: Observable<Post[]>;
 
-  constructor(private apollo: Apollo, private store: Store<AppState>) { }
+  constructor(private apollo: Apollo, private title: Title) { }
 
   ngOnInit(): void {
+    this.title.setTitle(`Nomkhonwaan | Trust me I'm Petdo`);
     this.latestPublishedPosts$ = this.apollo.query({
       query: gql`
         {
