@@ -1,4 +1,4 @@
-import { OnInit, Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 
 import { PostComponent } from './post.component';
 
@@ -26,10 +26,4 @@ import { PostComponent } from './post.component';
     `,
   ],
 })
-export class PostCategoriesComponent extends PostComponent implements OnInit {
-
-  ngOnInit(): void {
-
-  }
-
-}
+export class PostCategoriesComponent extends PostComponent { }
