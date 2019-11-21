@@ -58,7 +58,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "base-url",
 			EnvVar: "BASE_URL",
-			Value:  "https://beta.nomkhonwaan.com",
+			Value:  "https://www.nomkhonwaan.com",
 		},
 
 		/* Volume Options */
@@ -94,7 +94,7 @@ func main() {
 		cli.StringFlag{
 			Name:   "auth0-audience",
 			EnvVar: "AUTH0_AUDIENCE",
-			Value:  "https://api.nomkhonwaan.com",
+			Value:  "https://www.nomkhonwaan.com",
 		},
 		cli.StringFlag{
 			Name:   "auth0-issuer",
@@ -168,7 +168,6 @@ func action(ctx *cli.Context) error {
 	/* Gorilla Routes */
 	r := mux.NewRouter()
 	r.Use(logRequest)
-	//r.Use(gziphandler.GzipHandler)
 	r.Use(authMiddleware.Handler)
 
 	/* RESTfuls Endpoints */
