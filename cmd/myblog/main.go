@@ -17,6 +17,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/server"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
+	"github.com/nomkhonwaan/myblog/sitemap"
 	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -175,6 +176,9 @@ func action(ctx *cli.Context) error {
 	/* GraphQL Endpoints */
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
+
+	/* Site-map */
+	sitemap.NewHandler(ctx.String("base-url"), cache, blogSvc).Register(r.PathPrefix("/sitemap.xml").Subrouter())
 
 	/* Static Files Endpoints */
 	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(ctx.String("static-files-path"))))

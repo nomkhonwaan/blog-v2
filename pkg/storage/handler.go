@@ -81,7 +81,7 @@ func NewHandler(cache Cache, fileRepo FileRepository, downloader Downloader, upl
 	}
 }
 
-// Register does registering storage routes (prefix: /api/v2.1/storage) with its handlers
+// Register does registering storage routes under the prefix "/api/v2.1/storage"
 func (h Handler) Register(r *mux.Router) {
 	r.Path("/{slug}").HandlerFunc(h.download).Methods(http.MethodGet)
 	r.Path("/upload").HandlerFunc(h.upload).Methods(http.MethodPost)
