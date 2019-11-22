@@ -1,0 +1,3 @@
+Sitemap: https://www.nomkhonwaan.com/sitemap.xml
+User-agent: *
+Disallow:

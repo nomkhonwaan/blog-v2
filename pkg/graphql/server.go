@@ -23,8 +23,6 @@ func (s Slug) GetID() (interface{}, error) {
 	return primitive.ObjectIDFromHex(sl[len(sl)-1])
 }
 
-type blogService struct{ blog.Service }
-
 // MustGetID always return ID from the slug string
 func (s Slug) MustGetID() interface{} {
 	if id, err := s.GetID(); err == nil {
@@ -33,17 +31,23 @@ func (s Slug) MustGetID() interface{} {
 	return primitive.NewObjectID()
 }
 
+type blogService struct{ blog.Service }
+
 // Service helps co-working between data-layer and control-layer
 type Service interface {
-	/* Facebook Client */
+	// The Facebook client
 	FBClient() facebook.Client
 
-	/* Storage Service */
+	// A file repository
 	File() storage.FileRepository
 
-	/* Blog Service */
+	// A category repository
 	Category() blog.CategoryRepository
+
+	// A post repository
 	Post() blog.PostRepository
+
+	// A tag repository
 	Tag() blog.TagRepository
 }
 

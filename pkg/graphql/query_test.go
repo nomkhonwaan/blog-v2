@@ -39,12 +39,12 @@ func TestServer_RegisterQuery(t *testing.T) {
 		tagRepo   = mock_blog.NewMockTagRepository(ctrl)
 		transport = mock_http.NewMockRoundTripper(ctrl)
 
-		blogService = blog.Service{
+		blogSvc = blog.Service{
 			CategoryRepository: catRepo,
 			PostRepository:     postRepo,
 			TagRepository:      tagRepo,
 		}
-		fbClient, _ = facebook.NewClient("", "", "", fileRepo, postRepo, transport)
+		fbClient, _ = facebook.NewClient("", "", "", blogSvc, fileRepo, transport)
 	)
 
 	newGraphQLRequest := func(q query) *http.Request {
@@ -60,7 +60,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(blogService, fbClient, fileRepo)
+	server := NewServer(blogSvc, fbClient, fileRepo)
 	h := Handler(server.Schema())
 
 	t.Run("With successful querying category by its ID", func(t *testing.T) {

@@ -89,7 +89,7 @@ func TestNewClient(t *testing.T) {
 		invalidOpenGraphTemplate := "{{.URL}"
 
 		// When
-		_, err := NewClient("", "", invalidOpenGraphTemplate, nil, nil, http.DefaultTransport)
+		_, err := NewClient("", "", invalidOpenGraphTemplate, blog.Service{}, nil, http.DefaultTransport)
 
 		// Then
 		assert.EqualError(t, err, "template: facebook-open-graph-template:1: unexpected \"}\" in operand")
@@ -103,10 +103,11 @@ func TestClient_CrawlerHandler(t *testing.T) {
 	var (
 		fileRepo = mock_storage.NewMockFileRepository(ctrl)
 		postRepo = mock_blog.NewMockPostRepository(ctrl)
+		blogSvc  = blog.Service{PostRepository: postRepo}
 
 		baseURL           = "http://localhost:8080"
 		openGraphTemplate = `{"url":"{{.URL}}","title":"{{.Title}}","description":"{{.Description}}","featuredImage":"{{.FeaturedImage}}"}`
-		client, _         = NewClient(baseURL, "", openGraphTemplate, fileRepo, postRepo, http.DefaultTransport)
+		client, _         = NewClient(baseURL, "", openGraphTemplate, blogSvc, fileRepo, http.DefaultTransport)
 		nextHandler       = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			_, _ = w.Write([]byte("OK"))
 		})
@@ -227,7 +228,7 @@ func TestClient_GetURL(t *testing.T) {
 		appAccessToken = "test-app-access-token"
 	)
 
-	client, _ := NewClient(baseURL, appAccessToken, "", nil, nil, transport)
+	client, _ := NewClient(baseURL, appAccessToken, "", blog.Service{}, nil, transport)
 
 	t.Run("With successful getting URL result from the Facebook Graph API", func(t *testing.T) {
 		// Given
