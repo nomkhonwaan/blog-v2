@@ -17,19 +17,19 @@ jobs:
           key: go-{{ checksum "go.sum" }}
           paths:
             - /go/pkg/mod
-  # install_web:
-  #   docker:
-  #     - image: circleci/node:12.13.0
-  #   environment:
-  #     NPM_AUTH_TOKEN: $NPM_AUTH_TOKEN
-  #   working_directory: ~/repo
-  #   steps:
-  #     - checkout
-  #     - run: make install-web
-  #     - save_cache:
-  #         key: nodejs-{{ checksum "package-lock.json" }}
-  #         paths:
-  #           - ./web/node_modules
+  install_web:
+    docker:
+      - image: circleci/node:12.13.0
+    environment:
+      NPM_AUTH_TOKEN: $NPM_AUTH_TOKEN
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - run: make install-web
+      - save_cache:
+          key: nodejs-{{ checksum "package-lock.json" }}
+          paths:
+            - ./web/node_modules
   # build:
   #   docker:
   #     - image: circleci/golang:1.13
@@ -99,7 +99,8 @@ workflows:
   build_test_and_deploy:
     jobs:
       - install
-#       - install_web
+      - install_web
+      
 #       - test:
 #           requires:
 #             - install
