@@ -83,20 +83,21 @@ jobs:
       image: ubuntu-1604:201903-01
     working_directory: ~/repo
     steps:
+      - checkout
       - attach_workspace:
           at: .
       - run: make build-docker-all-in-one-ci
       - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
       - run: docker push nomkhonwaan/myblog-all-in-one:latest
-  # deploy_to_docker_deploy_webhook:
-  #   machine:
-  #     image: ubuntu-1604:201903-01
-  #   steps:
-  #     - run: |
-  #         curl \
-  #           -H 'Content-Type: application/json' \
-  #           -d '{"repository": {"repo_name": "nomkhonwaan/myblog-all-in-one"}, "push_data": {"tag": "latest"}}' \
-  #           ${DOCKER_DEPLOY_WEBHOOK_URL}
+  deploy_to_docker_deploy_webhook:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - run: |
+          curl \
+            -H 'Content-Type: application/json' \
+            -d '{"repository": {"repo_name": "nomkhonwaan/myblog-all-in-one"}, "push_data": {"tag": "latest"}}' \
+            ${DOCKER_DEPLOY_WEBHOOK_URL}
 
 workflows:
   version: 2
@@ -118,6 +119,6 @@ workflows:
             - test
             - build
             - build_web
-#       - deploy_to_docker_deploy_webhook:
-#           requires:
-#             - build_docker_image
+      - deploy_to_docker_deploy_webhook:
+          requires:
+            - build_docker_image
