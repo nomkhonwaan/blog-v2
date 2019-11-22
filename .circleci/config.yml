@@ -37,6 +37,7 @@ jobs:
     docker:
       - image: circleci/golang:1.13
     environment:
+      CGO_ENABLED: "0"
       GO111MODULE: "on"
     working_directory: ~/repo
     steps:
