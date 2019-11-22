@@ -29,50 +29,50 @@ jobs:
           key: nodejs-{{ checksum "./web/package-lock.json" }}
           paths:
             - ./web/node_modules
-  # build:
-  #   docker:
-  #     - image: circleci/golang:1.13
-  #   environment:
-  #     GO111MODULE: "on"
-  #   working_directory: ~/repo
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - go-{{ checksum "go.sum" }}
-  #           - run: make build
-  #     - persist_to_workspace:
-  #         root: .
-  #         paths:
-  #           - bin
-  # build_web:
-  #   docker:
-  #     - image: circleci/node:12.13.0
-  #   working_directory: ~/repo
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - nodejs-{{ checksum "package-lock.json" }}
-  #           - run: make build-web
-  #     - persist_to_workspace:
-  #         root: .
-  #         paths:
-  #           - web
-  # test:
-  #   docker:
-  #     - image: circleci/golang:1.13
-  #   environment:
-  #     GO111MODULE: "on"
-  #   working_directory: ~/repo
-  #   steps:
-  #     - checkout
-  #     - restore_cache:
-  #         keys:
-  #           - go-{{ checksum "go.sum" }}
-  #     - run: make test
-  #     - codecov/upload:
-  #         file: ./coverage.out
+  build:
+    docker:
+      - image: circleci/golang:1.13
+    environment:
+      GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-{{ checksum "go.sum" }}
+      - run: make build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
+  build_web:
+    docker:
+      - image: circleci/node:12.13.0
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - nodejs-{{ checksum "./web/package-lock.json" }}
+      - run: make build-web
+      - persist_to_workspace:
+          root: .
+          paths:
+            - web
+  test:
+    docker:
+      - image: circleci/golang:1.13
+    environment:
+      GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-{{ checksum "go.sum" }}
+      - run: make test
+      - codecov/upload:
+          file: ./coverage.out
   # build_docker_image:
   #   machine:
   #     image: ubuntu-1604:201903-01
@@ -99,16 +99,15 @@ workflows:
     jobs:
       - install
       - install_web
-
-#       - test:
-#           requires:
-#             - install
-#       - build:
-#           requires:
-#             - install
-#       - build_web:
-#           requires:
-#             - install_web
+      - test:
+          requires:
+            - install
+      - build:
+          requires:
+            - install
+      - build_web:
+          requires:
+            - install_web
 #       - build_docker_image:
 #           requires:
 #             - test
