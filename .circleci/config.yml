@@ -94,11 +94,11 @@ jobs:
   #           -d '{"repository": {"repo_name": "nomkhonwaan/myblog-all-in-one"}, "push_data": {"tag": "latest"}}' \
   #           ${DOCKER_DEPLOY_WEBHOOK_URL}
 
-# workflows:
-#   version: 2
-#   build_test_and_deploy:
-#     jobs:
-#       - install
+workflows:
+  version: 2
+  build_test_and_deploy:
+    jobs:
+      - install
 #       - install_web
 #       - test:
 #           requires:
