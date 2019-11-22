@@ -7,8 +7,8 @@ jobs:
   install:
     docker:
       - image: circleci/golang:1.13
-        environment:
-          GO111MODULE: "on"
+    environment:
+      GO111MODULE: "on"
     working_directory: ~/repo
     steps:
       - checkout
@@ -20,8 +20,8 @@ jobs:
   install_web:
     docker:
       - image: circleci/node:12.13.0
-        environment:
-          NPM_AUTH_TOKEN: $NPM_AUTH_TOKEN
+    environment:
+      NPM_AUTH_TOKEN: $NPM_AUTH_TOKEN
     working_directory: ~/repo
     steps:
       - checkout
@@ -33,8 +33,8 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.13
-        environment:
-          GO111MODULE: "on"
+    environment:
+      GO111MODULE: "on"
     working_directory: ~/repo
     steps:
       - checkout
@@ -63,8 +63,8 @@ jobs:
   test:
     docker:
       - image: circleci/golang:1.13
-        environment:
-          GO111MODULE: "on"
+    environment:
+      GO111MODULE: "on"
     working_directory: ~/repo
     steps:
       - checkout
@@ -93,6 +93,7 @@ jobs:
             -H 'Content-Type: application/json' \
             -d '{"repository": {"repo_name": "nomkhonwaan/myblog-all-in-one"}, "push_data": {"tag": "latest"}}' \
             ${DOCKER_DEPLOY_WEBHOOK_URL}
+
 workflows:
   version: 2
   build_test_and_deploy:
