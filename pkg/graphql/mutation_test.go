@@ -36,12 +36,12 @@ func TestServer_RegisterMutation(t *testing.T) {
 		tagRepo   = mock_blog.NewMockTagRepository(ctrl)
 		transport = mock_http.NewMockRoundTripper(ctrl)
 
-		blogService = blog.Service{
+		blogSvc = blog.Service{
 			CategoryRepository: catRepo,
 			PostRepository:     postRepo,
 			TagRepository:      tagRepo,
 		}
-		fbClient, _ = facebook.NewClient("", "", "", fileRepo, postRepo, transport)
+		fbClient, _ = facebook.NewClient("", "", "", blogSvc, fileRepo, transport)
 	)
 
 	newGraphQLRequest := func(q query) *http.Request {
@@ -57,7 +57,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(blogService, fbClient, fileRepo)
+	server := NewServer(blogSvc, fbClient, fileRepo)
 	h := Handler(server.Schema())
 
 	t.Run("Create a new post", func(t *testing.T) {

@@ -130,7 +130,6 @@ func action(ctx *cli.Context) error {
 
 	/* Repositories */
 	fileRepo := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
-	postRepo := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")))
 
 	/* Blog Service */
 	blogSvc := blog.Service{
@@ -156,7 +155,7 @@ func action(ctx *cli.Context) error {
 
 	/* Facebook Client */
 	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	fbClient, err := facebook.NewClient(ctx.String("base-url"), ctx.String("facebook-app-access-token"), string(openGraphTemplate), fileRepo, postRepo, http.DefaultTransport)
+	fbClient, err := facebook.NewClient(ctx.String("base-url"), ctx.String("facebook-app-access-token"), string(openGraphTemplate), blogSvc, fileRepo, http.DefaultTransport)
 	if err != nil {
 		return err
 	}
@@ -170,7 +169,7 @@ func action(ctx *cli.Context) error {
 	r.Use(logRequest)
 	r.Use(authMiddleware.Handler)
 
-	/* RESTfuls Endpoints */
+	/* RESTful Endpoints */
 	storage.NewHandler(cache, fileRepo, s3, s3).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 
 	/* GraphQL Endpoints */
