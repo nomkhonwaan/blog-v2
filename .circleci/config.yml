@@ -107,9 +107,9 @@ workflows:
       - build_web:
           requires:
             - install_web
-#      - build_docker_image:
-#          requires:
-#            - test
+      - build_docker_image:
+          requires:
+            - test
       - deploy_to_docker_deploy_webhook:
           requires:
             - build_docker_image
