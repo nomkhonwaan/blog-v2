@@ -58,6 +58,7 @@ jobs:
       - restore_cache:
           keys:
             - nodejs-{{ checksum "./web/package-lock.json" }}
+      - run: sudo apt install gettext
       - run: make build-web
       - persist_to_workspace:
           root: .
