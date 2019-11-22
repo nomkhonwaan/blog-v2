@@ -20,11 +20,10 @@ jobs:
   install_web:
     docker:
       - image: circleci/node:12.13.0
-    environment:
-      NPM_AUTH_TOKEN: $NPM_AUTH_TOKEN
     working_directory: ~/repo
     steps:
       - checkout
+      - run: sudo apt install gettext
       - run: make install-web
       - save_cache:
           key: nodejs-{{ checksum "package-lock.json" }}
@@ -100,7 +99,7 @@ workflows:
     jobs:
       - install
       - install_web
-      
+
 #       - test:
 #           requires:
 #             - install
