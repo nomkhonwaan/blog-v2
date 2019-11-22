@@ -78,16 +78,16 @@ jobs:
       - run: make test
       - codecov/upload:
           file: ./coverage.out
-  # build_docker_image:
-  #   machine:
-  #     image: ubuntu-1604:201903-01
-  #   working_directory: ~/repo
-  #   steps:
-  #     - attach_workspace:
-  #         at: .
-  #     - run: make build-docker-all-in-one-ci
-  #     - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
-  #     - run: docker push nomkhonwaan/myblog-all-in-one:latest
+  build_docker_image:
+    machine:
+      image: ubuntu-1604:201903-01
+    working_directory: ~/repo
+    steps:
+      - attach_workspace:
+          at: .
+      - run: make build-docker-all-in-one-ci
+      - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+      - run: docker push nomkhonwaan/myblog-all-in-one:latest
   # deploy_to_docker_deploy_webhook:
   #   machine:
   #     image: ubuntu-1604:201903-01
@@ -113,9 +113,11 @@ workflows:
       - build_web:
           requires:
             - install_web
-#       - build_docker_image:
-#           requires:
-#             - test
+      - build_docker_image:
+          requires:
+            - test
+            - build
+            - build_web
 #       - deploy_to_docker_deploy_webhook:
 #           requires:
 #             - build_docker_image
