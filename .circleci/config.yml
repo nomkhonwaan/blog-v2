@@ -26,7 +26,7 @@ jobs:
       - run: sudo apt install gettext
       - run: make install-web
       - save_cache:
-          key: nodejs-{{ checksum "package-lock.json" }}
+          key: nodejs-{{ checksum "./web/package-lock.json" }}
           paths:
             - ./web/node_modules
   # build:
