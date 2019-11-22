@@ -45,7 +45,7 @@ export class PostTitleComponent extends PostComponent implements OnInit {
 
   ngOnInit(): void {
     const publishedAt: Date = new Date(
-      new Date('2016-04-01T17:00:00Z')
+      new Date(this.post.publishedAt)
         .toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
     );
 

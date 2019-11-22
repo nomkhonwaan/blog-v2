@@ -73,7 +73,7 @@ build-web:
 	mv $(WEBDIR)/src/environments/environment.prod.ts $(WEBDIR)/src/environments/environment.prod.original.ts && \
 	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.prod.original.ts > $(WEBDIR)/src/environments/environment.prod.ts && \
 	cd $(WEBDIR) && \
-	$(NG) build --prod --buildOptimizer --aot --vendorChunk && \
+	$(NG) build --prod --buildOptimizer --aot --vendorChunk --source-map=false && \
 	rm -f $(WEBDIR)/src/environments/environment.prod.ts && \
 	mv $(WEBDIR)/src/environments/environment.prod.original.ts $(WEBDIR)/src/environments/environment.prod.ts
 
@@ -84,6 +84,10 @@ build-docker:
 .PHONY: build-docker-all-in-one
 build-docker-all-in-one:
 	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog-all-in-one:latest .
+
+.PHONY: build-docker-all-in-one-ci
+build-docker-all-in-one-ci:
+	$(DOCKER) build --file build/package/Dockerfile.all-in-one-ci --tag nomkhonwaan/myblog-all-in-one:latest .
 
 .PHONY: deploy-web-firebase
 deploy-web:
