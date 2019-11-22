@@ -23,6 +23,11 @@
     }
   }
 
+  code,
+  pre {
+    font-family: 'Roboto Mono', monospace;
+  }
+
   h2,
   h3,
   h4 {
@@ -86,6 +91,10 @@
         width: 100%;
       }
     }
+  }
+
+  pre {
+    margin: 3.2rem 0;
   }
 
   .caption {
