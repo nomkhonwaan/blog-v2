@@ -108,7 +108,7 @@ export class PostShareToComponent extends PostComponent implements OnInit {
 
   getURL(): string {
     const publishedAt: Date = new Date(
-      new Date('2016-04-01T17:00:00Z')
+      new Date(this.post.publishedAt)
         .toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
     );
 
