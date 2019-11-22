@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
@@ -27,6 +27,21 @@ export class SingleComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
+    const year: number = parseInt(this.route.snapshot.paramMap.get('year'), 10);
+
+    // automatically redirect to version 1.0 website if the published year less than 2019
+    if (year < 2019) {
+      window.location.href = [
+        'https://v1.nomkhonwaan.com',
+        this.route.snapshot.paramMap.get('year'),
+        this.route.snapshot.paramMap.get('month'),
+        this.route.snapshot.paramMap.get('date'),
+        this.route.snapshot.paramMap.get('slug'),
+      ].join('/');
+
+      return;
+    }
+
     this.apollo.query({
       query: gql`
         {
