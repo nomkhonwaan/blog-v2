@@ -64,11 +64,14 @@ func TestHandler(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	downloader := mock_storage.NewMockDownloader(ctrl)
-	uploader := mock_storage.NewMockUploader(ctrl)
-	cache := mock_storage.NewMockCache(ctrl)
-	fileRepo := mock_storage.NewMockFileRepository(ctrl)
-	router := mux.NewRouter()
+	var (
+		downloader = mock_storage.NewMockDownloader(ctrl)
+		uploader   = mock_storage.NewMockUploader(ctrl)
+		cache      = mock_storage.NewMockCache(ctrl)
+		fileRepo   = mock_storage.NewMockFileRepository(ctrl)
+
+		router = mux.NewRouter()
+	)
 
 	NewHandler(cache, fileRepo, downloader, uploader).Register(router.PathPrefix("/v1/storage").Subrouter())
 

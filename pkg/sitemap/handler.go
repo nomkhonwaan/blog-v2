@@ -16,7 +16,8 @@ import (
 )
 
 const (
-	sitemapFilePath = "sitemap.xml"
+	// CacheFilePath refers to path of the sitemap.xml to be saved in the cache storage
+	CacheFilePath = "sitemap.xml"
 )
 
 type blogService struct{ blog.Service }
@@ -134,8 +135,8 @@ func (h Handler) Register(r *mux.Router) {
 func (h Handler) serve(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
 
-	if h.service.Cache().Exist(sitemapFilePath) {
-		body, err := h.service.Cache().Retrieve(sitemapFilePath)
+	if h.service.Cache().Exist(CacheFilePath) {
+		body, err := h.service.Cache().Retrieve(CacheFilePath)
 		if err == nil {
 			length, _ := io.Copy(w, body)
 			w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
@@ -151,7 +152,7 @@ func (h Handler) serve(w http.ResponseWriter, r *http.Request) {
 	}
 	data = append([]byte(`<?xml version="1.0" encoding="UTF-8"?>`), data...)
 
-	err = h.service.Cache().Store(bytes.NewReader(data), sitemapFilePath)
+	err = h.service.Cache().Store(bytes.NewReader(data), CacheFilePath)
 	if err != nil {
 		logrus.Errorf("unable to store file on sitemap.xml: %s", err)
 	}
