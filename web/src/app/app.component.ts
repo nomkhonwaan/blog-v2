@@ -2,6 +2,7 @@ import { animate, state, style, transition, trigger } from '@angular/animations'
 import { Component, HostBinding, OnInit, Directive, ElementRef, Input, NgZone } from '@angular/core';
 import { Store, select } from '@ngrx/store';
 import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faHeart, IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
@@ -60,6 +61,7 @@ export class AnimationDirective implements OnInit {
 export class AppComponent implements OnInit {
 
   faBars: IconDefinition = faBars;
+  faHeart: SolidIconDefinition = faHeart;
   faSearch: IconDefinition = faSearch;
   faTimes: IconDefinition = faTimes;
   faGithubSquare: BrandIconDefinition = faGithubSquare;

@@ -125,20 +125,39 @@
           margin-top: 0;
         }
       }
+
+      > .social-networks > a {
+        display: inline-block;
+        font-size: 2.4rem;
+        margin: 2rem 0 0 1.6rem;
+
+        &:first-child {
+          margin-left: 0;
+        }
+      }
     }
 
     > div:nth-child(2) {
       background: #333;
       flex: 0.4;
 
-      > .social-networks > a {
-        display: inline-block;
-        font-size: 2.4rem;
-        margin-left: 1.6rem;
+      > .editorial {
+        margin-top: 2rem;
 
-        &:first-child {
-          margin-left: 0;
+        @include md {
+          margin-top: auto;
         }
+
+        fa-icon {
+          color: #f36;
+          margin: 0 .4rem;
+        }
+      }
+
+      > .var {
+        opacity: 0.64;
+        margin-top: 2rem;
+        text-align: center;
       }
     }
 

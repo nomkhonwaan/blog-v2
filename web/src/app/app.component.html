@@ -54,10 +54,6 @@
       </div>
 
       <div class="copyright">&copy; 2011 - 2019</div>
-    </div>
-
-    <div>
-      <div class="section-title">Contact Us</div>
 
       <div class="social-networks">
         <a href="https://github.com/nomkhonwaan" aria-label="GitHub">
@@ -67,9 +63,15 @@
         <a href="https://medium.com/@nomkhonwaan" aria-label="Medium">
           <fa-icon [icon]="faMedium"></fa-icon>
         </a>
-
-        <div class="version-and-revision var">{{version}} · {{revision | slice:0:7}}</div>
       </div>
+    </div>
+
+    <div class="_flex _flex-direction-column _flex-horizontal-align-center">
+      <img src="../assets/images/appenginegopher.svg" />
+
+      <div class="editorial">Made with <fa-icon [icon]="faHeart"></fa-icon> by <strong>Gopher</strong> for <strong>Developers</strong></div>
+
+      <div class="version-and-revision var">{{version}} · {{revision | slice:0:7}}</div>
     </div>
 
     <div>
