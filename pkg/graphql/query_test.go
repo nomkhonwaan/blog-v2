@@ -44,6 +44,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			PostRepository:     postRepo,
 			TagRepository:      tagRepo,
 		}
+
 		fbClient, _ = facebook.NewClient("", "", "", blogSvc, fileRepo, transport)
 	)
 
@@ -76,7 +77,13 @@ func TestServer_RegisterQuery(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		catRepo.EXPECT().FindByID(gomock.Any(), id).Return(cat, nil)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithCategory(cat).WithOffset(0).WithLimit(5).Build()).Return(nil, nil)
+		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().
+			WithCategory(cat).
+			WithStatus(blog.Published).
+			WithOffset(0).
+			WithLimit(5).
+			Build(),
+		).Return(nil, nil)
 
 		// When
 		h.ServeHTTP(w, newGraphQLRequest(q))
@@ -114,7 +121,13 @@ func TestServer_RegisterQuery(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		tagRepo.EXPECT().FindByID(gomock.Any(), id).Return(tag, nil)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithTag(tag).WithOffset(0).WithLimit(5).Build()).Return(nil, nil)
+		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().
+			WithTag(tag).
+			WithStatus(blog.Published).
+			WithOffset(0).
+			WithLimit(5).
+			Build(),
+		).Return(nil, nil)
 
 		// When
 		h.ServeHTTP(w, newGraphQLRequest(q))

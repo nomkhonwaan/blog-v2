@@ -41,6 +41,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 			PostRepository:     postRepo,
 			TagRepository:      tagRepo,
 		}
+
 		fbClient, _ = facebook.NewClient("", "", "", blogSvc, fileRepo, transport)
 	)
 
