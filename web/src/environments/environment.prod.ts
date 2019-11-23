@@ -3,8 +3,8 @@ export const environment = {
 
   url: 'https://www.nomkhonwaan.com',
 
-  version: '7cde3fe',
-  revision: '7cde3fe44e613ec2ca281a631640bc0f67e7f502',
+  version: '${VERSION}',
+  revision: '${REVISION}',
 
   auth0: {
     clientId: 'cSMgdzCX59n4TcL7H6RWRUYeRFGqCMbU',
