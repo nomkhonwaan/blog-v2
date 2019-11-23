@@ -15,9 +15,9 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
+	"github.com/nomkhonwaan/myblog/pkg/sitemap"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
-	"github.com/nomkhonwaan/myblog/sitemap"
 	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -29,6 +29,10 @@ import (
 	"strings"
 	"syscall"
 	"time"
+)
+
+const (
+	baseURL = "https://www.nomkhonwaan.com"
 )
 
 var (
@@ -55,11 +59,6 @@ func main() {
 		cli.BoolFlag{
 			Name:   "allow-cors",
 			EnvVar: "ALLOW_CORS",
-		},
-		cli.StringFlag{
-			Name:   "base-url",
-			EnvVar: "BASE_URL",
-			Value:  "https://www.nomkhonwaan.com",
 		},
 
 		/* Volume Options */
@@ -156,7 +155,7 @@ func action(ctx *cli.Context) error {
 
 	/* Facebook Client */
 	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	fbClient, err := facebook.NewClient(ctx.String("base-url"), ctx.String("facebook-app-access-token"), string(openGraphTemplate), blogSvc, fileRepo, http.DefaultTransport)
+	fbClient, err := facebook.NewClient(baseURL, ctx.String("facebook-app-access-token"), string(openGraphTemplate), blogSvc, fileRepo, http.DefaultTransport)
 	if err != nil {
 		return err
 	}
@@ -178,7 +177,7 @@ func action(ctx *cli.Context) error {
 	r.Handle("/graphql", graphql.Handler(schema))
 
 	/* Site-map */
-	sitemap.NewHandler(ctx.String("base-url"), cache, blogSvc).Register(r.PathPrefix("/sitemap.xml").Subrouter())
+	sitemap.NewHandler(baseURL, cache, blogSvc).Register(r.PathPrefix("/sitemap.xml").Subrouter())
 
 	/* Static Files Endpoints */
 	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(ctx.String("static-files-path"))))

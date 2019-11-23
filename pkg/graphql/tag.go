@@ -13,5 +13,11 @@ func (s *Server) registerTag(schema *schemabuilder.Schema) {
 }
 
 func (s *Server) tagLatestPublishedPostsFieldFunc(ctx context.Context, tag blog.Tag, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
-	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithTag(tag).WithOffset(args.Offset).WithLimit(args.Limit).Build())
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().
+		WithTag(tag).
+		WithStatus(blog.Published).
+		WithOffset(args.Offset).
+		WithLimit(args.Limit).
+		Build(),
+	)
 }
