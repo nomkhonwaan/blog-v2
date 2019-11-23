@@ -96,11 +96,6 @@ export class AppComponent implements OnInit {
    */
   revision: string = environment.revision;
 
-  /**
-   * Used to display at footer section as a current year of the copyright
-   */
-  fullYear: string;
-
   constructor(
     private apollo: Apollo,
     private store: Store<AppState>,
@@ -129,10 +124,6 @@ export class AppComponent implements OnInit {
 
     // Perform a query to the GraphQL server for retrieving a list of categories for displaying on sidebar menu
     this.queryAllCategories();
-
-    // Get the current year on user's browser for displaying as a copyright year,
-    // I know you can fool it but who care ¯\_(ツ)_/¯
-    this.fullYear = new Date().getFullYear().toString();
   }
 
   renewTokenIfAuthenticated(): void {

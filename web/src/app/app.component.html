@@ -44,17 +44,20 @@
 
 <footer class="footer">
   <div class="_wide">
-    <div class="copyright-version-and-revision cvar">
+    <div>
       <div class="creative-commons">
         <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License"
-            style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" class="lazyload" /></a><br />This work is
+            style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"
+            class="lazyload" /></a><br />This work is
         licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
           Attribution-ShareAlike 4.0 International License</a>.
       </div>
 
-      <div class="version-and-revision var">{{version}} · {{revision | slice:0:7}}</div>
+      <div class="copyright">&copy; 2011 - 2019</div>
+    </div>
 
-      <div class="copyright">www.nomkhonwaan.com &copy; {{fullYear}}</div>
+    <div>
+      <div class="section-title">Contact Us</div>
 
       <div class="social-networks">
         <a href="https://github.com/nomkhonwaan" aria-label="GitHub">
@@ -64,16 +67,12 @@
         <a href="https://medium.com/@nomkhonwaan" aria-label="Medium">
           <fa-icon [icon]="faMedium"></fa-icon>
         </a>
+
+        <div class="version-and-revision var">{{version}} · {{revision | slice:0:7}}</div>
       </div>
     </div>
 
-    <div class="subscription">
-      <div class="section-title">Subscribe</div>
-
-      <div>Stay up to date with our latest publishing. Your email is safe with us, we don't spam.</div>
-    </div>
-
-    <div class="links">
+    <div>
       <div class="section-title">Links</div>
 
       <ul class="_list-unstyled">
