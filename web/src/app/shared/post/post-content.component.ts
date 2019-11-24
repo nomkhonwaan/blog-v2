@@ -1,6 +1,18 @@
-import { Component, OnInit, Directive, ElementRef, AfterViewInit, Renderer2, ChangeDetectionStrategy, Input } from '@angular/core';
+import {
+  AfterViewInit,
+  ChangeDetectionStrategy,
+  Component,
+  Directive,
+  ElementRef,
+  Input,
+  OnInit,
+  Renderer2,
+} from '@angular/core';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 
 import { PostComponent } from './post.component';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { environment } from 'src/environments/environment';
 
 @Directive({
   selector: '[appPostContent]',
@@ -13,14 +25,16 @@ export class PostContentDirective implements AfterViewInit {
   @Input()
   innerHeight: number;
 
-  constructor(private el: ElementRef, private renderer: Renderer2) { }
+  constructor(private el: ElementRef, private http: HttpClient, private renderer: Renderer2) { }
 
   ngAfterViewInit(): void {
     const imgs: NodeList = this.el.nativeElement.querySelectorAll('img');
+    const scripts: NodeList = this.el.nativeElement.querySelectorAll('script');
 
     this.addExtraClassToImageClass(imgs);
     this.addExtraQueryToImageSrc(imgs);
     this.renderImageCaption(imgs);
+    this.renderGist(scripts);
   }
 
   addExtraClassToImageClass(imgs: NodeList): void {
@@ -50,6 +64,22 @@ export class PostContentDirective implements AfterViewInit {
       node.insertAdjacentElement('afterend', caption);
     });
   }
+
+  renderGist(scripts: NodeList): void {
+    scripts.forEach((node: Element): void => {
+      const src: string = node.getAttribute('src');
+
+      this.http.get(`/api/v2.1/github/gist?src=${encodeURIComponent(src)}`)
+        .subscribe((res: Gist): void => {
+          node.insertAdjacentHTML('afterend', res.div);
+
+          const link: Element = this.renderer.createElement('link');
+          link.setAttribute('rel', 'stylesheet');
+          link.setAttribute('href', res.stylesheet);
+          node.insertAdjacentElement('afterend', link);
+        });
+    });
+  }
 }
 
 @Component({
@@ -62,9 +92,16 @@ export class PostContentDirective implements AfterViewInit {
 })
 export class PostContentComponent extends PostComponent implements OnInit {
 
-  content: string;
+  content: SafeHtml;
+
+  constructor(private sanitizer: DomSanitizer) {
+    super();
+  }
 
   ngOnInit(): void {
-    this.content = this.post.html.replace(new RegExp('/api/v1/attachments', 'g'), 'https://www.nomkhonwaan.com/api/v1/attachments');
+    this.content = this.sanitizer.bypassSecurityTrustHtml(
+      this.post.html.replace(new RegExp('/api/v1/attachments', 'g'), 'https://www.nomkhonwaan.com/api/v1/attachments'),
+    );
   }
+
 }

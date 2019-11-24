@@ -1,4 +1,5 @@
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -19,6 +20,7 @@ import { TemplateModule } from '../template/template.module';
   imports: [
     CommonModule,
     FontAwesomeModule,
+    HttpClientModule,
     RouterModule,
     TemplateModule,
   ],
