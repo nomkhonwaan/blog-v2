@@ -5,7 +5,7 @@
 export const environment = {
   production: false,
 
-  url: 'http://localhost:4200',
+  url: 'http://localhost:4300',
 
   version: 'v0.0.1',
   revision: 'development',
@@ -16,7 +16,7 @@ export const environment = {
   },
 
   graphql: {
-    endpoint: 'http://localhost:8080/graphql',
+    endpoint: '/graphql',
   },
 };
 

@@ -10,6 +10,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/facebook"
+	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"github.com/nomkhonwaan/myblog/pkg/log"
@@ -171,12 +172,13 @@ func action(ctx *cli.Context) error {
 
 	/* RESTful Endpoints */
 	storage.NewHandler(cache, fileRepo, s3, s3).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
-
+	github.NewHandler(http.DefaultTransport).Register(r.PathPrefix("/api/v2.1/github").Subrouter())
+	
 	/* GraphQL Endpoints */
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
 
-	/* Site-map */
+	/* Sitemap */
 	sitemap.NewHandler(baseURL, cache, blogSvc).Register(r.PathPrefix("/sitemap.xml").Subrouter())
 
 	/* Static Files Endpoints */
