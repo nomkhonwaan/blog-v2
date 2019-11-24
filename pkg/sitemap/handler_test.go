@@ -49,10 +49,10 @@ func TestHandler_Register(t *testing.T) {
 		// Given
 		w := httptest.NewRecorder()
 		now := time.Now()
-		posts := []blog.Post{{Slug: "post-1", PublishedAt: now}, {Slug: "post-2", PublishedAt: now.Add(time.Hour * 24 * -1), UpdatedAt: now}}
+		posts := []blog.Post{{Slug: "post-1", PublishedAt: now}, {Slug: "post-2", PublishedAt: now.Add(time.Hour * 48 * -1), UpdatedAt: now}}
 		categories := []blog.Category{{Slug: "category-1"}}
 		tags := []blog.Tag{{Slug: "tag-1"}}
-		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/2019/11/23/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/2019/11/22/post-2</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
+		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/` + now.Format("2006/1/2") + `/post-1</loc><lastmod>` + posts[0].PublishedAt.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/` + posts[1].PublishedAt.Format("2006/1/2") + `/post-2</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
 
 		cache.EXPECT().Exist(CacheFilePath).Return(false)
 		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
@@ -94,7 +94,7 @@ func TestHandler_Register(t *testing.T) {
 		posts := []blog.Post{{Slug: "post-1", PublishedAt: now}}
 		categories := []blog.Category{{Slug: "category-1"}}
 		tags := []blog.Tag{{Slug: "tag-1"}}
-		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/2019/11/23/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
+		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/` + now.Format("2006/1/2") + `/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
 
 		cache.EXPECT().Exist(CacheFilePath).Return(true)
 		cache.EXPECT().Retrieve(CacheFilePath).Return(nil, errors.New("test unable to retrieve file content"))
@@ -167,7 +167,7 @@ func TestHandler_Register(t *testing.T) {
 		posts := []blog.Post{{Slug: "post-1", PublishedAt: now}}
 		categories := []blog.Category{{Slug: "category-1"}}
 		tags := []blog.Tag{{Slug: "tag-1"}}
-		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/2019/11/23/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
+		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/` + now.Format("2006/1/2") + `/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
 
 		cache.EXPECT().Exist(CacheFilePath).Return(false)
 		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
