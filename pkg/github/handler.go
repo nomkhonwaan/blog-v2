@@ -15,27 +15,40 @@ import (
 type Service interface {
 	// A cache service
 	Cache() storage.Cache
+
+	// Request to GitHub server for the Gist content
+	Retrieve(src string) (*http.Response, error)
 }
 
 type service struct {
-	cache storage.Cache
+	cache     storage.Cache
+	transport http.RoundTripper
 }
 
 func (s service) Cache() storage.Cache {
 	return s.cache
 }
 
+func (s service) Retrieve(src string) (*http.Response, error) {
+	u, _ := url.Parse(src)
+
+	u.Host = "gist.github.com"
+	u.Path = strings.Replace(u.Path, ".js", ".json", 1)
+
+	req, _ := http.NewRequest(http.MethodGet, u.String(), nil)
+	return s.transport.RoundTrip(req)
+}
+
 type Handler struct {
-	service   Service
-	transport http.RoundTripper
+	service Service
 }
 
 func NewHandler(cache storage.Cache, transport http.RoundTripper) Handler {
 	return Handler{
 		service: service{
-			cache: cache,
+			cache:     cache,
+			transport: transport,
 		},
-		transport: transport,
 	}
 }
 
@@ -47,7 +60,7 @@ func (h Handler) Register(r *mux.Router) {
 func (h Handler) serveGist(w http.ResponseWriter, r *http.Request) {
 	src := r.URL.Query().Get("src")
 	if src == "" {
-		http.Error(w, "`src` is required for downloading Gist content", http.StatusUnprocessableEntity)
+		http.Error(w, "`src` is required for downloading Gist content", http.StatusBadRequest)
 		return
 	}
 
@@ -64,9 +77,7 @@ func (h Handler) serveGist(w http.ResponseWriter, r *http.Request) {
 		logrus.Errorf("unable to retrieve Gist file from %s: %s", path, err)
 	}
 
-	// Retrieve Gist content from GitHub URL but in JSON format
-	req, _ := http.NewRequest(http.MethodGet, "https://gist.github.com/"+strings.Replace(src[24:], ".js", ".json", 1), nil)
-	res, err := h.transport.RoundTrip(req)
+	res, err := h.service.Retrieve(src)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

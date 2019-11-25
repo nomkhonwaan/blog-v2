@@ -173,7 +173,7 @@ func TestHandler_Register(t *testing.T) {
 		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
 		catRepo.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
 		tagRepo.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
-		cache.EXPECT().Store(gomock.Any(), CacheFilePath).Return(errors.New("unable to store cache file"))
+		cache.EXPECT().Store(gomock.Any(), CacheFilePath).Return(errors.New("test unable to store cache file"))
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())
