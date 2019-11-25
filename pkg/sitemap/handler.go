@@ -127,7 +127,7 @@ func NewHandler(baseURL string, cache storage.Cache, blogSvc blog.Service) Handl
 	}
 }
 
-// Register does registering site-map routes under the prefix "/sitemap.xml"
+// Register does registering sitemap routes under the prefix "/sitemap.xml"
 func (h Handler) Register(r *mux.Router) {
 	r.Path("").HandlerFunc(h.serve).Methods(http.MethodGet)
 }
