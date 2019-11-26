@@ -5,10 +5,10 @@ interface File {
   /**
    * An uploaded file name
    */
-  fileName: string
+  fileName: string;
 
   /**
    * Valid URL string composes with file name and ID
    */
-  slug: string
+  slug: string;
 }

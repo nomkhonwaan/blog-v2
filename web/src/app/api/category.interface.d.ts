@@ -5,12 +5,12 @@ interface Category {
   /**
    * Name of the category
    */
-  name: string
+  name: string;
 
   /**
    * Valid URL string composes with name and ID
    */
-  slug: string
+  slug: string;
 
   /**
    * List of latest published posts are belongging to the category
