@@ -6,7 +6,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { PostAuthorComponent } from './post-author.component';
 import { PostCategoriesComponent } from './post-categories.component';
-import { PostContentComponent, PostContentDirective } from './post-content.component';
+import { PostContentComponent } from './post-content.component';
 import { PostExcerptComponent } from './post-excerpt.component';
 import { PostFeaturedImageComponent } from './post-featured-image.component';
 import { PostMetadataComponent } from './post-metadata.component';
@@ -34,7 +34,6 @@ import { TemplateModule } from '../template/template.module';
     PostShareToComponent,
     PostTagsComponent,
     PostTitleComponent,
-    PostContentDirective,
   ],
   exports: [
     PostAuthorComponent,

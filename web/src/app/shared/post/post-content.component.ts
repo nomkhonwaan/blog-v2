@@ -1,59 +1,61 @@
+import { DOCUMENT } from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
   Component,
-  Directive,
   ElementRef,
-  Input,
   OnInit,
   Renderer2,
+  ViewChild,
+  Inject,
 } from '@angular/core';
-import { HttpClient, HttpResponse } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 
 import { PostComponent } from './post.component';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { environment } from 'src/environments/environment';
 
-@Directive({
-  selector: '[appPostContent]',
+@Component({
+  selector: 'app-post-content',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <article #content></article>
+  `,
+  styleUrls: ['./post-content.component.scss'],
 })
-export class PostContentDirective implements AfterViewInit {
+export class PostContentComponent extends PostComponent implements OnInit, AfterViewInit {
 
-  @Input()
-  innerWidth: number;
+  content: string;
 
-  @Input()
-  innerHeight: number;
+  @ViewChild('content', { static: false })
+  private elementRef: ElementRef;
 
-  constructor(private el: ElementRef, private http: HttpClient, private renderer: Renderer2) { }
+  constructor(@Inject(DOCUMENT) private document: Document, private http: HttpClient, private renderer: Renderer2) {
+    super();
+  }
+
+  ngOnInit(): void {
+    this.content = this.post.html.replace(new RegExp('/api/v1/attachments', 'g'), 'https://www.nomkhonwaan.com/api/v1/attachments');
+  }
 
   ngAfterViewInit(): void {
-    const imgs: NodeList = this.el.nativeElement.querySelectorAll('img');
-    const scripts: NodeList = this.el.nativeElement.querySelectorAll('script');
+    this.elementRef.nativeElement.appendChild(
+      this.document.createRange().createContextualFragment(this.content),
+    );
 
-    this.addExtraClassToImageClass(imgs);
-    this.addExtraQueryToImageSrc(imgs);
-    this.renderImageCaption(imgs);
-    this.renderGist(scripts);
+    const imgs: NodeList = this.elementRef.nativeElement.querySelectorAll('img');
+    const scripts: NodeList = this.elementRef.nativeElement.querySelectorAll('script');
+
+    this.addExtraClassNamesToAllImages(imgs);
+    this.renderAllImageCaptions(imgs);
+    this.renderGitHubGist(scripts);
   }
 
-  addExtraClassToImageClass(imgs: NodeList): void {
+  private addExtraClassNamesToAllImages(imgs: NodeList): void {
     imgs.forEach((node: Element): void => {
-      const classes: string = node.getAttribute('class');
-
-      node.setAttribute('class', `${classes} lazyload`);
-    })
-  }
-
-  addExtraQueryToImageSrc(imgs: NodeList): void {
-    imgs.forEach((node: Element): void => {
-      const src: string = node.getAttribute('src')
-
-      node.setAttribute('src', `${src}?width=${this.innerWidth}&height=${this.innerHeight}`);
+      node.setAttribute('class', `${node.getAttribute('class')} lazyload`);
     });
   }
 
-  renderImageCaption(imgs: NodeList): void {
+  private renderAllImageCaptions(imgs: NodeList): void {
     imgs.forEach((node: Element): void => {
       const alt: string = node.getAttribute('alt');
       const caption: Element = this.renderer.createElement('div');
@@ -65,7 +67,7 @@ export class PostContentDirective implements AfterViewInit {
     });
   }
 
-  renderGist(scripts: NodeList): void {
+  private renderGitHubGist(scripts: NodeList): void {
     scripts.forEach((node: Element): void => {
       const src: string = node.getAttribute('src');
 
@@ -79,29 +81,6 @@ export class PostContentDirective implements AfterViewInit {
           node.insertAdjacentElement('afterend', link);
         });
     });
-  }
-}
-
-@Component({
-  selector: 'app-post-content',
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <article appPostContent [innerHTML]="content" [innerWidth]="innerWidth" [innerHeight]="innerHeight"></article>
-  `,
-  styleUrls: ['./post-content.component.scss'],
-})
-export class PostContentComponent extends PostComponent implements OnInit {
-
-  content: SafeHtml;
-
-  constructor(private sanitizer: DomSanitizer) {
-    super();
-  }
-
-  ngOnInit(): void {
-    this.content = this.sanitizer.bypassSecurityTrustHtml(
-      this.post.html.replace(new RegExp('/api/v1/attachments', 'g'), 'https://www.nomkhonwaan.com/api/v1/attachments'),
-    );
   }
 
 }
