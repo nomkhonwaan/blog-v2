@@ -3,5 +3,5 @@ interface Engagement {
   /**
    * Total object shared counter
    */
-  shareCount: number
+  shareCount: number;
 }

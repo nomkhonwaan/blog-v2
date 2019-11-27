@@ -5,7 +5,11 @@ interface AppState {
   /**
    * An HTTP loading indicator
    */
-  isFetching: boolean,
+  isFetching: boolean;
+
+  auth: {
+    accessToken?: string,
+  };
 
   /**
    * A sidebar component storage

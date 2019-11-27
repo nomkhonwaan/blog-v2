@@ -1,10 +1,11 @@
 import { Action, createReducer, on } from '@ngrx/store';
 import update from 'immutability-helper';
 
-import { toggleSidebar, isFetching, isNotFetching } from './app.actions';
+import { toggleSidebar, setAuthorization, isFetching, isNotFetching } from './app.actions';
 
 const initialState: AppState = {
   isFetching: false,
+  auth: {},
   sidebar: {
     collapsed: true,
   },
@@ -12,9 +13,10 @@ const initialState: AppState = {
 
 const appReducer = createReducer(
   initialState,
-  on(toggleSidebar, (state) => update<AppState>(state, { sidebar: { $toggle: ['collapsed'] } })),
   on(isFetching, (state) => update<AppState>(state, { isFetching: { $set: true } })),
   on(isNotFetching, (state) => update<AppState>(state, { isFetching: { $set: false } })),
+  on(setAuthorization, (state, { accessToken }) => update<AppState>(state, { auth: { accessToken: { $set: accessToken } } })),
+  on(toggleSidebar, (state) => update<AppState>(state, { sidebar: { $toggle: ['collapsed'] } })),
 );
 
 export function reducer(state: AppState | undefined, action: Action) {
