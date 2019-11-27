@@ -5,41 +5,37 @@ import { HttpLinkModule, HttpLink } from 'apollo-angular-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
 import { GraphQLRequest, ApolloLink } from 'apollo-link';
 import { setContext } from 'apollo-link-context';
+import { Observable } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
 
 const uri = environment.graphql.endpoint;
 
 export function createApollo(store: Store<AppState>, httpLink: HttpLink) {
-  // let bearer: string;
+  const accessToken$: Observable<string> = store.pipe(select('app', 'auth', 'accessToken'));
 
-  // store.pipe(select('app', 'auth', 'accessToken')).subscribe((accessToken: string): void => {
-  //   if (accessToken !== '') {
-  //     bearer = `Bearer ${accessToken}`;
-  //   }
-  // });
-
-  // const auth: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
-  //   if (bearer !== '') {
-  //     return {
-  //       headers: {
-  //         Authorization: bearer,
-  //       },
-  //     };
-  //   } else {
-  //     return {
-  //       headers: {},
-  //     };
-  //   }
-  // });
+  const auth: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
+    return accessToken$
+      .pipe(take(1))
+      .toPromise()
+      .then((accessToken: string): { headers?: { [Authorization:string]: string } } => {
+        return accessToken ? {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        } : {};
+      });
+  });
 
   return {
-    link: ApolloLink.from([httpLink.create({ uri, withCredentials: true })]),
+    link: ApolloLink.from([auth, httpLink.create({ uri, withCredentials: true })]),
     cache: new InMemoryCache(),
   };
 }
 
 @NgModule({
+  imports: [],
   exports: [ApolloModule, HttpLinkModule],
   providers: [
     {
