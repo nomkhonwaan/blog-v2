@@ -25,7 +25,7 @@
 
   code,
   pre {
-    font-family: 'Roboto Mono', monospace;
+    font-family: "Roboto Mono", monospace;
   }
 
   h2,
@@ -58,6 +58,14 @@
     }
   }
 
+  iframe {
+    border: none;
+    height: 32rem;
+    margin: 0.8rem 0;
+    max-width: 100%;
+    width: 100%;
+  }
+
   img {
     border-radius: 0.2rem;
     display: block;
@@ -66,7 +74,7 @@
   }
 
   img + div.caption {
-    margin: .8rem 0 3.2rem 0;
+    margin: 0.8rem 0 3.2rem 0;
   }
 
   p {
