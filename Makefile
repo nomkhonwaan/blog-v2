@@ -50,6 +50,7 @@ mockgen:
 	$(MOCKGEN) -destination ./pkg/blog/mock/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
 	$(MOCKGEN) -destination ./pkg/graphql/mock/service_mock.go github.com/nomkhonwaan/myblog/pkg/graphql Service
 	$(MOCKGEN) -destination ./pkg/http/mock/client_mock.go net/http RoundTripper
+	$(MOCKGEN) -destination ./pkg/log/mock/timer_mock.go github.com/nomkhonwaan/myblog/pkg/log Timer
 	$(MOCKGEN) -destination ./pkg/mongo/mock/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
 	$(MOCKGEN) -destination ./pkg/mongo/mock/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
 	$(MOCKGEN) -destination ./pkg/mongo/mock/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	. "github.com/nomkhonwaan/myblog/pkg/blog"
+	mock_log "github.com/nomkhonwaan/myblog/pkg/log/mock"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
@@ -47,25 +48,29 @@ func TestPost_MarshalJSON(t *testing.T) {
 }
 
 func TestMongoPostRepository_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	col := mock_mongo.NewMockCollection(ctrl)
+	timer := mock_log.NewMockTimer(ctrl)
+
 	t.Run("When insert into the collection successfully", func(t *testing.T) {
 		// Given
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		col := mock_mongo.NewMockCollection(ctrl)
 		ctx := context.Background()
+		now := time.Now()
 		authorID := "github|303589"
 
+		timer.EXPECT().Now().Return(now)
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
-		postRepo := NewPostRepository(col)
+		postRepo := NewPostRepository(col, timer)
 
 		// When
 		result, err := postRepo.Create(ctx, authorID)
 
 		// Then
 		assert.Nil(t, err)
-		assert.True(t, time.Since(result.CreatedAt) < time.Minute)
+		assert.Equal(t, now, result.CreatedAt)
 		assert.Equal(t, fmt.Sprintf("%s", result.ID.Hex()), result.Slug)
 		assert.Equal(t, Draft, result.Status)
 		assert.Equal(t, authorID, result.AuthorID)
@@ -73,16 +78,14 @@ func TestMongoPostRepository_Create(t *testing.T) {
 
 	t.Run("When insert into the collection un-successfully", func(t *testing.T) {
 		// Given
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		col := mock_mongo.NewMockCollection(ctrl)
 		ctx := context.Background()
+		now := time.Now()
 		authorID := "github|303589"
 
+		timer.EXPECT().Now().Return(now)
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("something went wrong"))
 
-		postRepo := NewPostRepository(col)
+		postRepo := NewPostRepository(col, timer)
 
 		expected := Post{}
 
@@ -104,7 +107,7 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	col := mock_mongo.NewMockCollection(ctrl)
 
 	ctx := context.Background()
-	repo := NewPostRepository(col)
+	repo := NewPostRepository(col, nil)
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
 
@@ -200,7 +203,7 @@ func TestMongoPostRepository_FindByID(t *testing.T) {
 	col := mock_mongo.NewMockCollection(ctrl)
 
 	ctx := context.Background()
-	repo := NewPostRepository(col)
+	repo := NewPostRepository(col, nil)
 
 	tests := map[string]struct {
 		id  interface{}
@@ -241,9 +244,11 @@ func TestMongoPostRepository_Save(t *testing.T) {
 
 	singleResult := mock_mongo.NewMockSingleResult(ctrl)
 	col := mock_mongo.NewMockCollection(ctrl)
+	timer := mock_log.NewMockTimer(ctrl)
 
 	ctx := context.Background()
-	repo := NewPostRepository(col)
+	now := time.Now()
+	repo := NewPostRepository(col, timer)
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
 	featuredImageID := primitive.NewObjectID()
@@ -258,47 +263,47 @@ func TestMongoPostRepository_Save(t *testing.T) {
 		"With default query options": {
 			q:      NewPostQueryBuilder().Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{}},
+			update: bson.M{"$set": bson.M{"updatedAt": now}},
 		},
 		"When updating post's title": {
 			q:      NewPostQueryBuilder().WithTitle("Test update post title").Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"title": "Test update post title"}},
+			update: bson.M{"$set": bson.M{"title": "Test update post title", "updatedAt": now}},
 		},
 		"When updating post's slug": {
 			q:      NewPostQueryBuilder().WithSlug("test-update-post-slug").Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"slug": "test-update-post-slug"}},
+			update: bson.M{"$set": bson.M{"slug": "test-update-post-slug", "updatedAt": now}},
 		},
 		"When updating post's content": {
 			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>"}},
+			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>", "updatedAt": now}},
 		},
 		"When updating post's categories": {
 			q:      NewPostQueryBuilder().WithCategories([]Category{{ID: catID, Name: "Web Development", Slug: "web-development-" + catID.Hex()}}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"categories": bson.A{mongo.DBRef{Ref: "categories", ID: catID}}}},
+			update: bson.M{"$set": bson.M{"categories": bson.A{mongo.DBRef{Ref: "categories", ID: catID}}, "updatedAt": now}},
 		},
 		"When updating post's tags": {
 			q:      NewPostQueryBuilder().WithTags([]Tag{{ID: tagID, Name: "Blog", Slug: "blog-" + tagID.Hex()}}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"tags": bson.A{mongo.DBRef{Ref: "tags", ID: tagID}}}},
+			update: bson.M{"$set": bson.M{"tags": bson.A{mongo.DBRef{Ref: "tags", ID: tagID}}, "updatedAt": now}},
 		},
 		"When updating post's featured image": {
 			q:      NewPostQueryBuilder().WithFeaturedImage(storage.File{ID: featuredImageID, Slug: fmt.Sprintf("test-featured-image-%s.jpg", featuredImageID.Hex())}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"featuredImage": mongo.DBRef{Ref: "files", ID: featuredImageID}}},
+			update: bson.M{"$set": bson.M{"featuredImage": mongo.DBRef{Ref: "files", ID: featuredImageID}, "updatedAt": now}},
 		},
 		"When updating post's attachments": {
 			q:      NewPostQueryBuilder().WithAttachments([]storage.File{{ID: attachmentID}}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"attachments": bson.A{mongo.DBRef{Ref: "files", ID: attachmentID}}}},
+			update: bson.M{"$set": bson.M{"attachments": bson.A{mongo.DBRef{Ref: "files", ID: attachmentID}}, "updatedAt": now}},
 		},
 		"When an error has occurred while updating the post": {
 			q:      NewPostQueryBuilder().Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{}},
+			update: bson.M{"$set": bson.M{"updatedAt": now}},
 			err:    errors.New("something went wrong"),
 		},
 	}
@@ -306,6 +311,7 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
+			timer.EXPECT().Now().Return(now)
 			col.EXPECT().UpdateOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}, test.update).Return(nil, test.err)
 
 			if test.err == nil {

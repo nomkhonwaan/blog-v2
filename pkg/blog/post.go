@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson"
@@ -90,13 +91,14 @@ type PostRepository interface {
 }
 
 // NewPostRepository returns post repository
-func NewPostRepository(col mongo.Collection) MongoPostRepository {
-	return MongoPostRepository{col}
+func NewPostRepository(col mongo.Collection, timer log.Timer) MongoPostRepository {
+	return MongoPostRepository{col: col, timer: timer}
 }
 
 // MongoPostRepository is a MongoDB specified repository for post
 type MongoPostRepository struct {
-	col mongo.Collection
+	col   mongo.Collection
+	timer log.Timer
 }
 
 func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Post, error) {
@@ -106,7 +108,7 @@ func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Po
 		Slug:      fmt.Sprintf("%s", id.Hex()),
 		Status:    Draft,
 		AuthorID:  authorID,
-		CreatedAt: time.Now(),
+		CreatedAt: repo.timer.Now(),
 	}
 
 	doc, _ := bson.Marshal(post)
@@ -162,7 +164,9 @@ func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (P
 }
 
 func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q PostQuery) (Post, error) {
-	update := bson.M{"$set": bson.M{}}
+	update := bson.M{"$set": bson.M{
+		"updatedAt": repo.timer.Now(),
+	}}
 
 	if title := q.Title(); title != "" {
 		update["$set"].(bson.M)["title"] = title

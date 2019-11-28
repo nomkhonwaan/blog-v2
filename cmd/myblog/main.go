@@ -135,7 +135,7 @@ func action(ctx *cli.Context) error {
 	/* Blog Service */
 	blogSvc := blog.Service{
 		CategoryRepository: blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories"))),
-		PostRepository:     blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts"))),
+		PostRepository:     blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")), log.NewDefaultTimer()),
 		TagRepository:      blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags"))),
 	}
 

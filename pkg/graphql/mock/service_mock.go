@@ -49,18 +49,18 @@ func (mr *MockServiceMockRecorder) Category() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Category", reflect.TypeOf((*MockService)(nil).Category))
 }
 
-// Facebook mocks base method
-func (m *MockService) Facebook() facebook.Client {
+// FBClient mocks base method
+func (m *MockService) FBClient() facebook.Client {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Facebook")
+	ret := m.ctrl.Call(m, "FBClient")
 	ret0, _ := ret[0].(facebook.Client)
 	return ret0
 }
 
-// Facebook indicates an expected call of Facebook
-func (mr *MockServiceMockRecorder) Facebook() *gomock.Call {
+// FBClient indicates an expected call of FBClient
+func (mr *MockServiceMockRecorder) FBClient() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Facebook", reflect.TypeOf((*MockService)(nil).Facebook))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FBClient", reflect.TypeOf((*MockService)(nil).FBClient))
 }
 
 // File mocks base method
