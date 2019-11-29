@@ -68,7 +68,7 @@ type Client struct {
 	appAccessToken string
 
 	// A text template instance which parses the open-graph HTML template already
-	openGraphTemplate *template.Template
+	ogTemplate *template.Template
 
 	service   Service
 	transport http.RoundTripper
@@ -82,9 +82,9 @@ func NewClient(baseURL string, appAccessToken string, ogTemplate string, blogSer
 	}
 
 	return Client{
-		baseURL:           baseURL,
-		appAccessToken:    appAccessToken,
-		openGraphTemplate: tmpl,
+		baseURL:        baseURL,
+		appAccessToken: appAccessToken,
+		ogTemplate:     tmpl,
 		service: service{
 			Service: blogService,
 			file:    file,
@@ -145,7 +145,7 @@ func (c Client) serveSingle(w http.ResponseWriter, r *http.Request, id interface
 		FeaturedImage: featuredImage,
 	}
 
-	_ = c.openGraphTemplate.Execute(w, data)
+	_ = c.ogTemplate.Execute(w, data)
 }
 
 // GetURL returns a URL shared on a timeline on in a comment
