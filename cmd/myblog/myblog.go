@@ -38,12 +38,16 @@ const (
 )
 
 var (
-	version, revision string
+	// Version refers to the latest Git tag
+	Version string
+
+	// Revision refers to the latest Git commit hash
+	Revision string
 
 	cmd = &cobra.Command{
 		Use:     "myblog",
 		Short:   "Personal blog website written in Go with Angular 2+",
-		Version: fmt.Sprintf("%s %s\n", version, revision),
+		Version: fmt.Sprintf("%s %s\n", Version, Revision),
 		RunE:    action,
 	}
 )
