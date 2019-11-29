@@ -1,4 +1,4 @@
-package main
+package myblog
 
 import (
 	"bytes"
@@ -21,12 +21,13 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/sirupsen/logrus"
-	"github.com/urfave/cli"
+	"github.com/spf13/cobra"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"os/signal"
+	"path"
 	"strings"
 	"syscall"
 	"time"
@@ -38,166 +39,115 @@ const (
 
 var (
 	version, revision string
+
+	cmd = &cobra.Command{
+		Use:     "myblog",
+		Short:   "Personal blog website written in Go with Angular 2+",
+		Version: fmt.Sprintf("%s %s\n", version, revision),
+		RunE:    action,
+	}
 )
 
 func init() {
-	cli.VersionPrinter = func(ctx *cli.Context) {
-		fmt.Println(ctx.App.Name, ctx.App.Version, revision)
-	}
+	workingDirectory, _ := os.Getwd()
+
+	flags := cmd.Flags()
+	flags.Bool("allow-cors", false, "")
+	flags.String("listen-address", "0.0.0.0:8080", "")
+	flags.String("cache-files-path", path.Join(workingDirectory, ".cache"), "")
+	flags.String("static-files-path", path.Join(workingDirectory, "dist", "web"), "")
+	flags.String("mongodb-uri", "", "")
+	flags.String("amazon-s3-access-key", "", "")
+	flags.String("amazon-s3-secret-key", "", "")
+	flags.String("auth0-audience", baseURL, "")
+	flags.String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
+	flags.String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
+	flags.String("facebook-app-access-token", "", "")
 }
 
-func main() {
-	app := cli.NewApp()
-	app.Name = "myblog"
-	app.Version = version
-	app.Flags = []cli.Flag{
-		/* HTTP Server Options */
-		cli.StringFlag{
-			Name:   "listen-address",
-			EnvVar: "LISTEN_ADDRESS",
-			Value:  "0.0.0.0:8080",
-		},
-		cli.BoolFlag{
-			Name:   "allow-cors",
-			EnvVar: "ALLOW_CORS",
-		},
-
-		/* Volume Options */
-		cli.StringFlag{
-			Name:   "cache-files-path",
-			EnvVar: "CACHE_FILES_PATH",
-			Value:  "./.cache",
-		},
-		cli.StringFlag{
-			Name:   "static-files-path",
-			EnvVar: "STATIC_FILES_PATH",
-			Value:  "./dist/web",
-		},
-
-		/* Database Options */
-		cli.StringFlag{
-			Name:   "mongodb-uri",
-			EnvVar: "MONGODB_URI",
-			Value:  "mongodb://localhost/nomkhonwaan_com",
-		},
-
-		/* Amazon S3 Options */
-		cli.StringFlag{
-			Name:   "amazon-s3-access-key",
-			EnvVar: "AMAZON_S3_ACCESS_KEY",
-		},
-		cli.StringFlag{
-			Name:   "amazon-s3-secret-key",
-			EnvVar: "AMAZON_S3_SECRET_KEY",
-		},
-
-		/* Auth0 Options */
-		cli.StringFlag{
-			Name:   "auth0-audience",
-			EnvVar: "AUTH0_AUDIENCE",
-			Value:  "https://www.nomkhonwaan.com",
-		},
-		cli.StringFlag{
-			Name:   "auth0-issuer",
-			EnvVar: "AUTH0_ISSUER",
-			Value:  "https://nomkhonwaan.auth0.com/",
-		},
-		cli.StringFlag{
-			Name:   "auth0-jwks-uri",
-			EnvVar: "AUTH0_JWKS_URI",
-			Value:  "https://nomkhonwaan.auth0.com/.well-known/jwks.json",
-		},
-
-		/* Facebook Options */
-		cli.StringFlag{
-			Name:   "facebook-app-access-token",
-			EnvVar: "FACEBOOK_APP_ACCESS_TOKEN",
-		},
-	}
-	app.Action = action
-
-	if err := app.Run(os.Args); err != nil {
-		logrus.Fatalf("myblog: %v", err)
-	}
+// Execute proxies to the Cobra command execution function
+func Execute() error {
+	return cmd.Execute()
 }
 
-func action(ctx *cli.Context) error {
-	/* MongoDB Connection */
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(ctx.String("mongodb-uri")))
+func action(cmd *cobra.Command, args []string) error {
+	flags := cmd.Flags()
+
+	// Create a connection to MongoDB server without time limitation
+	uri, _ := flags.GetString("mongodb-uri")
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		return err
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	/* Repositories */
-	fileRepo := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
+	// Create all MongoDB repositories
+	file := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
+	category := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
+	post := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")), log.NewDefaultTimer())
+	tag := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
-	/* Blog Service */
-	blogSvc := blog.Service{
-		CategoryRepository: blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories"))),
-		PostRepository:     blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")), log.NewDefaultTimer()),
-		TagRepository:      blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags"))),
-	}
-
-	/* Disk Storage Cache */
-	cache, err := storage.NewDiskCache(ctx.String("cache-files-path"))
+	// Create all services; as well as repositories
+	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
+	cacheFilesPath, _ := flags.GetString("cache-files-path")
+	cacheService, err := storage.NewDiskCache(cacheFilesPath)
 	if err != nil {
 		return err
 	}
 
-	/* Amazon S3 */
-	s3, err := storage.NewCustomizedAmazonS3Client(ctx.String("amazon-s3-access-key"), ctx.String("amazon-s3-secret-key"))
+	// Create new Amazon S3 client which provides uploader and downloader functions
+	accessKey, _ := flags.GetString("amazon-s3-access-key")
+	secretKey, _ := flags.GetString("amazon-s3-secret-key")
+	s3, err := storage.NewCustomizedAmazonS3Client(accessKey, secretKey)
 	if err != nil {
 		return err
 	}
 
-	/* Auth0 JWT Middleware */
-	authMiddleware := auth.NewJWTMiddleware(ctx.String("auth0-audience"), ctx.String("auth0-issuer"), ctx.String("auth0-jwks-uri"), http.DefaultTransport)
-
-	/* Facebook Client */
-	openGraphTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	fbClient, err := facebook.NewClient(baseURL, ctx.String("facebook-app-access-token"), string(openGraphTemplate), blogSvc, fileRepo, http.DefaultTransport)
+	// Create new Facebook client which provides crawler bot handling and Graph API client
+	appAccessToken, _ := flags.GetString("facebook-app-access-token")
+	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
+	fbClient, err := facebook.NewClient(baseURL, appAccessToken, string(ogTemplate), blogService, file, http.DefaultTransport)
 	if err != nil {
 		return err
 	}
 
-	/* GraphQL Schema */
-	schema := graphql.NewServer(blogSvc, fbClient, fileRepo).Schema()
+	// Create Auth0 JWT middleware for checking an authorization header
+	audience, _ := flags.GetString("auth0-audience")
+	issuer, _ := flags.GetString("auth0-issuer")
+	jwksURI, _ := flags.GetString("auth0-jwks-uri")
+	authMiddleware := auth.NewJWTMiddleware(audience, issuer, jwksURI, http.DefaultTransport)
+
+	// Create all HTTP handlers
+	ghHandler := github.NewHandler(cacheService, http.DefaultTransport)
+	storageHandler := storage.NewHandler(cacheService, file, s3, s3)
+	sitemapHandler := sitemap.NewHandler(baseURL, cacheService, blogService)
+	schema := graphql.NewServer(blogService, fbClient, file).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
-	/* Gorilla Routes */
+	// Register all routes with Gorilla
 	r := mux.NewRouter()
+
+	if yes, _ := flags.GetBool("allow-cors"); yes {
+		r.Use(allowCORS)
+	}
 	r.Use(logRequest)
 	r.Use(authMiddleware.Handler)
 
-	/* RESTful Endpoints */
-	github.NewHandler(cache, http.DefaultTransport).Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-	storage.NewHandler(cache, fileRepo, s3, s3).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
-
-	/* GraphQL Endpoints */
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
 
-	/* Sitemap */
-	sitemap.NewHandler(baseURL, cache, blogSvc).Register(r.PathPrefix("/sitemap.xml").Subrouter())
+	ghHandler.Register(r.PathPrefix("/api/v2.1/github").Subrouter())
+	storageHandler.Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
+	sitemapHandler.Register(r.PathPrefix("/sitemap.xml").Subrouter())
 
-	/* Static Files Endpoints */
-	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(ctx.String("static-files-path"))))
+	staticFilesPath, _ := flags.GetString("static-files-path")
+	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(staticFilesPath)))
 
-	/* Instantiate an HTTP server */
-	if ctx.Bool("allow-cors") {
-		logrus.Info("the Cross-Origin Resource Sharing (CORS) is allowed for all sites (*)")
-		r.Use(allowCORS)
-	}
-
-	s := server.InsecureServer{
-		Handler:         r,
-		ShutdownTimeout: time.Minute * 5,
-	}
-
+	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}
 	stopCh := handleSignals()
 
-	err = s.ListenAndServe(ctx.String("listen-address"), stopCh)
+	listenAddress, _ := flags.GetString("listen-address")
+	err = s.ListenAndServe(listenAddress, stopCh)
 	if err != nil {
 		return err
 	}

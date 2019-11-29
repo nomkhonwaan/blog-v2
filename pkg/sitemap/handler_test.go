@@ -25,15 +25,15 @@ func TestHandler_Register(t *testing.T) {
 	var (
 		baseURL = "http://localhost:8080"
 
-		cache    = mock_storage.NewMockCache(ctrl)
-		postRepo = mock_blog.NewMockPostRepository(ctrl)
-		catRepo  = mock_blog.NewMockCategoryRepository(ctrl)
-		tagRepo  = mock_blog.NewMockTagRepository(ctrl)
+		cacheService = mock_storage.NewMockCache(ctrl)
+		post         = mock_blog.NewMockPostRepository(ctrl)
+		category     = mock_blog.NewMockCategoryRepository(ctrl)
+		tag          = mock_blog.NewMockTagRepository(ctrl)
 
-		blogSvc = blog.Service{
-			CategoryRepository: catRepo,
-			PostRepository:     postRepo,
-			TagRepository:      tagRepo,
+		blogService = blog.Service{
+			CategoryRepository: category,
+			PostRepository:     post,
+			TagRepository:      tag,
 		}
 
 		r = mux.NewRouter()
@@ -43,7 +43,7 @@ func TestHandler_Register(t *testing.T) {
 		return httptest.NewRequest(http.MethodGet, "/sitemap.xml", nil)
 	}
 
-	NewHandler(baseURL, cache, blogSvc).Register(r.PathPrefix("/sitemap.xml").Subrouter())
+	NewHandler(baseURL, cacheService, blogService).Register(r.PathPrefix("/sitemap.xml").Subrouter())
 
 	t.Run("With successful generate a new sitemap.xml from list of posts, categories and tags", func(t *testing.T) {
 		// Given
@@ -54,11 +54,11 @@ func TestHandler_Register(t *testing.T) {
 		tags := []blog.Tag{{Slug: "tag-1"}}
 		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/` + now.Format("2006/1/2") + `/post-1</loc><lastmod>` + posts[0].PublishedAt.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/` + posts[1].PublishedAt.Format("2006/1/2") + `/post-2</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
 
-		cache.EXPECT().Exist(CacheFilePath).Return(false)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
-		catRepo.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
-		tagRepo.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
-		cache.EXPECT().Store(gomock.Any(), CacheFilePath).DoAndReturn(func(body io.Reader, path string) error {
+		cacheService.EXPECT().Exist(CacheFilePath).Return(false)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
+		category.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
+		tag.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
+		cacheService.EXPECT().Store(gomock.Any(), CacheFilePath).DoAndReturn(func(body io.Reader, path string) error {
 			data, _ := ioutil.ReadAll(body)
 			assert.Equal(t, expected, string(data))
 
@@ -77,8 +77,8 @@ func TestHandler_Register(t *testing.T) {
 		w := httptest.NewRecorder()
 		expected := []byte("test cached sitemap.xml content")
 
-		cache.EXPECT().Exist(CacheFilePath).Return(true)
-		cache.EXPECT().Retrieve(CacheFilePath).Return(bytes.NewReader(expected), nil)
+		cacheService.EXPECT().Exist(CacheFilePath).Return(true)
+		cacheService.EXPECT().Retrieve(CacheFilePath).Return(bytes.NewReader(expected), nil)
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())
@@ -96,12 +96,12 @@ func TestHandler_Register(t *testing.T) {
 		tags := []blog.Tag{{Slug: "tag-1"}}
 		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/` + now.Format("2006/1/2") + `/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
 
-		cache.EXPECT().Exist(CacheFilePath).Return(true)
-		cache.EXPECT().Retrieve(CacheFilePath).Return(nil, errors.New("test unable to retrieve file content"))
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
-		catRepo.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
-		tagRepo.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
-		cache.EXPECT().Store(gomock.Any(), CacheFilePath).Return(nil)
+		cacheService.EXPECT().Exist(CacheFilePath).Return(true)
+		cacheService.EXPECT().Retrieve(CacheFilePath).Return(nil, errors.New("test unable to retrieve file content"))
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
+		category.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
+		tag.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
+		cacheService.EXPECT().Store(gomock.Any(), CacheFilePath).Return(nil)
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())
@@ -114,8 +114,8 @@ func TestHandler_Register(t *testing.T) {
 		// Given
 		w := httptest.NewRecorder()
 
-		cache.EXPECT().Exist(CacheFilePath).Return(false)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(nil, errors.New("test unable to retrieve list of published posts"))
+		cacheService.EXPECT().Exist(CacheFilePath).Return(false)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(nil, errors.New("test unable to retrieve list of published posts"))
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())
@@ -130,9 +130,9 @@ func TestHandler_Register(t *testing.T) {
 		now := time.Now()
 		posts := []blog.Post{{Slug: "post-1", PublishedAt: now}}
 
-		cache.EXPECT().Exist(CacheFilePath).Return(false)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
-		catRepo.EXPECT().FindAll(gomock.Any()).Return(nil, errors.New("test unable to retrieve list of categories"))
+		cacheService.EXPECT().Exist(CacheFilePath).Return(false)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
+		category.EXPECT().FindAll(gomock.Any()).Return(nil, errors.New("test unable to retrieve list of categories"))
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())
@@ -148,10 +148,10 @@ func TestHandler_Register(t *testing.T) {
 		posts := []blog.Post{{Slug: "post-1", PublishedAt: now}}
 		categories := []blog.Category{{Slug: "category-1"}}
 
-		cache.EXPECT().Exist(CacheFilePath).Return(false)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
-		catRepo.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
-		tagRepo.EXPECT().FindAll(gomock.Any()).Return(nil, errors.New("test unable to retrieve list of tags"))
+		cacheService.EXPECT().Exist(CacheFilePath).Return(false)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
+		category.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
+		tag.EXPECT().FindAll(gomock.Any()).Return(nil, errors.New("test unable to retrieve list of tags"))
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())
@@ -169,11 +169,11 @@ func TestHandler_Register(t *testing.T) {
 		tags := []blog.Tag{{Slug: "tag-1"}}
 		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>http://localhost:8080</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>1</priority></url><url><loc>http://localhost:8080/` + now.Format("2006/1/2") + `/post-1</loc><lastmod>` + now.Format(time.RFC3339) + `</lastmod><priority>0.8</priority></url><url><loc>http://localhost:8080/category/category-1</loc><priority>0.5</priority></url><url><loc>http://localhost:8080/tag/tag-1</loc><priority>0.5</priority></url></urlset>`
 
-		cache.EXPECT().Exist(CacheFilePath).Return(false)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
-		catRepo.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
-		tagRepo.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
-		cache.EXPECT().Store(gomock.Any(), CacheFilePath).Return(errors.New("test unable to store cache file"))
+		cacheService.EXPECT().Exist(CacheFilePath).Return(false)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().WithStatus(blog.Published).WithLimit(9999).Build()).Return(posts, nil)
+		category.EXPECT().FindAll(gomock.Any()).Return(categories, nil)
+		tag.EXPECT().FindAll(gomock.Any()).Return(tags, nil)
+		cacheService.EXPECT().Store(gomock.Any(), CacheFilePath).Return(errors.New("test unable to store cache file"))
 
 		// When
 		r.ServeHTTP(w, newSitemapRequest())

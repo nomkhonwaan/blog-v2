@@ -30,19 +30,19 @@ func TestServer_RegisterMutation(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		catRepo   = mock_blog.NewMockCategoryRepository(ctrl)
-		fileRepo  = mock_storage.NewMockFileRepository(ctrl)
-		postRepo  = mock_blog.NewMockPostRepository(ctrl)
-		tagRepo   = mock_blog.NewMockTagRepository(ctrl)
+		category  = mock_blog.NewMockCategoryRepository(ctrl)
+		file      = mock_storage.NewMockFileRepository(ctrl)
+		post      = mock_blog.NewMockPostRepository(ctrl)
+		tag       = mock_blog.NewMockTagRepository(ctrl)
 		transport = mock_http.NewMockRoundTripper(ctrl)
 
-		blogSvc = blog.Service{
-			CategoryRepository: catRepo,
-			PostRepository:     postRepo,
-			TagRepository:      tagRepo,
+		blogService = blog.Service{
+			CategoryRepository: category,
+			PostRepository:     post,
+			TagRepository:      tag,
 		}
 
-		fbClient, _ = facebook.NewClient("", "", "", blogSvc, fileRepo, transport)
+		fbClient, _ = facebook.NewClient("", "", "", blogService, file, transport)
 	)
 
 	newGraphQLRequest := func(q query) *http.Request {
@@ -58,7 +58,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(blogSvc, fbClient, fileRepo)
+	server := NewServer(blogService, fbClient, file)
 	h := Handler(server.Schema())
 
 	t.Run("Create a new post", func(t *testing.T) {
@@ -67,7 +67,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 			q := query{Query: `mutation { createPost { slug } }`}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().Create(gomock.Any(), "authorizedID").Return(blog.Post{}, nil)
+			post.EXPECT().Create(gomock.Any(), "authorizedID").Return(blog.Post{}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -107,8 +107,8 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTitle(title).WithSlug(slug).Build()).Return(blog.Post{}, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTitle(title).WithSlug(slug).Build()).Return(blog.Post{}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -153,7 +153,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{}, errors.New("test non-existing post"))
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{}, errors.New("test non-existing post"))
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -178,7 +178,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "otherAuthorID"}, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "otherAuthorID"}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -206,8 +206,8 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithMarkdown(markdown).WithHTML(html).Build())
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithMarkdown(markdown).WithHTML(html).Build())
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -254,9 +254,9 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(categories, nil).Times(2)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithCategories(categories).Build()).Return(blog.Post{Categories: []mongo.DBRef{{ID: catID}}}, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			category.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(categories, nil).Times(2)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithCategories(categories).Build()).Return(blog.Post{Categories: []mongo.DBRef{{ID: catID}}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -279,8 +279,8 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			catRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(nil, errors.New("test unable to retrieve list of categories"))
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			category.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{catID}).Return(nil, errors.New("test unable to retrieve list of categories"))
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -331,9 +331,9 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			tagRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(tags, nil).Times(2)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTags(tags).Build()).Return(blog.Post{Tags: []mongo.DBRef{{ID: tagID}}}, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			tag.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(tags, nil).Times(2)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithTags(tags).Build()).Return(blog.Post{Tags: []mongo.DBRef{{ID: tagID}}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -355,8 +355,8 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			tagRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(nil, errors.New("test unable to retrieve list of tags"))
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			tag.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{tagID}).Return(nil, errors.New("test unable to retrieve list of tags"))
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -397,7 +397,7 @@ func TestServer_RegisterMutation(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
 			featuredImageID := primitive.NewObjectID()
-			file := storage.File{ID: featuredImageID}
+			f := storage.File{ID: featuredImageID}
 			q := query{
 				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { featuredImage { slug } } }`,
 				Variables: map[string]interface{}{
@@ -407,9 +407,9 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil).Times(2)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithFeaturedImage(file).Build()).Return(blog.Post{FeaturedImage: mongo.DBRef{ID: featuredImageID}}, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			file.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(f, nil).Times(2)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithFeaturedImage(f).Build()).Return(blog.Post{FeaturedImage: mongo.DBRef{ID: featuredImageID}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -431,8 +431,8 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(storage.File{}, errors.New("test unable to retrieve featured image"))
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			file.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(storage.File{}, errors.New("test unable to retrieve featured image"))
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -485,9 +485,9 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			fileRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{attachmentID}).Return(attachments, nil).Times(2)
-			postRepo.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithAttachments(attachments).Build()).Return(blog.Post{Attachments: []mongo.DBRef{{ID: attachmentID}}}, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			file.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{attachmentID}).Return(attachments, nil).Times(2)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithAttachments(attachments).Build()).Return(blog.Post{Attachments: []mongo.DBRef{{ID: attachmentID}}}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -511,8 +511,8 @@ func TestServer_RegisterMutation(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
-			fileRepo.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{attachmentID}).Return(nil, errors.New("test unable to retrieve list of attachments"))
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			file.EXPECT().FindAllByIDs(gomock.Any(), []primitive.ObjectID{attachmentID}).Return(nil, errors.New("test unable to retrieve list of attachments"))
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))

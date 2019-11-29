@@ -101,14 +101,14 @@ func TestClient_CrawlerHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		fileRepo = mock_storage.NewMockFileRepository(ctrl)
-		postRepo = mock_blog.NewMockPostRepository(ctrl)
-		blogSvc  = blog.Service{PostRepository: postRepo}
+		file        = mock_storage.NewMockFileRepository(ctrl)
+		post        = mock_blog.NewMockPostRepository(ctrl)
+		blogService = blog.Service{PostRepository: post}
 
-		baseURL           = "http://localhost:8080"
-		openGraphTemplate = `{"url":"{{.URL}}","title":"{{.Title}}","description":"{{.Description}}","featuredImage":"{{.FeaturedImage}}"}`
-		client, _         = NewClient(baseURL, "", openGraphTemplate, blogSvc, fileRepo, http.DefaultTransport)
-		nextHandler       = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		baseURL     = "http://localhost:8080"
+		ogTemplate  = `{"url":"{{.URL}}","title":"{{.Title}}","description":"{{.Description}}","featuredImage":"{{.FeaturedImage}}"}`
+		client, _   = NewClient(baseURL, "", ogTemplate, blogService, file, http.DefaultTransport)
+		nextHandler = http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 			_, _ = w.Write([]byte("OK"))
 		})
 	)
@@ -136,7 +136,7 @@ func TestClient_CrawlerHandler(t *testing.T) {
 		id := primitive.NewObjectID()
 		featuredImageID := primitive.NewObjectID()
 		now := time.Now().In(DefaultTimeZone)
-		post := blog.Post{
+		p := blog.Post{
 			ID:            id,
 			Title:         "Test post",
 			Slug:          "test-post-" + id.Hex(),
@@ -146,13 +146,13 @@ func TestClient_CrawlerHandler(t *testing.T) {
 			Markdown: `this should be a post description
 but not this line`,
 		}
-		file := storage.File{
+		f := storage.File{
 			Slug: fmt.Sprintf("test-featured-image-%s.jpg", featuredImageID.Hex()),
 		}
 		w := httptest.NewRecorder()
 
-		postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
-		fileRepo.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(file, nil)
+		post.EXPECT().FindByID(gomock.Any(), id).Return(p, nil)
+		file.EXPECT().FindByID(gomock.Any(), featuredImageID).Return(f, nil)
 
 		expected := renderedOpenGraphTemplate{
 			URL:           fmt.Sprintf("%s/%s/test-post-%s", baseURL, now.Format("2006/1/2"), id.Hex()),
@@ -189,7 +189,7 @@ but not this line`,
 		id := primitive.NewObjectID()
 		w := httptest.NewRecorder()
 
-		postRepo.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{}, errors.New("test unable to find post by ID"))
+		post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{}, errors.New("test unable to find post by ID"))
 
 		// When
 		h.ServeHTTP(w, withFacebookUserAgent(newSinglePageRequest("test-post-"+id.Hex())))
@@ -201,13 +201,13 @@ but not this line`,
 	t.Run("With non-published status on the post", func(t *testing.T) {
 		// Given
 		id := primitive.NewObjectID()
-		post := blog.Post{
+		p := blog.Post{
 			ID:     id,
 			Status: blog.Draft,
 		}
 		w := httptest.NewRecorder()
 
-		postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
+		post.EXPECT().FindByID(gomock.Any(), id).Return(p, nil)
 
 		// When
 		h.ServeHTTP(w, withFacebookUserAgent(newSinglePageRequest("test-post-"+id.Hex())))

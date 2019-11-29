@@ -20,8 +20,6 @@ const (
 	CacheFilePath = "sitemap.xml"
 )
 
-type blogService struct{ blog.Service }
-
 // Service helps co-working between data-layer and control-layer
 type Service interface {
 	// Create a new sitemap and return byte array of the XML data
@@ -41,10 +39,10 @@ type Service interface {
 }
 
 type service struct {
-	blogService
+	blog.Service
 
-	baseURL string
-	cache   storage.Cache
+	baseURL      string
+	cacheService storage.Cache
 }
 
 func (s service) Generate() ([]byte, error) {
@@ -108,7 +106,7 @@ func (s service) Generate() ([]byte, error) {
 }
 
 func (s service) Cache() storage.Cache {
-	return s.cache
+	return s.cacheService
 }
 
 // Handler provides site-map handlers
@@ -117,12 +115,12 @@ type Handler struct {
 }
 
 // NewHandler returns a new handler instance
-func NewHandler(baseURL string, cache storage.Cache, blogSvc blog.Service) Handler {
+func NewHandler(baseURL string, cache storage.Cache, blogService blog.Service) Handler {
 	return Handler{
 		service: service{
-			blogService: blogService{blogSvc},
-			baseURL:     baseURL,
-			cache:       cache,
+			Service:      blogService,
+			baseURL:      baseURL,
+			cacheService: cache,
 		},
 	}
 }
