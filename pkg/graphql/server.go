@@ -31,8 +31,6 @@ func (s Slug) MustGetID() interface{} {
 	return primitive.NewObjectID()
 }
 
-type blogService struct{ blog.Service }
-
 // Service helps co-working between data-layer and control-layer
 type Service interface {
 	// The Facebook client
@@ -52,10 +50,10 @@ type Service interface {
 }
 
 type service struct {
-	blogService
+	blog.Service
 
 	fbClient facebook.Client
-	fileRepo storage.FileRepository
+	file     storage.FileRepository
 }
 
 func (s service) FBClient() facebook.Client {
@@ -63,7 +61,7 @@ func (s service) FBClient() facebook.Client {
 }
 
 func (s service) File() storage.FileRepository {
-	return s.fileRepo
+	return s.file
 }
 
 // Server is our GraphQL server
@@ -75,12 +73,12 @@ type Server struct {
 }
 
 // NewServer returns new GraphQL server
-func NewServer(blogSvc blog.Service, fbClient facebook.Client, fileRepo storage.FileRepository) *Server {
+func NewServer(blogService blog.Service, fbClient facebook.Client, file storage.FileRepository) *Server {
 	return &Server{
 		service: service{
-			blogService: blogService{blogSvc},
-			fbClient:    fbClient,
-			fileRepo:    fileRepo,
+			Service:  blogService,
+			fbClient: fbClient,
+			file:     file,
 		},
 		schema: schemabuilder.NewSchema(),
 	}

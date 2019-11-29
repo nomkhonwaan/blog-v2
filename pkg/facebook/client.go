@@ -22,8 +22,6 @@ var (
 	DefaultTimeZone, _ = time.LoadLocation("Asia/Bangkok")
 )
 
-type blogService struct{ blog.Service }
-
 // IsFacebookCrawlerRequest does checking the request user-agent strings.
 // The Facebook crawler user-agent strings are listed here: https://developers.facebook.com/docs/sharing/webmasters/crawler/#identify
 func IsFacebookCrawlerRequest(userAgent string) bool {
@@ -51,13 +49,13 @@ type Service interface {
 }
 
 type service struct {
-	blogService
+	blog.Service
 
-	fileRepo storage.FileRepository
+	file storage.FileRepository
 }
 
 func (s service) File() storage.FileRepository {
-	return s.fileRepo
+	return s.file
 }
 
 // Client uses to handling with Facebook services
@@ -77,8 +75,8 @@ type Client struct {
 }
 
 // NewClient returns a new Facebook client instance
-func NewClient(baseURL string, appAccessToken string, openGraphTemplate string, blogSvc blog.Service, fileRepo storage.FileRepository, transport http.RoundTripper) (Client, error) {
-	tmpl, err := template.New("facebook-open-graph-template").Parse(openGraphTemplate)
+func NewClient(baseURL string, appAccessToken string, ogTemplate string, blogService blog.Service, file storage.FileRepository, transport http.RoundTripper) (Client, error) {
+	tmpl, err := template.New("facebook-open-graph-template").Parse(ogTemplate)
 	if err != nil {
 		return Client{}, err
 	}
@@ -88,8 +86,8 @@ func NewClient(baseURL string, appAccessToken string, openGraphTemplate string, 
 		appAccessToken:    appAccessToken,
 		openGraphTemplate: tmpl,
 		service: service{
-			blogService: blogService{blogSvc},
-			fileRepo:    fileRepo,
+			Service: blogService,
+			file:    file,
 		},
 		transport: transport,
 	}, nil

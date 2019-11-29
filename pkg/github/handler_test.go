@@ -22,8 +22,8 @@ func TestHandler_Register(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		cache     = mock_storage.NewMockCache(ctrl)
-		transport = mock_http.NewMockRoundTripper(ctrl)
+		cacheService = mock_storage.NewMockCache(ctrl)
+		transport    = mock_http.NewMockRoundTripper(ctrl)
 
 		r = mux.NewRouter()
 	)
@@ -36,14 +36,14 @@ func TestHandler_Register(t *testing.T) {
 		return req
 	}
 
-	NewHandler(cache, transport).Register(r.PathPrefix("/api/v2.1/github").Subrouter())
+	NewHandler(cacheService, transport).Register(r.PathPrefix("/api/v2.1/github").Subrouter())
 
 	t.Run("With successful retrieving Gist content", func(t *testing.T) {
 		// Given
 		w := httptest.NewRecorder()
 		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
 
-		cache.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
+		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
 		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
 			assert.Equal(t, "gist.github.com", r.URL.Host)
 			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
@@ -53,7 +53,7 @@ func TestHandler_Register(t *testing.T) {
 				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
 			}, nil
 		})
-		cache.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").DoAndReturn(func(body io.Reader, path string) error {
+		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").DoAndReturn(func(body io.Reader, path string) error {
 			data, _ := ioutil.ReadAll(body)
 			assert.Equal(t, `{"foo":"bar"}`, string(data))
 
@@ -72,8 +72,8 @@ func TestHandler_Register(t *testing.T) {
 		w := httptest.NewRecorder()
 		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
 
-		cache.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
-		cache.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(bytes.NewBufferString(`{"foo":"bar"}`), nil)
+		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
+		cacheService.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(bytes.NewBufferString(`{"foo":"bar"}`), nil)
 
 		// When
 		r.ServeHTTP(w, newGistRequest(src))
@@ -87,8 +87,8 @@ func TestHandler_Register(t *testing.T) {
 		w := httptest.NewRecorder()
 		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
 
-		cache.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
-		cache.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(nil, errors.New("test unable to retrieve file content"))
+		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
+		cacheService.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(nil, errors.New("test unable to retrieve file content"))
 		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
 			assert.Equal(t, "gist.github.com", r.URL.Host)
 			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
@@ -98,7 +98,7 @@ func TestHandler_Register(t *testing.T) {
 				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
 			}, nil
 		})
-		cache.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").DoAndReturn(func(body io.Reader, path string) error {
+		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").DoAndReturn(func(body io.Reader, path string) error {
 			data, _ := ioutil.ReadAll(body)
 			assert.Equal(t, `{"foo":"bar"}`, string(data))
 
@@ -117,7 +117,7 @@ func TestHandler_Register(t *testing.T) {
 		w := httptest.NewRecorder()
 		src := "https://gist.github.malicious.localtest.me/nomkhonwaan/gist-id.js?file=test.txt"
 
-		cache.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
+		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
 		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
 			assert.Equal(t, "gist.github.com", r.URL.Host)
 			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
@@ -127,7 +127,7 @@ func TestHandler_Register(t *testing.T) {
 				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
 			}, nil
 		})
-		cache.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(nil)
+		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(nil)
 
 		// When
 		r.ServeHTTP(w, newGistRequest(src))
@@ -152,7 +152,7 @@ func TestHandler_Register(t *testing.T) {
 		w := httptest.NewRecorder()
 		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
 
-		cache.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
+		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
 		transport.EXPECT().RoundTrip(gomock.Any()).Return(nil, errors.New("test unable to retrieve Gist content"))
 
 		// When
@@ -167,8 +167,8 @@ func TestHandler_Register(t *testing.T) {
 		w := httptest.NewRecorder()
 		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
 
-		cache.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
-		cache.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(nil, errors.New("test unable to retrieve file content"))
+		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
+		cacheService.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(nil, errors.New("test unable to retrieve file content"))
 		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
 			assert.Equal(t, "gist.github.com", r.URL.Host)
 			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
@@ -178,7 +178,7 @@ func TestHandler_Register(t *testing.T) {
 				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
 			}, nil
 		})
-		cache.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(errors.New("test unable to store cache file"))
+		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(errors.New("test unable to store cache file"))
 
 		// When
 		r.ServeHTTP(w, newGistRequest(src))

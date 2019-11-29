@@ -67,7 +67,7 @@ bindata:
 
 .PHONY: build
 build:
-	GOBIN=$(BINDIR) $(GO) install $(GOFLAGS) -tags '$(TAGS)' -ldflags '-X main.version=$(VERSION) -X main.revision=$(REVISION) $(LDFLAGS)' $(PKG)/cmd/myblog
+	$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '-X $(PKG)/cmd/myblog.Version=$(VERSION) -X $(PKG)/cmd/myblog.Revision=$(REVISION) $(LDFLAGS)' -o $(BINDIR)/myblog main.go
 
 .PHONY: build-web
 build-web:

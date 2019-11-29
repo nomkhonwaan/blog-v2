@@ -33,19 +33,19 @@ func TestServer_RegisterQuery(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		catRepo   = mock_blog.NewMockCategoryRepository(ctrl)
-		fileRepo  = mock_storage.NewMockFileRepository(ctrl)
-		postRepo  = mock_blog.NewMockPostRepository(ctrl)
-		tagRepo   = mock_blog.NewMockTagRepository(ctrl)
+		category  = mock_blog.NewMockCategoryRepository(ctrl)
+		file      = mock_storage.NewMockFileRepository(ctrl)
+		post      = mock_blog.NewMockPostRepository(ctrl)
+		tag       = mock_blog.NewMockTagRepository(ctrl)
 		transport = mock_http.NewMockRoundTripper(ctrl)
 
-		blogSvc = blog.Service{
-			CategoryRepository: catRepo,
-			PostRepository:     postRepo,
-			TagRepository:      tagRepo,
+		blogService = blog.Service{
+			CategoryRepository: category,
+			PostRepository:     post,
+			TagRepository:      tag,
 		}
 
-		fbClient, _ = facebook.NewClient("", "", "", blogSvc, fileRepo, transport)
+		fbClient, _ = facebook.NewClient("", "", "", blogService, file, transport)
 	)
 
 	newGraphQLRequest := func(q query) *http.Request {
@@ -61,7 +61,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 		}))
 	}
 
-	server := NewServer(blogSvc, fbClient, fileRepo)
+	server := NewServer(blogService, fbClient, file)
 	h := Handler(server.Schema())
 
 	t.Run("With successful querying category by its ID", func(t *testing.T) {
@@ -76,8 +76,8 @@ func TestServer_RegisterQuery(t *testing.T) {
 		}
 		w := httptest.NewRecorder()
 
-		catRepo.EXPECT().FindByID(gomock.Any(), id).Return(cat, nil)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().
+		category.EXPECT().FindByID(gomock.Any(), id).Return(cat, nil)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().
 			WithCategory(cat).
 			WithStatus(blog.Published).
 			WithOffset(0).
@@ -99,7 +99,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 		}
 		w := httptest.NewRecorder()
 
-		catRepo.EXPECT().FindAll(gomock.Any()).Return([]blog.Category{}, nil)
+		category.EXPECT().FindAll(gomock.Any()).Return([]blog.Category{}, nil)
 
 		// When
 		h.ServeHTTP(w, newGraphQLRequest(q))
@@ -111,7 +111,6 @@ func TestServer_RegisterQuery(t *testing.T) {
 	t.Run("With successful querying tag by its ID", func(t *testing.T) {
 		// Given
 		id := primitive.NewObjectID()
-		tag := blog.Tag{ID: id}
 		q := query{
 			Query: `{ tag(slug: $slug) { slug latestPublishedPosts(offset: 0, limit: 5) { slug } } }`,
 			Variables: map[string]interface{}{
@@ -120,9 +119,9 @@ func TestServer_RegisterQuery(t *testing.T) {
 		}
 		w := httptest.NewRecorder()
 
-		tagRepo.EXPECT().FindByID(gomock.Any(), id).Return(tag, nil)
-		postRepo.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().
-			WithTag(tag).
+		tag.EXPECT().FindByID(gomock.Any(), id).Return(blog.Tag{ID: id}, nil)
+		post.EXPECT().FindAll(gomock.Any(), blog.NewPostQueryBuilder().
+			WithTag(blog.Tag{ID: id}).
 			WithStatus(blog.Published).
 			WithOffset(0).
 			WithLimit(5).
@@ -141,7 +140,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 		q := query{Query: `{ tags { slug } }`}
 		w := httptest.NewRecorder()
 
-		tagRepo.EXPECT().FindAll(gomock.Any()).Return([]blog.Tag{}, nil)
+		tag.EXPECT().FindAll(gomock.Any()).Return([]blog.Tag{}, nil)
 
 		// When
 		h.ServeHTTP(w, newGraphQLRequest(q))
@@ -156,7 +155,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 
 		w := httptest.NewRecorder()
 
-		postRepo.EXPECT().FindAll(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, q blog.PostQuery) ([]blog.Post, error) {
+		post.EXPECT().FindAll(gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, q blog.PostQuery) ([]blog.Post, error) {
 			assert.Equal(t, blog.Published, q.Status())
 			assert.EqualValues(t, 0, q.Offset())
 			assert.EqualValues(t, 5, q.Limit())
@@ -178,7 +177,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			catID := primitive.NewObjectID()
 			tagID := primitive.NewObjectID()
 			slug := "test-published-" + id.Hex()
-			post := blog.Post{
+			p := blog.Post{
 				ID:         id,
 				Slug:       slug,
 				Status:     blog.Published,
@@ -193,7 +192,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
+			post.EXPECT().FindByID(gomock.Any(), id).Return(p, nil)
 
 			// When
 			h.ServeHTTP(w, newGraphQLRequest(q))
@@ -204,13 +203,12 @@ func TestServer_RegisterQuery(t *testing.T) {
 
 		t.Run("With existing published post and has engagement field", func(t *testing.T) {
 			t.Run("With successful getting URL result from the Facebook Graph API", func(t *testing.T) {
-
 				// Given
 				id := primitive.NewObjectID()
 				catID := primitive.NewObjectID()
 				tagID := primitive.NewObjectID()
 				slug := "test-published-" + id.Hex()
-				post := blog.Post{
+				p := blog.Post{
 					ID:         id,
 					Slug:       slug,
 					Status:     blog.Published,
@@ -225,7 +223,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 				}
 				w := httptest.NewRecorder()
 
-				postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
+				post.EXPECT().FindByID(gomock.Any(), id).Return(p, nil)
 				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(_ *http.Request) (*http.Response, error) {
 					return &http.Response{
 						Body: ioutil.NopCloser(bytes.NewBufferString(`{"engagement":{"comment_count":1,"comment_plugin_count":2,"reaction_count":3,"share_count":4}}`)),
@@ -253,13 +251,12 @@ func TestServer_RegisterQuery(t *testing.T) {
 			})
 
 			t.Run("When unable to connect to the Facebook Graph API", func(t *testing.T) {
-
 				// Given
 				id := primitive.NewObjectID()
 				catID := primitive.NewObjectID()
 				tagID := primitive.NewObjectID()
 				slug := "test-published-" + id.Hex()
-				post := blog.Post{
+				p := blog.Post{
 					ID:         id,
 					Slug:       slug,
 					Status:     blog.Published,
@@ -274,7 +271,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 				}
 				w := httptest.NewRecorder()
 
-				postRepo.EXPECT().FindByID(gomock.Any(), id).Return(post, nil)
+				post.EXPECT().FindByID(gomock.Any(), id).Return(p, nil)
 				transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(_ *http.Request) (*http.Response, error) {
 					return nil, errors.New("unable to connect to Facebook Graph API")
 				})
@@ -312,7 +309,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft, AuthorID: "authorizedID"}, nil)
+			post.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft, AuthorID: "authorizedID"}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
@@ -333,7 +330,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{}, errors.New("test error on finding post by ID"))
+			post.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{}, errors.New("test error on finding post by ID"))
 
 			// When
 			h.ServeHTTP(w, newGraphQLRequest(q))
@@ -357,7 +354,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft}, nil)
+			post.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft}, nil)
 
 			// When
 			h.ServeHTTP(w, newGraphQLRequest(q))
@@ -381,7 +378,7 @@ func TestServer_RegisterQuery(t *testing.T) {
 			}
 			w := httptest.NewRecorder()
 
-			postRepo.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft, AuthorID: "otherAuthorizedID"}, nil)
+			post.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(blog.Post{Status: blog.Draft, AuthorID: "otherAuthorizedID"}, nil)
 
 			// When
 			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))

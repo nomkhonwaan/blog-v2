@@ -65,15 +65,15 @@ func TestHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		downloader = mock_storage.NewMockDownloader(ctrl)
-		uploader   = mock_storage.NewMockUploader(ctrl)
-		cache      = mock_storage.NewMockCache(ctrl)
-		fileRepo   = mock_storage.NewMockFileRepository(ctrl)
+		downloader   = mock_storage.NewMockDownloader(ctrl)
+		uploader     = mock_storage.NewMockUploader(ctrl)
+		cacheService = mock_storage.NewMockCache(ctrl)
+		file         = mock_storage.NewMockFileRepository(ctrl)
 
 		router = mux.NewRouter()
 	)
 
-	NewHandler(cache, fileRepo, downloader, uploader).Register(router.PathPrefix("/v1/storage").Subrouter())
+	NewHandler(cacheService, file, downloader, uploader).Register(router.PathPrefix("/v1/storage").Subrouter())
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}
@@ -111,7 +111,7 @@ func TestHandler(t *testing.T) {
 			assert.Nil(t, err)
 			assert.False(t, id.(primitive.ObjectID).IsZero())
 
-			fileRepo.EXPECT().Create(gomock.Any(), File{
+			file.EXPECT().Create(gomock.Any(), File{
 				ID:             id.(primitive.ObjectID),
 				Path:           path,
 				FileName:       "test.txt",
