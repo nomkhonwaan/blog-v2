@@ -36,7 +36,7 @@ export class ArchiveComponent implements OnInit {
           ${type}(slug: $slug) {
             name
             slug
-            latestPublishedPosts(offset: 0, limit: 5) {
+            latestPublishedPosts(offset: 0, limit: 6) {
               title
               slug
               html

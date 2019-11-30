@@ -4,7 +4,7 @@
   </div>
 
   <ul class="latest-published-posts _list-unstyled">
-    <li *ngFor="let post of archive.latestPublishedPosts">
+    <li *ngFor="let post of archive.latestPublishedPosts | slice:0:5">
       <app-post-featured-image [post]="post"></app-post-featured-image>
 
       <app-post-title [post]="post">
@@ -19,7 +19,7 @@
     </li>
   </ul>
 
-  <div class="_text-right" [style.margin-top]="'6.4rem'">
-    <app-outline-button ariaLabel="Older Posts">Older Posts</app-outline-button>
+  <div *ngIf="latestPublishedPosts?.length > 5" class="_text-right" [style.margin-top]="'6.4rem'">
+    <app-outline-button>Older Posts</app-outline-button>
   </div>
 </div>
