@@ -18,13 +18,13 @@ func (interceptor LoggingInterceptor) Handler(h http.Handler) http.Handler {
 
 		h.ServeHTTP(customResponseWriter, r)
 
-		interceptor.Outputer.Printf(`"%s %s" %d %q %q "%.2f"`,
+		interceptor.Outputer.Printf(`"%s %s" %d %q %q "%d"`,
 			r.Method,
 			r.RequestURI,
 			customResponseWriter.statusCode,
 			r.UserAgent(),
 			r.RemoteAddr,
-			time.Since(start).Seconds(),
+			time.Since(start).Milliseconds(),
 		)
 	})
 }
