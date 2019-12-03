@@ -151,7 +151,7 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 
 	mimeType := mime.TypeByExtension(filepath.Ext(path))
 
-	if shouldResize && (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
+	if body != nil && shouldResize && (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
 		buf.Reset()
 		rdr = io.TeeReader(body, &buf)
 		body, err = h.service.Resize(rdr, width, height)
