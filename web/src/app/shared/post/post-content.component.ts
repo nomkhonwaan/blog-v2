@@ -10,8 +10,13 @@ import {
   Inject,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import 'fslightbox';
 
 import { PostComponent } from './post.component';
+
+declare global {
+  interface Window { refreshFsLightbox: () => void; }
+}
 
 @Component({
   selector: 'app-post-content',
@@ -46,8 +51,9 @@ export class PostContentComponent extends PostComponent implements OnInit, After
 
     this.addExtraClassNamesToAllImages(imgs);
     this.addExtraQueryToImageSrc(imgs);
-    this.renderAllImageCaptions(imgs);
     this.renderGitHubGist(scripts);
+
+    window.refreshFsLightbox();
   }
 
   private addExtraClassNamesToAllImages(imgs: NodeList): void {
@@ -61,19 +67,27 @@ export class PostContentComponent extends PostComponent implements OnInit, After
       const src: string = node.getAttribute('src')
 
       node.setAttribute('src', `${src}?width=${this.innerWidth}`);
+
+      const anchor: Element = this.renderer.createElement('a');
+      const img: Element = <Element>node.cloneNode();
+
+      this.renderer.setAttribute(anchor, 'data-fslightbox', '');
+      this.renderer.setAttribute(anchor, 'href', src);
+      this.renderer.appendChild(anchor, img);
+      this.renderImageCaption(img);
+
+      node.replaceWith(anchor);
     });
   }
 
-  private renderAllImageCaptions(imgs: NodeList): void {
-    imgs.forEach((node: Element): void => {
-      const alt: string = node.getAttribute('alt');
-      const caption: Element = this.renderer.createElement('div');
+  private renderImageCaption(img: Element): void {
+    const alt: string = img.getAttribute('alt');
+    const caption: Element = this.renderer.createElement('div');
 
-      this.renderer.addClass(caption, 'caption');
-      this.renderer.appendChild(caption, this.renderer.createText(alt));
+    this.renderer.addClass(caption, 'caption');
+    this.renderer.appendChild(caption, this.renderer.createText(alt));
 
-      node.insertAdjacentElement('afterend', caption);
-    });
+    img.insertAdjacentElement('afterend', caption);
   }
 
   private renderGitHubGist(scripts: NodeList): void {
