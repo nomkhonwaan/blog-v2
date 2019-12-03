@@ -2,6 +2,7 @@ package storage
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
@@ -97,8 +98,14 @@ func (h Handler) Register(r *mux.Router) {
 }
 
 func (h Handler) download(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	slug := Slug(vars["slug"])
+	var (
+		vars          = mux.Vars(r)
+		slug          = Slug(vars["slug"])
+		width, height = getWidthAndHeightFromQuery(r.URL.Query())
+
+		body        io.Reader
+		resizedPath string
+	)
 
 	file, err := h.service.File().FindByID(r.Context(), slug.MustGetID())
 	if err != nil {
@@ -106,52 +113,33 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var (
-		length       int64
-		body         io.Reader
-		shouldResize bool
+	path := file.Path
+	mimeType := mime.TypeByExtension(filepath.Ext(path))
 
-		path          = file.Path
-		width, height = getWidthAndHeightFromQuery(r.URL.Query())
-		resizedPath   = fmt.Sprintf("%s-%d-%d%s", path[0:len(path)-len(filepath.Ext(path))], width, height, filepath.Ext(path))
-	)
+	if (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
+		resizedPath = fmt.Sprintf("%s-%d-%d%s", path[0:len(path)-len(filepath.Ext(path))], width, height, filepath.Ext(path))
 
-	if width > 0 || height > 0 {
 		if h.service.Cache().Exist(resizedPath) {
 			body, err = h.service.Cache().Retrieve(resizedPath)
 			if err != nil {
 				logrus.Errorf("unable to retrieve file from %s: %s", path, err)
+			} else {
+				// a resized image found on cache storage,
+				// clear the `resizedPath` value for preventing image resize function
+				resizedPath = ""
 			}
 		}
 	}
 
-	if body == nil && h.service.Cache().Exist(path) {
-		body, err = h.service.Cache().Retrieve(path)
-		if err != nil {
-			logrus.Errorf("unable to retrieve file from %s: %s", path, err)
-		}
-		shouldResize = true
-	}
-
 	if body == nil {
-		body, err = h.service.Download(r.Context(), path)
+		body, err = h.downloadOriginalFile(r.Context(), path)
 		if err != nil {
-			h.responseError(w, err.Error(), http.StatusNotFound)
+			http.Error(w, err.Error(), http.StatusNotFound)
 			return
 		}
-		shouldResize = true
-
-		var buf bytes.Buffer
-		rdr := io.TeeReader(body, &buf)
-		body = &buf
-		if err = h.service.Cache().Store(rdr, path); err != nil {
-			logrus.Errorf("unable to store file on %s: %s", path, err)
-		}
 	}
 
-	mimeType := mime.TypeByExtension(filepath.Ext(path))
-
-	if body != nil && shouldResize && (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
+	if resizedPath != "" {
 		var buf bytes.Buffer
 		rdr := io.TeeReader(body, &buf)
 		body, err = h.service.Resize(rdr, width, height)
@@ -162,18 +150,51 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 			body = &buf
 		}
 
-		buf.Reset()
-		rdr = io.TeeReader(body, &buf)
-		body = &buf
-		if err = h.service.Cache().Store(rdr, resizedPath); err != nil {
-			logrus.Errorf("unable to store file on %s: %s", resizedPath, err)
-		}
+		rdr, wtr := io.Pipe()
+		body = io.TeeReader(body, wtr)
+
+		go func(wtr io.WriteCloser, rdr io.Reader) {
+			defer wtr.Close()
+
+			if err = h.service.Cache().Store(rdr, resizedPath); err != nil {
+				logrus.Errorf("unable to store file on %s: %s", path, err)
+			}
+		}(wtr, rdr)
 	}
 
-	length, _ = io.Copy(w, body)
+	length, _ := io.Copy(w, body)
 
 	w.Header().Set("Content-Type", mimeType)
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
+}
+
+func (h Handler) downloadOriginalFile(ctx context.Context, path string) (body io.Reader, err error) {
+	if h.service.Cache().Exist(path) {
+		body, err = h.service.Cache().Retrieve(path)
+		if err != nil {
+			logrus.Errorf("unable to retrieve file from %s: %s", path, err)
+		}
+	}
+
+	if body == nil {
+		body, err = h.service.Download(ctx, path)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	rdr, wtr := io.Pipe()
+	body = io.TeeReader(body, wtr)
+
+	go func(wtr io.WriteCloser, rdr io.Reader) {
+		defer wtr.Close()
+
+		if err = h.service.Cache().Store(rdr, path); err != nil {
+			logrus.Errorf("unable to store file on %s: %s", path, err)
+		}
+	}(wtr, rdr)
+
+	return body, nil
 }
 
 func (h Handler) upload(w http.ResponseWriter, r *http.Request) {
