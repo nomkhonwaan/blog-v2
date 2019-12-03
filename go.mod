@@ -8,6 +8,7 @@ require (
 	github.com/aws/aws-sdk-go v1.25.19
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/disintegration/imaging v1.6.2
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/mock v1.3.1
 	github.com/golang/snappy v0.0.1 // indirect
@@ -17,6 +18,7 @@ require (
 	github.com/graphql-go/graphql v0.7.8 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1
 	github.com/samsarahq/go v0.0.0-20190905175208-8d057fd44004 // indirect

@@ -13,6 +13,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
+	"github.com/nomkhonwaan/myblog/pkg/image"
 	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
@@ -123,7 +124,7 @@ func action(cmd *cobra.Command, args []string) error {
 
 	// Create all HTTP handlers
 	ghHandler := github.NewHandler(cacheService, http.DefaultTransport)
-	storageHandler := storage.NewHandler(cacheService, file, s3, s3)
+	storageHandler := storage.NewHandler(cacheService, file, s3, s3, image.NewLanczosResizer())
 	sitemapHandler := sitemap.NewHandler(baseURL, cacheService, blogService)
 	schema := graphql.NewServer(blogService, fbClient, file).Schema()
 	introspection.AddIntrospectionToSchema(schema)
