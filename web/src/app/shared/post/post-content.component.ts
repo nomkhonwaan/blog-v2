@@ -45,6 +45,7 @@ export class PostContentComponent extends PostComponent implements OnInit, After
     const scripts: NodeList = this.elementRef.nativeElement.querySelectorAll('script');
 
     this.addExtraClassNamesToAllImages(imgs);
+    this.addExtraQueryToImageSrc(imgs);
     this.renderAllImageCaptions(imgs);
     this.renderGitHubGist(scripts);
   }
@@ -52,6 +53,14 @@ export class PostContentComponent extends PostComponent implements OnInit, After
   private addExtraClassNamesToAllImages(imgs: NodeList): void {
     imgs.forEach((node: Element): void => {
       node.setAttribute('class', `${node.getAttribute('class')} lazyload`);
+    });
+  }
+
+  private addExtraQueryToImageSrc(imgs: NodeList): void {
+    imgs.forEach((node: Element): void => {
+      const src: string = node.getAttribute('src')
+
+      node.setAttribute('src', `${src}?width=${this.innerWidth}`);
     });
   }
 

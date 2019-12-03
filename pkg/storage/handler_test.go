@@ -9,6 +9,7 @@ import (
 	"github.com/golang/mock/gomock"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
+	mock_image "github.com/nomkhonwaan/myblog/pkg/image/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/storage"
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
@@ -67,13 +68,14 @@ func TestHandler(t *testing.T) {
 	var (
 		downloader   = mock_storage.NewMockDownloader(ctrl)
 		uploader     = mock_storage.NewMockUploader(ctrl)
+		resizer      = mock_image.NewMockResizer(ctrl)
 		cacheService = mock_storage.NewMockCache(ctrl)
 		file         = mock_storage.NewMockFileRepository(ctrl)
 
 		router = mux.NewRouter()
 	)
 
-	NewHandler(cacheService, file, downloader, uploader).Register(router.PathPrefix("/v1/storage").Subrouter())
+	NewHandler(cacheService, file, downloader, uploader, resizer).Register(router.PathPrefix("/v1/storage").Subrouter())
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}

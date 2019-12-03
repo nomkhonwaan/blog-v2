@@ -1,17 +1,21 @@
 package storage
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
+	"github.com/nomkhonwaan/myblog/pkg/image"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -35,11 +39,14 @@ func (s Slug) MustGetID() interface{} {
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
-	// The Downloader interface
+	// Provide file downloading function
 	Downloader
 
-	// The Uploader interface
+	// Provide file uploading function
 	Uploader
+
+	// Provide image resizing function
+	image.Resizer
 
 	// A Cache service
 	Cache() Cache
@@ -51,6 +58,7 @@ type Service interface {
 type service struct {
 	Downloader
 	Uploader
+	image.Resizer
 
 	cache    Cache
 	fileRepo FileRepository
@@ -70,11 +78,12 @@ type Handler struct {
 }
 
 // NewHandler returns a new handler instance
-func NewHandler(cache Cache, fileRepo FileRepository, downloader Downloader, uploader Uploader) Handler {
+func NewHandler(cache Cache, fileRepo FileRepository, downloader Downloader, uploader Uploader, resizer image.Resizer) Handler {
 	return Handler{
 		service: service{
 			Downloader: downloader,
 			Uploader:   uploader,
+			Resizer:    resizer,
 			cache:      cache,
 			fileRepo:   fileRepo,
 		},
@@ -98,17 +107,30 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var (
-		length int64
-		body   io.Reader
+		length       int64
+		body         io.Reader
+		shouldResize bool
 
-		path = file.Path
+		path          = file.Path
+		width, height = getWidthAndHeightFromQuery(r.URL.Query())
+		resizedPath   = fmt.Sprintf("%s-%d-%d%s", path[0:len(path)-len(filepath.Ext(path))], width, height, filepath.Ext(path))
 	)
 
-	if h.service.Cache().Exist(path) {
+	if width > 0 || height > 0 {
+		if h.service.Cache().Exist(resizedPath) {
+			body, err = h.service.Cache().Retrieve(resizedPath)
+			if err != nil {
+				logrus.Errorf("unable to retrieve file from %s: %s", path, err)
+			}
+		}
+	}
+
+	if body == nil && h.service.Cache().Exist(path) {
 		body, err = h.service.Cache().Retrieve(path)
 		if err != nil {
 			logrus.Errorf("unable to retrieve file from %s: %s", path, err)
 		}
+		shouldResize = true
 	}
 
 	if body == nil {
@@ -117,22 +139,40 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 			h.responseError(w, err.Error(), http.StatusNotFound)
 			return
 		}
+		shouldResize = true
 
-		rdr, wtr := io.Pipe()
-		body = io.TeeReader(body, wtr)
+		var buf bytes.Buffer
+		rdr := io.TeeReader(body, &buf)
+		body = &buf
+		if err = h.service.Cache().Store(rdr, path); err != nil {
+			logrus.Errorf("unable to store file on %s: %s", path, err)
+		}
+	}
 
-		go func(wtr io.WriteCloser, rdr io.Reader) {
-			defer wtr.Close()
+	mimeType := mime.TypeByExtension(filepath.Ext(path))
 
-			if err = h.service.Cache().Store(rdr, path); err != nil {
-				logrus.Errorf("unable to store file on %s: %s", path, err)
-			}
-		}(wtr, rdr)
+	if body != nil && shouldResize && (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
+		var buf bytes.Buffer
+		rdr := io.TeeReader(body, &buf)
+		body, err = h.service.Resize(rdr, width, height)
+		if err != nil {
+			logrus.Errorf("unable to resize image: %s", err)
+		}
+		if body == nil {
+			body = &buf
+		}
+
+		buf.Reset()
+		rdr = io.TeeReader(body, &buf)
+		body = &buf
+		if err = h.service.Cache().Store(rdr, resizedPath); err != nil {
+			logrus.Errorf("unable to store file on %s: %s", resizedPath, err)
+		}
 	}
 
 	length, _ = io.Copy(w, body)
 
-	w.Header().Set("Content-Type", mime.TypeByExtension(filepath.Ext(path)))
+	w.Header().Set("Content-Type", mimeType)
 	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
 }
 
@@ -196,4 +236,10 @@ func (h Handler) responseError(w http.ResponseWriter, message string, code int) 
 
 	w.WriteHeader(code)
 	_, _ = w.Write(val)
+}
+
+func getWidthAndHeightFromQuery(values url.Values) (int, int) {
+	w, _ := strconv.Atoi(values.Get("width"))
+	h, _ := strconv.Atoi(values.Get("height"))
+	return w, h
 }
