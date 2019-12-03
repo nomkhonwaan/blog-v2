@@ -108,8 +108,7 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 
 	var (
 		length       int64
-		buf          bytes.Buffer
-		body, rdr    io.Reader
+		body         io.Reader
 		shouldResize bool
 
 		path          = file.Path
@@ -142,7 +141,8 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 		}
 		shouldResize = true
 
-		rdr = io.TeeReader(body, &buf)
+		var buf bytes.Buffer
+		rdr := io.TeeReader(body, &buf)
 		body = &buf
 		if err = h.service.Cache().Store(rdr, path); err != nil {
 			logrus.Errorf("unable to store file on %s: %s", path, err)
@@ -152,8 +152,8 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 	mimeType := mime.TypeByExtension(filepath.Ext(path))
 
 	if body != nil && shouldResize && (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
-		buf.Reset()
-		rdr = io.TeeReader(body, &buf)
+		var buf bytes.Buffer
+		rdr := io.TeeReader(body, &buf)
 		body, err = h.service.Resize(rdr, width, height)
 		if err != nil {
 			logrus.Errorf("unable to resize image: %s", err)
