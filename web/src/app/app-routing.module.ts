@@ -3,8 +3,8 @@ import { Routes, RouterModule } from '@angular/router';
 
 const routes: Routes = [
   {
-    path: ':year/:month/:date/:slug',
-    loadChildren: () => import('./single/single.module').then((m) => m.SingleModule),
+    path: '', pathMatch: 'full',
+    loadChildren: () => import('./recent-posts/recent-posts.module').then((m) => m.RecentPostsModule),
   },
   {
     path: 'category/:slug',
@@ -17,8 +17,12 @@ const routes: Routes = [
     loadChildren: () => import('./archive/archive.module').then((m) => m.ArchiveModule),
   },
   {
-    path: '', pathMatch: 'full',
-    loadChildren: () => import('./recent-posts/recent-posts.module').then((m) => m.RecentPostsModule),
+    path: 'admin',
+    loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
+  },
+  {
+    path: ':year/:month/:date/:slug',
+    loadChildren: () => import('./single/single.module').then((m) => m.SingleModule),
   },
   {
     path: '**',
