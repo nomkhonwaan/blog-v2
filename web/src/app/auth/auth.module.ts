@@ -20,6 +20,6 @@ import { environment } from '../../environments/environment';
         scope: 'email openid profile'
       }),
     },
-  ]
+  ],
 })
 export class AuthModule { }

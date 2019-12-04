@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { AppLoginComponent } from './app-login.component';
+
 const routes: Routes = [
   {
     path: '', pathMatch: 'full',
@@ -15,6 +17,10 @@ const routes: Routes = [
     path: 'tag/:slug',
     data: { type: 'tag' },
     loadChildren: () => import('./archive/archive.module').then((m) => m.ArchiveModule),
+  },
+  {
+    path: 'login',
+    component: AppLoginComponent,
   },
   {
     path: 'admin',

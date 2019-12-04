@@ -15,6 +15,7 @@ import { GraphQLModule } from './graphql/graphql.module';
 import { SharedModule } from './shared/share.module';
 
 import { AppComponent, AnimationDirective } from './app.component';
+import { AppLoginComponent } from './app-login.component';
 
 import * as appReducer from './app.reducer';
 import { AppHttpInterceptor } from './app-http.interceptor';
@@ -43,6 +44,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
   ],
   declarations: [
     AppComponent,
+    AppLoginComponent,
     AnimationDirective,
   ],
   providers: [

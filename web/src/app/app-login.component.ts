@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../auth/auth.service';
+
+import { AuthService } from './auth/auth.service';
 
 @Component({
-  selector: 'app-admin-login',
+  selector: 'app-login',
   template: ``,
 })
-export class LoginComponent implements OnInit {
+export class AppLoginComponent implements OnInit {
 
   constructor(private auth: AuthService) { }
 

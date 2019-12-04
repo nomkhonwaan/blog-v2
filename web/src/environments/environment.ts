@@ -12,7 +12,7 @@ export const environment = {
 
   auth0: {
     clientId: 'cSMgdzCX59n4TcL7H6RWRUYeRFGqCMbU',
-    redirectUri: 'http://localhost:4300/admin/login',
+    redirectUri: 'http://localhost:4300/login',
   },
 
   graphql: {
