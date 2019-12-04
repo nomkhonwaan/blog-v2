@@ -120,6 +120,17 @@ workflows:
             - test
             - build
             - build_web
+      - hold:
+          type: approval
+          filters:
+            bracnhes:
+              only:
+                - master
       - deploy_to_docker_deploy_webhook:
           requires:
             - build_docker_image
+            - hold
+          filters:
+            branches:
+              only:
+                - master
