@@ -78,7 +78,7 @@ export class AuthService {
    * Performs silent authentication to renew the session.
    */
   renewTokens(): void {
-    this.webAuth.checkSession({}, (_, authResult) => {
+    this.webAuth.checkSession({}, (_, authResult: AuthResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
         this.localLogin(authResult);
       }
