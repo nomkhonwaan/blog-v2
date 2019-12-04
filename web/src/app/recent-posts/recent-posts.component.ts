@@ -26,7 +26,7 @@ export class RecentPostsComponent implements OnInit {
     this.latestPublishedPosts$ = this.apollo.query({
       query: gql`
         {
-          latestPublishedPosts(offset: 0, limit: 3) {
+          latestPublishedPosts(offset: 0, limit: 6) {
             title
             slug
             html
