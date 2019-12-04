@@ -100,15 +100,14 @@ export class AppComponent implements OnInit {
 
   constructor(
     private apollo: Apollo,
-    private store: Store<AppState>,
     private auth: AuthService,
     private router: Router,
+    private store: Store<AppState>,
   ) {
     this.loadingAnimationData = coffeeCup;
 
     store
       .pipe(select('app', 'isFetching'))
-      .pipe(debounceTime(0))
       .subscribe((isFetching: boolean): void => {
         this.isFetching = isFetching;
       });

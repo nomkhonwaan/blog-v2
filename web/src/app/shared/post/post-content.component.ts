@@ -10,13 +10,11 @@ import {
   Inject,
 } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Store, select } from '@ngrx/store';
 import 'fslightbox';
 
 import { PostComponent } from './post.component';
-
-declare global {
-  interface Window { refreshFsLightbox: () => void; }
-}
+import { isLightboxOpened, isLightboxClosed } from './post.actions';
 
 @Component({
   selector: 'app-post-content',
@@ -30,11 +28,24 @@ export class PostContentComponent extends PostComponent implements OnInit, After
 
   content: string;
 
+  isLightboxClosed: boolean;
+
   @ViewChild('content', { static: false })
   private elementRef: ElementRef;
 
-  constructor(@Inject(DOCUMENT) private document: Document, private http: HttpClient, private renderer: Renderer2) {
+  constructor(
+    @Inject(DOCUMENT) private document: Document,
+    private http: HttpClient,
+    private renderer: Renderer2,
+    private store: Store<PostState>,
+  ) {
     super();
+
+    store
+      .pipe(select('post', 'content', 'fslightbox', 'closed'))
+      .subscribe((closed: boolean): void => {
+        this.isLightboxClosed = closed;
+      })
   }
 
   ngOnInit(): void {
@@ -54,6 +65,14 @@ export class PostContentComponent extends PostComponent implements OnInit, After
     this.renderGitHubGist(scripts);
 
     window.refreshFsLightbox();
+
+    window.fsLightboxInstances[''].props.onOpen = (): void => {
+      this.store.dispatch(isLightboxOpened());
+    };
+
+    window.fsLightboxInstances[''].props.onClose = (): void => {
+      this.store.dispatch(isLightboxClosed());
+    };
   }
 
   private addExtraClassNamesToAllImages(imgs: NodeList): void {

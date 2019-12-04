@@ -1,5 +1,5 @@
 /**
- * A shape of the application state
+ * A shape of application state
  */
 interface AppState {
   /**

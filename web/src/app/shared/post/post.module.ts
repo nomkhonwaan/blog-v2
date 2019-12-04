@@ -3,6 +3,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { StoreModule } from '@ngrx/store';
 
 import { PostAuthorComponent } from './post-author.component';
 import { PostCategoriesComponent } from './post-categories.component';
@@ -13,6 +14,7 @@ import { PostMetadataComponent } from './post-metadata.component';
 import { PostShareToComponent } from './post-share-to.component';
 import { PostTagsComponent } from './post-tags.component';
 import { PostTitleComponent } from './post-title.component';
+import * as postReducer from './post.reducer';
 
 import { TemplateModule } from '../template/template.module';
 
@@ -22,6 +24,7 @@ import { TemplateModule } from '../template/template.module';
     FontAwesomeModule,
     HttpClientModule,
     RouterModule,
+    StoreModule.forFeature('post', postReducer.reducer),
     TemplateModule,
   ],
   declarations: [
