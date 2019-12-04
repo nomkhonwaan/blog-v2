@@ -56,7 +56,7 @@ func TestDiskCache_Retrieve(t *testing.T) {
 
 	t.Run("With successful retrieving cache file", func(t *testing.T) {
 		// Given
-		path := "test.txt"
+		path := "test1.txt"
 		_ = cache.Store(bytes.NewBufferString("test"), path)
 		defer func() {
 			_ = os.Remove(filepath.Join(cacheFilesPath, path))
@@ -93,7 +93,7 @@ func TestDiskCache_Store(t *testing.T) {
 	t.Run("With successful storing cache file", func(t *testing.T) {
 		// Given
 		body := bytes.NewBufferString("test")
-		path := "test.txt"
+		path := "test3.txt"
 		defer func() {
 			_ = os.Remove(filepath.Join(cacheFilesPath, path))
 		}()
@@ -109,7 +109,7 @@ func TestDiskCache_Store(t *testing.T) {
 
 	t.Run("When unable to create nested directory on the given path", func(t *testing.T) {
 		// Given
-		path := "ro/rw/test.txt"
+		path := "ro/rw/test4.txt"
 		body := bytes.NewBufferString("test")
 		_ = os.Mkdir(filepath.Join(cacheFilesPath, "ro"), 0400)
 		defer func() {
@@ -125,7 +125,7 @@ func TestDiskCache_Store(t *testing.T) {
 
 	t.Run("When unable to write cache file", func(t *testing.T) {
 		// Given
-		path := "test.txt"
+		path := "test5.txt"
 		body := bytes.NewBufferString("test")
 		_, _ = os.Create(filepath.Join(cacheFilesPath, path))
 		_ = os.Chmod(filepath.Join(cacheFilesPath, path), 0400)
