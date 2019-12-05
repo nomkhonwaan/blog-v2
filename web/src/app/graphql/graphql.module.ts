@@ -19,8 +19,8 @@ export function createApollo(httpLink: HttpLink, store: Store<AppState>) {
     return auth$
       .pipe(take(1))
       .toPromise()
-      .then((auth: { accessToken?: string }) => {
-        return auth.accessToken ? {
+      .then((auth?: { accessToken?: string }) => {
+        return auth && auth.accessToken ? {
           headers: {
             Authorization: `Bearer ${auth.accessToken}`,
           },

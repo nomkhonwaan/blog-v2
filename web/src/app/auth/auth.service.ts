@@ -34,7 +34,7 @@ export class AuthService {
    * Dispatch the @ngrx/store for updating `accessToken` and `idToken` values
    */
   dispatchNgrxStore(): void {
-    if (this.accessToken !== '' || this.idToken !== '') {
+    if (this.isAuthenticated()) {
       this.store.dispatch(setAuthentication({ accessToken: this.accessToken, idToken: this.idToken }));
     }
   }
@@ -116,6 +116,6 @@ export class AuthService {
    * Check whether the user's Access Token is set and its expiry time has passed.
    */
   isAuthenticated(): boolean {
-    return this.accessToken && Date.now() < this.expiresAt;
+    return this.accessToken !== '' && this.idToken !== '' && Date.now() < this.expiresAt;
   }
 }
