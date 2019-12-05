@@ -26,7 +26,9 @@ import { AppHttpInterceptor } from './app-http.interceptor';
     BrowserAnimationsModule,
     FontAwesomeModule,
     HttpClientModule,
-    StoreModule.forRoot({ app: appReducer.reducer }, {
+    StoreModule.forRoot({
+      app: appReducer.reducer,
+    }, {
       runtimeChecks: {
         strictActionImmutability: true,
         strictStateImmutability: true,

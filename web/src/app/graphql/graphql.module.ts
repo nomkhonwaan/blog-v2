@@ -12,7 +12,7 @@ import { environment } from 'src/environments/environment';
 
 const uri = environment.graphql.endpoint;
 
-export function createApollo(store: Store<AppState>, httpLink: HttpLink) {
+export function createApollo(httpLink: HttpLink, store: Store<AppState>) {
   const accessToken$: Observable<string> = store.pipe(select('app', 'auth', 'accessToken'));
 
   const auth: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
@@ -35,13 +35,15 @@ export function createApollo(store: Store<AppState>, httpLink: HttpLink) {
 }
 
 @NgModule({
-  imports: [],
-  exports: [ApolloModule, HttpLinkModule],
+  exports: [
+    ApolloModule,
+    HttpLinkModule,
+  ],
   providers: [
     {
       provide: APOLLO_OPTIONS,
       useFactory: createApollo,
-      deps: [Store, HttpLink],
+      deps: [HttpLink, Store],
     },
   ],
 })
