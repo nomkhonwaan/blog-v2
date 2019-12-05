@@ -5,6 +5,7 @@ import { DialogModule } from './dialog/dialog.module';
 import { FormModule } from './form/form.module';
 import { PostModule } from './post/post.module';
 import { TemplateModule } from './template/template.module';
+import { UserModule } from './user/user.module';
 
 @NgModule({
   exports: [
@@ -13,6 +14,7 @@ import { TemplateModule } from './template/template.module';
     FormModule,
     PostModule,
     TemplateModule,
+    UserModule,
   ],
 })
 export class SharedModule { }

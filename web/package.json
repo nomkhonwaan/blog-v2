@@ -38,6 +38,7 @@
     "graphql": "^14.3.1",
     "graphql-tag": "^2.10.0",
     "immutability-helper": "^3.0.1",
+    "jwt-decode": "^2.2.0",
     "lazysizes": "^5.2.0-beta1",
     "lottie-web": "^5.5.9",
     "rxjs": "~6.5.3",

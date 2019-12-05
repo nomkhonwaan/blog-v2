@@ -15,6 +15,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
           position: absolute;
           left: 25.6rem;
           width: 100%;
+          z-index: 99;
       }
     `,
     `

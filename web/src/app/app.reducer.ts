@@ -19,11 +19,12 @@ const appReducer = createReducer(
   initialState,
   on(isFetching, (state) => update<AppState>(state, { isFetching: { $set: true } })),
   on(isNotFetching, (state) => update<AppState>(state, { isFetching: { $set: false } })),
-  on(setAuthentication, (state, { accessToken, idToken }) => update<AppState>(state, {
+  on(setAuthentication, (state, { accessToken, idToken, userInfo }) => update<AppState>(state, {
     auth: {
       $set: {
         accessToken,
         idToken,
+        userInfo,
       },
     },
   })),

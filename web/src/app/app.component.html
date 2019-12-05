@@ -28,6 +28,8 @@
 
   <app-button ariaLabel="Search" [icon]="faSearch" [style.margin-left]="'auto'">
   </app-button>
+
+  <app-user-navbar *ngIf="isAuthenticated()" [userInfo]="userInfo$ | async"></app-user-navbar>
 </div>
 
 <main class="main">

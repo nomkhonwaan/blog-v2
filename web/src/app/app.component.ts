@@ -89,6 +89,11 @@ export class AppComponent implements OnInit {
   loadingAnimationData: any;
 
   /**
+   * An authenticated user information
+   */
+  userInfo$: Observable<UserInfo | null>;
+
+  /**
    * Used to display at footer section as a build version number
    */
   version: string = environment.version;
@@ -105,6 +110,7 @@ export class AppComponent implements OnInit {
     private store: Store<AppState>,
   ) {
     this.loadingAnimationData = coffeeCup;
+    this.userInfo$ = store.pipe(select('app', 'auth', 'userInfo'));
 
     store
       .pipe(select('app', 'isFetching'))

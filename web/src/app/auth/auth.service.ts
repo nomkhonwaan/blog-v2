@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { WebAuth } from 'auth0-js';
+import jwtDecode from 'jwt-decode';
 
 import { AuthModule } from './auth.module';
 
@@ -31,11 +32,15 @@ export class AuthService {
   }
 
   /**
-   * Dispatch the @ngrx/store for updating `accessToken` and `idToken` values
+   * Dispatch the @ngrx/store for updating `accessToken`, `idToken` and `userInfo` values
    */
   dispatchNgrxStore(): void {
     if (this.isAuthenticated()) {
-      this.store.dispatch(setAuthentication({ accessToken: this.accessToken, idToken: this.idToken }));
+      this.store.dispatch(setAuthentication({
+        accessToken: this.accessToken,
+        idToken: this.idToken,
+        userInfo: this.userInfo(),
+      }));
     }
   }
 
@@ -117,5 +122,12 @@ export class AuthService {
    */
   isAuthenticated(): boolean {
     return this.accessToken !== '' && this.idToken !== '' && Date.now() < this.expiresAt;
+  }
+
+  /**
+   * Return user info that decodes from an `id_token` string
+   */
+  userInfo(): UserInfo | null {
+    return this.isAuthenticated() ? jwtDecode(this.idToken) : null;
   }
 }

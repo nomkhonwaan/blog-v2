@@ -35,8 +35,13 @@
 }
 
 .navbar {
+  align-items: center;
   border-bottom: 0.1rem solid #ececec;
   display: flex;
+
+  app-user-navbar {
+    margin-right: 3.2rem;
+  }
 }
 
 .main {

@@ -10,6 +10,7 @@ interface AppState {
   auth?: {
     accessToken: string,
     idToken: string,
+    userInfo: UserInfo | null,
   };
 
   /**
