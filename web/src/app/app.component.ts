@@ -100,9 +100,9 @@ export class AppComponent implements OnInit {
 
   constructor(
     private apollo: Apollo,
-    private auth: AuthService,
     private router: Router,
     private store: Store<AppState>,
+    auth: AuthService,
   ) {
     this.loadingAnimationData = coffeeCup;
 

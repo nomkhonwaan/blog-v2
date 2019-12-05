@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { AppLoginComponent } from './app-login.component';
+import { LoginComponent } from './login.component';
 
 const routes: Routes = [
   {
@@ -20,7 +20,7 @@ const routes: Routes = [
   },
   {
     path: 'login',
-    component: AppLoginComponent,
+    component: LoginComponent,
   },
   {
     path: 'admin',
