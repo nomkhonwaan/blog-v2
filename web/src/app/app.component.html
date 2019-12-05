@@ -11,8 +11,8 @@
       <li (click)="toggleSidebar()">
         <a [routerLink]="['']" routerLinkActive="-actived">Home</a>
       </li>
-      <li *ngIf="!auth.isAuthenticated()">
-        <a (click)="auth.login(router.url)">Login / Register</a>
+      <li *ngIf="!isAuthenticated()">
+        <a (click)="login()">Login / Register</a>
       </li>
       <li *ngFor="let cat of categories$ | async" (click)="toggleSidebar()">
         <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>

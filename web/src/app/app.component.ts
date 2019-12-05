@@ -100,9 +100,9 @@ export class AppComponent implements OnInit {
 
   constructor(
     private apollo: Apollo,
+    private auth: AuthService,
     private router: Router,
     private store: Store<AppState>,
-    auth: AuthService,
   ) {
     this.loadingAnimationData = coffeeCup;
 
@@ -125,6 +125,14 @@ export class AppComponent implements OnInit {
 
     // Perform a query to the GraphQL server for retrieving a list of categories for displaying on sidebar menu
     this.queryAllCategories();
+  }
+
+  isAuthenticated(): boolean {
+    return this.auth.isAuthenticated();
+  }
+
+  login(): void {
+    this.auth.login(this.router.url);
   }
 
   renewTokenIfAuthenticated(): void {
