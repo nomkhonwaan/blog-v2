@@ -53,7 +53,22 @@ import { UserComponent } from './user.component';
         padding: 1.6rem 0!important;
         position: absolute;
         right: 0;
-        top: 6.4rem;
+        top: 7.2rem;
+      }
+    `,
+    `
+      .nav:before {
+        background: #fff;
+        border-top: .1rem solid #ececec;
+        border-left: .1rem solid #ececec;
+        content: '';
+        display: block;
+        height: 1.6rem;
+        position: absolute;
+        right: .8rem;
+        width: 1.6rem;
+        top: -.8rem;
+        transform: rotate(45deg);
       }
     `,
     `
