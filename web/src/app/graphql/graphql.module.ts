@@ -13,23 +13,23 @@ import { environment } from 'src/environments/environment';
 const uri = environment.graphql.endpoint;
 
 export function createApollo(httpLink: HttpLink, store: Store<AppState>) {
-  const accessToken$: Observable<string> = store.pipe(select('app', 'auth', 'accessToken'));
+  const auth$: Observable<{ accessToken: string }> = store.pipe(select('app', 'auth'));
 
-  const auth: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
-    return accessToken$
+  const authContext: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
+    return auth$
       .pipe(take(1))
       .toPromise()
-      .then((accessToken: string): { headers?: { [Authorization: string]: string } } => {
-        return accessToken ? {
+      .then((auth: { accessToken?: string }) => {
+        return auth.accessToken ? {
           headers: {
-            Authorization: `Bearer ${accessToken}`,
+            Authorization: `Bearer ${auth.accessToken}`,
           },
         } : {};
       });
   });
 
   return {
-    link: ApolloLink.from([auth, httpLink.create({ uri, withCredentials: true })]),
+    link: ApolloLink.from([authContext, httpLink.create({ uri, withCredentials: true })]),
     cache: new InMemoryCache(),
   };
 }

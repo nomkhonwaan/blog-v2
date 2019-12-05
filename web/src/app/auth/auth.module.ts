@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 @NgModule({
   imports: [
     StorageModule,
+    StoreModule,
   ],
   providers: [
     {

@@ -1,14 +1,16 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
 import { WebAuth } from 'auth0-js';
 
 import { AuthModule } from './auth.module';
 
 import { LocalStorageService } from '../storage/local-storage.service';
+import { setAuthentication } from '../app.actions';
 
 @Injectable({
   providedIn: AuthModule,
-  deps: [LocalStorageService, Router, WebAuth],
+  deps: [LocalStorageService, Router, Store, WebAuth],
 })
 export class AuthService {
   private accessToken?: string;
@@ -18,15 +20,27 @@ export class AuthService {
   constructor(
     private localStorage: LocalStorageService,
     private router: Router,
+    private store: Store<AppState>,
     private webAuth: WebAuth,
   ) {
     this.accessToken = this.localStorage.get('accessToken');
     this.idToken = this.localStorage.get('idToken');
     this.expiresAt = this.localStorage.getNumber('expiresAt');
+
+    this.dispatchNgrxStore();
   }
 
   /**
-   * Redirects to the Auth0 login page.
+   * Dispatch the @ngrx/store for updating `accessToken` and `idToken` values
+   */
+  dispatchNgrxStore(): void {
+    if (this.accessToken !== '' || this.idToken !== '') {
+      this.store.dispatch(setAuthentication({ accessToken: this.accessToken, idToken: this.idToken }));
+    }
+  }
+
+  /**
+   * Redirect to the Auth0 login page.
    *
    * @param redirectPath string
    */
@@ -39,12 +53,12 @@ export class AuthService {
   }
 
   /**
-   * Parses the authentication result from URL hash.
+   * Parse the authentication result from URL hash.
    */
   handleAuthentication(): void {
     this.webAuth.parseHash((_: Error, authResult: AuthResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
-        this.localLogin(authResult);
+        this.storeCredentials(authResult);
 
         // Redirect back to the previous path (that was saved in the login step) or home path
         const redirectPath: string = this.localStorage.get('redirectPath');
@@ -58,11 +72,11 @@ export class AuthService {
   }
 
   /**
-   * Stores the authentication result in class properties.
+   * Store the authentication result in class properties.
    *
    * @param authResult object An authentication result which contains accessToken, idToken and expiresAt
    */
-  localLogin(authResult): void {
+  storeCredentials(authResult): void {
     this.accessToken = authResult.accessToken;
     this.idToken = authResult.idToken;
     this.expiresAt = authResult.expiresIn * 1000 + Date.now();
@@ -72,21 +86,23 @@ export class AuthService {
       idToken: this.idToken,
       expiresAt: this.expiresAt.toString()
     });
+
+    this.dispatchNgrxStore();
   }
 
   /**
-   * Performs silent authentication to renew the session.
+   * Perform silent authentication to renew the session.
    */
   renewTokens(): void {
     this.webAuth.checkSession({}, (_: Error, authResult: AuthResult) => {
       if (authResult && authResult.accessToken && authResult.idToken) {
-        this.localLogin(authResult);
+        this.storeCredentials(authResult);
       }
     });
   }
 
   /**
-   * Removes the user's tokens and expiry time from class properties.
+   * Remove the user's tokens and expiry time from class properties.
    */
   logout(): void {
     this.accessToken = null;
@@ -97,7 +113,7 @@ export class AuthService {
   }
 
   /**
-   * Checks whether the user's Access Token is set and its expiry time has passed.
+   * Check whether the user's Access Token is set and its expiry time has passed.
    */
   isAuthenticated(): boolean {
     return this.accessToken && Date.now() < this.expiresAt;

@@ -10,7 +10,6 @@ import {
 
 const initialState: AppState = {
   isFetching: false,
-  auth: {},
   sidebar: {
     collapsed: true,
   },
@@ -20,7 +19,14 @@ const appReducer = createReducer(
   initialState,
   on(isFetching, (state) => update<AppState>(state, { isFetching: { $set: true } })),
   on(isNotFetching, (state) => update<AppState>(state, { isFetching: { $set: false } })),
-  on(setAuthentication, (state, { accessToken }) => update<AppState>(state, { auth: { accessToken: { $set: accessToken } } })),
+  on(setAuthentication, (state, { accessToken, idToken }) => update<AppState>(state, {
+    auth: {
+      $set: {
+        accessToken,
+        idToken,
+      },
+    },
+  })),
   on(toggleSidebar, (state) => update<AppState>(state, { sidebar: { $toggle: ['collapsed'] } })),
 );
 

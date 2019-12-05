@@ -7,8 +7,9 @@ interface AppState {
    */
   isFetching: boolean;
 
-  auth: {
-    accessToken?: string,
+  auth?: {
+    accessToken: string,
+    idToken: string,
   };
 
   /**
