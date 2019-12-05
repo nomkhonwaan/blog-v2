@@ -1,31 +1,40 @@
 import { Component } from '@angular/core';
 
 import { UserComponent } from './user.component';
+import { trigger } from '@angular/animations';
 
 @Component({
+  // animations: [
+  //   trigger('slideUpDown', [
+  //   ]),
+  // ],
   selector: 'app-user-navbar',
   template: `
-    <img class="picture" [attr.src]="userInfo.picture" />
+    <img
+      class="picture"
+      [attr.src]="userInfo.picture"
+      (click)="toggleNav()"
+    />
 
-    <ul class="nav _list-unstyled">
-      <li>
+    <ul class="menu _list-unstyled">
+      <li class="menu-item">
         <a [routerLink]="['/admin', 'new-post']">Draft a new post</a>
       </li>
-      <li>
-        <a (click)="toggleShowDraftPosts()">Display my draft posts</a>
+      <li class="menu-item">
+        <a>Display my draft posts</a>
       </li>
-      <li class="horizontal-separator"></li>
-      <li>
+      <li class="menu-item menu-item--horizontal-separator"></li>
+      <li class="menu-item">
         <a [routerLink]="['/admin', 'stats']">Stats</a>
       </li>
-      <li class="horizontal-separator"></li>
-      <li>
+      <li class="menu-item menu-item--horizontal-separator"></li>
+      <li class="menu-item">
         <a [routerLink]="['/user']">Profile</a>
       </li>
-      <li>
+      <li class="menu-item">
         <a [routerLink]="['/user', 'settings']">Settings</a>
       </li>
-      <li>
+      <li class="menu-item">
         <a [routerLink]="['/logout']">Logout</a>
       </li>
     </ul>
@@ -45,7 +54,7 @@ import { UserComponent } from './user.component';
       }
     `,
     `
-      .nav {
+      .menu {
         background: #fff;
         border: .1rem solid #ececec;
         border-radius: .4rem;
@@ -57,7 +66,7 @@ import { UserComponent } from './user.component';
       }
     `,
     `
-      .nav:before {
+      .menu:before {
         background: #fff;
         border-top: .1rem solid #ececec;
         border-left: .1rem solid #ececec;
@@ -72,18 +81,18 @@ import { UserComponent } from './user.component';
       }
     `,
     `
-      .nav > li {
+      .menu-item {
         padding: 1.6rem 3.2rem;
       }
     `,
     `
-      .nav > li > a {
+      .menu-item > a {
         color: #333;
         font: normal 400 1.6rem Lato, sans-serif;
       }
     `,
     `
-      .nav > .horizontal-separator {
+      .menu-item--horizontal-separator {
         border-bottom: .1rem solid #ececec;
         margin-bottom: 1.6rem;
         padding: 1.6rem 0 0 0;
@@ -93,7 +102,8 @@ import { UserComponent } from './user.component';
 })
 export class UserNavbarComponent extends UserComponent {
 
-  toggleShowDraftPosts(): void {
+
+  toggleNav(): void {
 
   }
 
