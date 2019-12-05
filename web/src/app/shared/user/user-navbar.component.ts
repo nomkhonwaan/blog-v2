@@ -1,27 +1,51 @@
 import { Component } from '@angular/core';
 
 import { UserComponent } from './user.component';
-import { trigger } from '@angular/animations';
+import { trigger, style, state, transition, animate } from '@angular/animations';
 
 @Component({
-  // animations: [
-  //   trigger('slideUpDown', [
-  //   ]),
-  // ],
+  animations: [
+    trigger('slideUpDown', [
+      state('true', style({
+        transform: 'translateY(0)',
+        opacity: 1,
+        display: 'initial',
+      })),
+      state('false', style({
+        transform: 'translateY(8%)',
+        opacity: 0,
+        display: 'none',
+      })),
+      transition('* => true', [
+        style({ display: 'initial' }),
+        animate('.4s ease-in-out', style({
+          transform: 'translateY(0)',
+          opacity: 1,
+        })),
+      ]),
+      transition('true => false', [
+        animate('.4s ease-in-out', style({
+          transform: 'translateY(8%)',
+          opacity: 0,
+        })),
+        style({ display: 'none' }),
+      ]),
+    ]),
+  ],
   selector: 'app-user-navbar',
   template: `
     <img
       class="picture"
       [attr.src]="userInfo.picture"
-      (click)="toggleNav()"
+      (click)="toggleMenu()"
     />
 
-    <ul class="menu _list-unstyled">
+    <ul [@slideUpDown]="showMenu ? true : false" class="menu _list-unstyled">
       <li class="menu-item">
         <a [routerLink]="['/admin', 'new-post']">Draft a new post</a>
       </li>
       <li class="menu-item">
-        <a>Display my draft posts</a>
+        <a [routerLink]="['/admin', 'posts']">All my posts</a>
       </li>
       <li class="menu-item menu-item--horizontal-separator"></li>
       <li class="menu-item">
@@ -102,9 +126,13 @@ import { trigger } from '@angular/animations';
 })
 export class UserNavbarComponent extends UserComponent {
 
+  /**
+   * Used to toggle menu pane for showing or hiding
+   */
+  showMenu = false;
 
-  toggleNav(): void {
-
+  toggleMenu(): void {
+    this.showMenu = !this.showMenu;
   }
 
 }

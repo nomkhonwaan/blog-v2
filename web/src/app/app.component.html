@@ -21,7 +21,7 @@
   </nav>
 </div>
 
-<app-dialog *ngIf="sidebarExpanded"></app-dialog>
+<app-dialog [show]="sidebarExpanded"></app-dialog>
 
 <div class="navbar">
   <app-button ariaLabel="Open Sidebar" [icon]="faBars" (click)="toggleSidebar()"></app-button>

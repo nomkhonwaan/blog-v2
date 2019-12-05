@@ -45,12 +45,12 @@ export class AnimationDirective implements OnInit {
   animations: [
     trigger('slideInOut', [
       state('true', style({ transform: 'translateX(0)' })),
+      state('false', style({ transform: 'translateX(-25.6rem)' })),
       transition('* => true', [
         animate('.4s ease-in-out', style({ transform: 'translateX(0)' })),
       ]),
       transition('true => false', [
-        style({ transform: 'translateX(0)' }),
-        animate('.4s ease-in-out'),
+        animate('.4s ease-in-out', style({ transform: 'translateX(-25.6rem)' })),
       ]),
     ]),
   ],
