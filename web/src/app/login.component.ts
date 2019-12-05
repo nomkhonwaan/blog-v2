@@ -6,7 +6,7 @@ import { AuthService } from './auth/auth.service';
   selector: 'app-login',
   template: ``,
 })
-export class AppLoginComponent implements OnInit {
+export class LoginComponent implements OnInit {
 
   constructor(private auth: AuthService) { }
 
