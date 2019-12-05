@@ -15,11 +15,12 @@ import { environment } from '../../environments/environment';
     {
       provide: WebAuth,
       useFactory: () => new WebAuth({
-        clientID: environment.auth0.clientId,
         domain: 'nomkhonwaan.auth0.com',
+        clientID: environment.auth0.clientId,
         responseType: 'token id_token',
         redirectUri: environment.auth0.redirectUri,
-        scope: 'email openid profile'
+        scope: 'email openid profile',
+        audience: environment.auth0.audience,
       }),
     },
   ],
