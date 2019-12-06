@@ -2,6 +2,8 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 
 import { AdminRoutingModule } from './admin-routing.module';
+import { MyPostsComponent } from './my-posts.component';
+import { PostEditorComponent } from './post-editor.component';
 
 import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
@@ -14,6 +16,8 @@ import { SharedModule } from '../shared/share.module';
     SharedModule,
   ],
   declarations: [
+    MyPostsComponent,
+    PostEditorComponent,
   ],
 })
 export class AdminModule {}

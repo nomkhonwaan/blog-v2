@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute, ParamMap } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
@@ -15,7 +15,7 @@ import { map, finalize } from 'rxjs/operators';
 export class SingleComponent implements OnInit {
 
   /**
-   * A single post object
+   * A post object
    */
   post: Post;
 

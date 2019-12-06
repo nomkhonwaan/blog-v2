@@ -31,6 +31,10 @@ const routes: Routes = [
     loadChildren: () => import('./single/single.module').then((m) => m.SingleModule),
   },
   {
+    path: ':year/:month/:date/:slug/edit',
+    loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
+  },
+  {
     path: '**',
     loadChildren: () => import('./page-not-found/page-not-found.module').then((m) => m.PageNotFoundModule),
   },
