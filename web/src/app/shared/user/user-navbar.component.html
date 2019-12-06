@@ -1,0 +1,24 @@
+<img class="picture" [attr.src]="userInfo.picture" (click)="toggleMenu()" />
+
+<ul [@slideUpDown]="showMenu ? true : false" class="menu _list-unstyled">
+  <li class="menu-item">
+    <a [routerLink]="['/admin', 'new-post']">Draft a new post</a>
+  </li>
+  <li class="menu-item">
+    <a [routerLink]="['/admin', 'posts']">All my posts</a>
+  </li>
+  <li class="menu-item --horizontal-separator"></li>
+  <li class="menu-item">
+    <a [routerLink]="['/admin', 'stats']">Stats</a>
+  </li>
+  <li class="menu-item --horizontal-separator"></li>
+  <li class="menu-item">
+    <a [routerLink]="['/user']">Profile</a>
+  </li>
+  <li class="menu-item">
+    <a [routerLink]="['/user', 'settings']">Settings</a>
+  </li>
+  <li class="menu-item">
+    <a [routerLink]="['/logout']">Logout</a>
+  </li>
+</ul>

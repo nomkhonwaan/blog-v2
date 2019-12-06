@@ -1,0 +1,51 @@
+:host {
+  position: relative;
+}
+
+.picture {
+  border-radius: 50%;
+  cursor: pointer;
+  max-height: 3.2rem;
+  max-width: 3.2rem;
+}
+
+.menu {
+  background: #fff;
+  border: 0.1rem solid #ececec;
+  border-radius: 0.4rem;
+  min-width: 24rem;
+  padding: 1.6rem 0 !important;
+  position: absolute;
+  right: 0;
+  top: 7.2rem;
+  z-index: 98;
+}
+
+.menu:before {
+  background: #fff;
+  border-top: 0.1rem solid #ececec;
+  border-left: 0.1rem solid #ececec;
+  content: "";
+  display: block;
+  height: 1.6rem;
+  position: absolute;
+  right: 0.8rem;
+  width: 1.6rem;
+  top: -0.8rem;
+  transform: rotate(45deg);
+}
+
+.menu-item {
+  padding: 1.6rem 3.2rem;
+
+  &.--horizontal-separator {
+    border-bottom: 0.1rem solid #ececec;
+    margin-bottom: 1.6rem;
+    padding: 1.6rem 0 0 0;
+  }
+}
+
+.menu-item > a {
+  color: #333;
+  font: normal 400 1.6rem Lato sans-serif;
+}

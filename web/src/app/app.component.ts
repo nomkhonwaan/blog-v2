@@ -71,7 +71,7 @@ export class AppComponent implements OnInit {
    * Used to toggle sidebar pane for showing or hiding
    */
   @HostBinding('@slideInOut')
-  sidebarExpanded = false;
+  hasSidebarExpanded = false;
 
   /**
    * Used to display loading animation while fetching resources
@@ -121,7 +121,7 @@ export class AppComponent implements OnInit {
     store
       .pipe(select('app'))
       .subscribe(({ sidebar }: AppState): void => {
-        this.sidebarExpanded = !sidebar.collapsed;
+        this.hasSidebarExpanded = !sidebar.collapsed;
       });
   }
 

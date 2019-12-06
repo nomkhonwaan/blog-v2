@@ -21,7 +21,7 @@
   </nav>
 </div>
 
-<app-dialog [show]="sidebarExpanded"></app-dialog>
+<app-dialog [state]="hasSidebarExpanded ? 'show' : 'hide'"></app-dialog>
 
 <div class="navbar">
   <app-button ariaLabel="Open Sidebar" [icon]="faBars" (click)="toggleSidebar()"></app-button>
