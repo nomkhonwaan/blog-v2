@@ -42,7 +42,7 @@ export class PostContentComponent extends PostComponent implements OnInit, After
     super();
 
     store
-      .pipe(select('post', 'content', 'fslightbox', 'closed'))
+      .pipe(select((state: PostState): boolean => state.content.fslightbox.closed))
       .subscribe((closed: boolean): void => {
         this.isLightboxClosed = closed;
       });

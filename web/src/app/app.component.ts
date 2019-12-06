@@ -110,16 +110,17 @@ export class AppComponent implements OnInit {
     private store: Store<AppState>,
   ) {
     this.loadingAnimationData = coffeeCup;
-    this.userInfo$ = store.pipe(select('app', 'auth', 'userInfo'));
+
+    this.userInfo$ = store.pipe(select((state: AppState): UserInfo => state.auth.userInfo));
 
     store
-      .pipe(select('app', 'isFetching'))
+      .pipe(select((state: AppState): boolean => state.isFetching))
       .subscribe((isFetching: boolean): void => {
         this.isFetching = isFetching;
       });
 
     store
-      .pipe(select('app'))
+      .pipe(select((state: AppState): AppState => state))
       .subscribe(({ sidebar }: AppState): void => {
         this.hasSidebarExpanded = !sidebar.collapsed;
       });

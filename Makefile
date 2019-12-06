@@ -75,7 +75,7 @@ build-web:
 	mv $(WEBDIR)/src/environments/environment.prod.ts $(WEBDIR)/src/environments/environment.prod.original.ts && \
 	VERSION=$(VERSION) REVISION=$(REVISION) envsubst < $(WEBDIR)/src/environments/environment.prod.original.ts > $(WEBDIR)/src/environments/environment.prod.ts && \
 	cd $(WEBDIR) && \
-	$(NG) build --prod --buildOptimizer --aot --vendorChunk --source-map=false && \
+	$(NG) build --prod --buildOptimizer --vendorChunk --source-map=false && \
 	rm -f $(WEBDIR)/src/environments/environment.prod.ts && \
 	mv $(WEBDIR)/src/environments/environment.prod.original.ts $(WEBDIR)/src/environments/environment.prod.ts
 
