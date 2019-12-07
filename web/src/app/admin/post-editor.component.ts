@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { Component, OnInit, Directive, ElementRef, HostListener, Inject } from '@angular/core';
+import { Component, OnInit, Directive, ElementRef, HostListener, Inject, AfterViewInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
@@ -12,9 +12,17 @@ import { map, tap } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 @Directive({ selector: '[appAutoResize]' })
-export class AutoResizeDirective {
+export class AutoResizeDirective implements AfterViewInit {
 
   constructor(@Inject(DOCUMENT) private document: Document, private elementRef: ElementRef) { }
+
+  ngAfterViewInit(): void {
+    const elem: HTMLElement = this.elementRef.nativeElement as HTMLElement;
+
+    elem.style.height = 'auto';
+
+    this.resize();
+  }
 
   @HostListener('change')
   onChange(): void {
