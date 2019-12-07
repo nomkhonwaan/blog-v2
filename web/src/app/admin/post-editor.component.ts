@@ -11,7 +11,7 @@ import { map, tap } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
 
-@Directive({ selector: '[autoResize]' })
+@Directive({ selector: '[appAutoResize]' })
 export class AutoResizeDirective {
 
   constructor(@Inject(DOCUMENT) private document: Document, private elementRef: ElementRef) { }
@@ -27,7 +27,7 @@ export class AutoResizeDirective {
   }
 
   private resize(): void {
-    const elem: HTMLElement = <HTMLElement>this.elementRef.nativeElement;
+    const elem: HTMLElement = this.elementRef.nativeElement as HTMLElement;
     const body: HTMLElement = this.document.body;
 
     elem.style.height = elem.scrollHeight.toString() + 'px';

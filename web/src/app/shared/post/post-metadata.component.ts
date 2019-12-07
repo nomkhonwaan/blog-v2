@@ -8,7 +8,7 @@ import { PostComponent } from './post.component';
   template: `
     <app-post-author [post]="post"></app-post-author>
 
-    <div class="published-at">{{ post.publishedAt | dateFormat }} on <app-post-categories [post]="post"></app-post-categories></div>
+    <div class="published-at">{{post.publishedAt | dateFormat}} on <app-post-categories [post]="post"></app-post-categories></div>
   `,
   styles: [
     `

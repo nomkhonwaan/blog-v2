@@ -6,6 +6,10 @@
       </app-button>
       <app-button ariaLabel="Close Sidebar" [icon]="faTimes"></app-button>
     </header>
+
+    <div class="_section-title">
+      {{'Attachments' | uppercase}}
+    </div>
   </aside>
 
   <div class="control-pane">
@@ -15,7 +19,7 @@
   <div class="content">
     <input class="post-title input" placeholder="Title" (change)="onChangeTitle()" [(ngModel)]="post.title" />
 
-    <textarea autoResize class="post-markdown input --textarea" placeholder="Markdown" (change)="onChangeMarkdown()"
+    <textarea appAutoResize class="post-markdown input --textarea" placeholder="Markdown" (change)="onChangeMarkdown()"
       [(ngModel)]="post.markdown"></textarea>
   </div>
 </div>
