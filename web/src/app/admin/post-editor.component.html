@@ -1,0 +1,18 @@
+<div *ngIf="post" class="post-editor">
+  <aside class="additional-data-editor">
+    <header>
+      <app-button ariaLabel="Close Sidebar" [style.margin-right]="'-1.6rem'">
+        {{'close' | uppercase}}
+      </app-button>
+      <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="toggleSidebar()"></app-button>
+    </header>
+  </aside>
+
+  <div class="control-pane"></div>
+
+  <div class="content">
+    <input class="post-title input" placeholder="Title" [(ngModel)]="post.title" />
+
+    <textarea autoResize class="post-markdown input --textarea" placeholder="Markdown" [(ngModel)]="post.markdown"></textarea>
+  </div>
+</div>

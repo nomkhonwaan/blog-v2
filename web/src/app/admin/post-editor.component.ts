@@ -1,10 +1,22 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Directive, AfterViewInit, ElementRef } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import { ActivatedRoute } from '@angular/router';
+import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import gql from 'graphql-tag';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApolloQueryResult } from 'apollo-client';
+
+@Directive({ selector: '[autoResize]' })
+export class AutoResizeDirective implements AfterViewInit {
+
+  constructor(private elementRef: ElementRef) { }
+
+  ngAfterViewInit(): void {
+
+  }
+
+}
 
 @Component({
   selector: 'app-post-editor',
@@ -17,6 +29,8 @@ export class PostEditorComponent implements OnInit {
    * A post object
    */
   post: Post;
+
+  faTimes: IconDefinition = faTimes;
 
   fragments: { [name: string]: any } = {
     post: gql`

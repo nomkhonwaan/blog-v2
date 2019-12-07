@@ -1,9 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { AdminRoutingModule } from './admin-routing.module';
+import { AdminComponent } from './admin.component';
 import { MyPostsComponent } from './my-posts.component';
-import { PostEditorComponent } from './post-editor.component';
+import { PostEditorComponent, AutoResizeDirective } from './post-editor.component';
 
 import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
@@ -13,11 +15,15 @@ import { SharedModule } from '../shared/share.module';
     AdminRoutingModule,
     CommonModule,
     GraphQLModule,
+    FormsModule,
     SharedModule,
   ],
   declarations: [
+    AdminComponent,
+    AutoResizeDirective,
     MyPostsComponent,
     PostEditorComponent,
   ],
+  bootstrap: [AdminComponent],
 })
-export class AdminModule {}
+export class AdminModule { }
