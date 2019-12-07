@@ -6,6 +6,7 @@ export const environment = {
   production: false,
 
   url: 'http://localhost:4300',
+  title: 'Nomkhonwaan | Trust me I\'m Petdo',
 
   version: 'v0.0.1',
   revision: 'development',

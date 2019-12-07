@@ -2,6 +2,7 @@ export const environment = {
   production: true,
 
   url: 'https://www.nomkhonwaan.com',
+  titleSuffix: 'Nomkhonwaan | Trust me I\'m Petdo',
 
   version: '${VERSION}',
   revision: '${REVISION}',

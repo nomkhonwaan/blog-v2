@@ -1,13 +1,15 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, Directive, ElementRef, HostListener, Inject } from '@angular/core';
-import { Apollo } from 'apollo-angular';
+import { Title } from '@angular/platform-browser';
 import { ActivatedRoute } from '@angular/router';
 import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { Apollo } from 'apollo-angular';
+import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
-import { ApolloQueryResult } from 'apollo-client';
-import { Title } from '@angular/platform-browser';
+
+import { environment } from 'src/environments/environment';
 
 @Directive({ selector: '[autoResize]' })
 export class AutoResizeDirective {
@@ -85,8 +87,53 @@ export class PostEditorComponent implements OnInit {
     });
   }
 
+  onChangeTitle(): void {
+    this.apollo.mutate({
+      mutation: gql`
+        mutation {
+          updatePostTitle(slug: $slug, title: $title) {
+            ...EditablePost
+          }
+        }
+
+        ${this.fragments.post}
+      `,
+      variables: {
+        slug: this.post.slug,
+        title: this.post.title,
+      },
+    }).pipe(
+      map((result: ApolloQueryResult<{ updatePostTitle: Post }>): Post => result.data.updatePostTitle),
+    ).subscribe((post: Post): void => {
+      this.title.setTitle(`Edit · ${post.title} - ${environment.title}`);
+      this.post.slug = post.slug;
+    })
+  }
+
+  onChangeMarkdown(): void {
+    this.apollo.mutate({
+      mutation: gql`
+        mutation {
+          updatePostContent(slug: $slug, markdown: $markdown) {
+            ...EditablePost
+          }
+        }
+
+        ${this.fragments.post}
+      `,
+      variables: {
+        slug: this.post.slug,
+        markdown: this.post.markdown,
+      }
+    }).pipe(
+      map((result: ApolloQueryResult<{ updatePostContent: Post }>): Post => result.data.updatePostContent)
+    ).subscribe((post: Post): void => {
+      this.post.html = post.html;
+    });
+  }
+
   private createNewPost(): Observable<Post> {
-    this.title.setTitle('Draft a new post - Nomkhonwaan | Trust me I\'m Petdo');
+    this.title.setTitle(`Draft a new post - ${environment.title}`);
 
     return this.apollo.mutate({
       mutation: gql`
@@ -120,7 +167,7 @@ export class PostEditorComponent implements OnInit {
     }).pipe(
       map((result: ApolloQueryResult<{ post: Post }>): Post => result.data.post),
       tap((post: Post): void => {
-        this.title.setTitle(`Edit · ${post.title || 'Untitled'} - Nomkhonwaan | Trust me I'm Petdo`);
+        this.title.setTitle(`Edit · ${post.title || 'Untitled'} - ${environment.title}`);
       }),
     );
   }

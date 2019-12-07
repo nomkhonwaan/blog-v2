@@ -13,9 +13,9 @@
   </div>
 
   <div class="content">
-    <input class="post-title input" placeholder="Title" [(ngModel)]="post.title" />
+    <input class="post-title input" placeholder="Title" (change)="onChangeTitle()" [(ngModel)]="post.title" />
 
-    <textarea autoResize class="post-markdown input --textarea" placeholder="Markdown"
+    <textarea autoResize class="post-markdown input --textarea" placeholder="Markdown" (change)="onChangeMarkdown()"
       [(ngModel)]="post.markdown"></textarea>
   </div>
 </div>

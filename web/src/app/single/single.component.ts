@@ -6,6 +6,8 @@ import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { map, finalize } from 'rxjs/operators';
 
+import { environment } from 'src/environments/environment';
+
 @Component({
   selector: 'app-single',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -72,7 +74,7 @@ export class SingleComponent implements OnInit {
       map((result: ApolloQueryResult<{ post: Post }>): Post => result.data.post),
       finalize((): void => this.changeDetectorRef.markForCheck()),
     ).subscribe((post: Post): void => {
-      this.title.setTitle(`${post.title} - Nomkhonwaan | Trust me I'm Petdo`);
+      this.title.setTitle(`${post.title} - ${environment.title}`);
       this.post = post;
     });
   }
