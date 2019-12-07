@@ -1,5 +1,5 @@
-<div *ngIf="post" class="post-editor">
-  <aside class="additional-data-editor">
+<div *ngIf="post" class="editor">
+  <aside class="sidebar">
     <header>
       <app-button [style.margin-right]="'-1.6rem'">
         {{'close' | uppercase}}
@@ -7,7 +7,7 @@
       <app-button ariaLabel="Close Sidebar" [icon]="faTimes"></app-button>
     </header>
 
-    <div class="_section-title">
+    <div class="_section-title" [style.margin]="'3.2rem 3.2rem 2.4rem 3.2rem'">
       {{'Attachments' | uppercase}}
     </div>
   </aside>
@@ -16,10 +16,14 @@
     <app-button [style.margin-left]="'3.2rem'">{{'Editor' | uppercase }}</app-button>
   </div>
 
-  <div class="content">
+  <div class="title-and-markdown tam">
     <input class="post-title input" placeholder="Title" (change)="onChangeTitle()" [(ngModel)]="post.title" />
 
     <textarea appAutoResize class="post-markdown input --textarea" placeholder="Markdown" (change)="onChangeMarkdown()"
       [(ngModel)]="post.markdown"></textarea>
+
+    <div *ngIf="isFetching$ | async" class="status">
+      <fa-icon [icon]="faSpinnerThird" [spin]="true"></fa-icon>Saving...
+    </div>
   </div>
 </div>

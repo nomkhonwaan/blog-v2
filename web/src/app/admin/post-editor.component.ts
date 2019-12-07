@@ -2,14 +2,16 @@ import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, Directive, ElementRef, HostListener, Inject, AfterViewInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
+import { GraphQLError } from 'graphql';
 import gql from 'graphql-tag';
-import { Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
+import { trigger } from '@angular/animations';
+import { BehaviorSubject } from 'rxjs';
 
 @Directive({ selector: '[appAutoResize]' })
 export class AutoResizeDirective implements AfterViewInit {
@@ -17,11 +19,7 @@ export class AutoResizeDirective implements AfterViewInit {
   constructor(@Inject(DOCUMENT) private document: Document, private elementRef: ElementRef) { }
 
   ngAfterViewInit(): void {
-    const elem: HTMLElement = this.elementRef.nativeElement as HTMLElement;
-
-    elem.style.height = 'auto';
-
-    this.resize();
+    setTimeout(() => this.resize());
   }
 
   @HostListener('change')
@@ -39,12 +37,17 @@ export class AutoResizeDirective implements AfterViewInit {
     const body: HTMLElement = this.document.body;
 
     elem.style.height = elem.scrollHeight.toString() + 'px';
-    body.style.height = (elem.scrollHeight + 256).toString() + 'px';
+    body.style.height = body.scrollHeight.toString() + 'px';
   }
 
 }
 
 @Component({
+  animations: [
+    trigger('popUpDown', [
+      // state('show')
+    ]),
+  ],
   selector: 'app-post-editor',
   templateUrl: './post-editor.component.html',
   styleUrls: ['./post-editor.component.scss'],
@@ -56,6 +59,10 @@ export class PostEditorComponent implements OnInit {
    */
   post: Post;
 
+  isErrors$: BehaviorSubject<ReadonlyArray<GraphQLError>> = new BehaviorSubject(null);
+  isFetching$: BehaviorSubject<boolean> = new BehaviorSubject(false);
+
+  faSpinnerThird: IconDefinition = faSpinnerThird;
   faTimes: IconDefinition = faTimes;
 
   fragments: { [name: string]: any } = {
@@ -91,6 +98,9 @@ export class PostEditorComponent implements OnInit {
   ngOnInit(): void {
     const slug: string | null = this.route.snapshot.paramMap.get('slug');
 
+    this.isFetching$.subscribe(console.info);
+    this.isErrors$.subscribe(console.info);
+
     if (slug) {
       this.findPostBySlug(slug);
     } else {
@@ -99,6 +109,8 @@ export class PostEditorComponent implements OnInit {
   }
 
   onChangeTitle(): void {
+    this.isFetching$.next(true);
+
     this.apollo.mutate({
       mutation: gql`
         mutation {
@@ -113,8 +125,11 @@ export class PostEditorComponent implements OnInit {
         slug: this.post.slug,
         title: this.post.title,
       },
+      errorPolicy: 'all',
     }).pipe(
+      tap((result: ApolloQueryResult<any>): void => { this.isErrors$.next(result.errors) }),
       map((result: ApolloQueryResult<{ updatePostTitle: Post }>): Post => result.data.updatePostTitle),
+      tap((_: Post): void => { this.isFetching$.next(false); }),
     ).subscribe((post: Post): void => {
       this.title.setTitle(`Edit · ${post.title} - ${environment.title}`);
       this.post.slug = post.slug;
@@ -122,6 +137,8 @@ export class PostEditorComponent implements OnInit {
   }
 
   onChangeMarkdown(): void {
+    this.isFetching$.next(true);
+
     this.apollo.mutate({
       mutation: gql`
         mutation {
@@ -135,9 +152,12 @@ export class PostEditorComponent implements OnInit {
       variables: {
         slug: this.post.slug,
         markdown: this.post.markdown,
-      }
+      },
+      errorPolicy: 'all',
     }).pipe(
-      map((result: ApolloQueryResult<{ updatePostContent: Post }>): Post => result.data.updatePostContent)
+      tap((result: ApolloQueryResult<any>): void => { this.isErrors$.next(result.errors) }),
+      map((result: ApolloQueryResult<{ updatePostContent: Post }>): Post => result.data.updatePostContent),
+      tap((_: Post): void => { this.isFetching$.next(false); }),
     ).subscribe((post: Post): void => {
       this.post.html = post.html;
     });

@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin.component';
@@ -15,6 +16,7 @@ import { SharedModule } from '../shared/share.module';
     AdminRoutingModule,
     CommonModule,
     GraphQLModule,
+    FontAwesomeModule,
     FormsModule,
     SharedModule,
   ],
