@@ -1,19 +1,35 @@
-import { Component, OnInit, Directive, AfterViewInit, ElementRef } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { Component, OnInit, Directive, ElementRef, HostListener, Inject } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import { ActivatedRoute } from '@angular/router';
 import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import gql from 'graphql-tag';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, tap } from 'rxjs/operators';
 import { ApolloQueryResult } from 'apollo-client';
+import { Title } from '@angular/platform-browser';
 
 @Directive({ selector: '[autoResize]' })
-export class AutoResizeDirective implements AfterViewInit {
+export class AutoResizeDirective {
 
-  constructor(private elementRef: ElementRef) { }
+  constructor(@Inject(DOCUMENT) private document: Document, private elementRef: ElementRef) { }
 
-  ngAfterViewInit(): void {
+  @HostListener('change')
+  onChange(): void {
+    this.resize();
+  }
 
+  @HostListener('document:keypress', ['$event'])
+  onKeyPress(event: KeyboardEvent): void {
+    this.resize();
+  }
+
+  private resize(): void {
+    const elem: HTMLElement = <HTMLElement>this.elementRef.nativeElement;
+    const body: HTMLElement = this.document.body;
+
+    elem.style.height = elem.scrollHeight.toString() + 'px';
+    body.style.height = (elem.scrollHeight + 256).toString() + 'px';
   }
 
 }
@@ -58,6 +74,7 @@ export class PostEditorComponent implements OnInit {
   constructor(
     private apollo: Apollo,
     private route: ActivatedRoute,
+    private title: Title,
   ) { }
 
   ngOnInit(): void {
@@ -69,6 +86,8 @@ export class PostEditorComponent implements OnInit {
   }
 
   private createNewPost(): Observable<Post> {
+    this.title.setTitle('Draft a new post - Nomkhonwaan | Trust me I\'m Petdo');
+
     return this.apollo.mutate({
       mutation: gql`
         mutation {
@@ -100,6 +119,9 @@ export class PostEditorComponent implements OnInit {
       },
     }).pipe(
       map((result: ApolloQueryResult<{ post: Post }>): Post => result.data.post),
+      tap((post: Post): void => {
+        this.title.setTitle(`Edit · ${post.title || 'Untitled'} - Nomkhonwaan | Trust me I'm Petdo`);
+      }),
     );
   }
 
