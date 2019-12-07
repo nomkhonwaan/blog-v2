@@ -107,23 +107,16 @@ export class AppComponent implements OnInit {
     private apollo: Apollo,
     private auth: AuthService,
     private router: Router,
-    private store: Store<AppState>,
+    private store: Store<{ app: AppState }>,
   ) {
     this.loadingAnimationData = coffeeCup;
 
-    this.userInfo$ = store.pipe(select((state: AppState): UserInfo => state.auth.userInfo));
+    this.userInfo$ = store.pipe(select('app', 'auth', 'userInfo'));
 
-    store
-      .pipe(select((state: AppState): boolean => state.isFetching))
-      .subscribe((isFetching: boolean): void => {
-        this.isFetching = isFetching;
-      });
-
-    store
-      .pipe(select((state: AppState): AppState => state))
-      .subscribe(({ sidebar }: AppState): void => {
-        this.hasSidebarExpanded = !sidebar.collapsed;
-      });
+    store.pipe(select('app')).subscribe((app: AppState): void => {
+      this.isFetching = app.isFetching;
+      this.hasSidebarExpanded = !app.sidebar.collapsed;
+    });
   }
 
   ngOnInit(): void {

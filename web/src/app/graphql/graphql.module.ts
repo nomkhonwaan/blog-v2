@@ -12,8 +12,8 @@ import { environment } from 'src/environments/environment';
 
 const uri = environment.graphql.endpoint;
 
-export function createApollo(httpLink: HttpLink, store: Store<AppState>) {
-  const auth$: Observable<{ accessToken: string }> = store.pipe(select((state: AppState): { accessToken: string } => state.auth));
+export function createApollo(httpLink: HttpLink, store: Store<{ app: AppState }>) {
+  const auth$: Observable<{ accessToken: string } > = store.pipe(select('app', 'auth'));
 
   const authContext: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
     return auth$
