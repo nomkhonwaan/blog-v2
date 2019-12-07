@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, Directive, ElementRef, HostListener, Inject, AfterViewInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
@@ -84,15 +84,18 @@ export class PostEditorComponent implements OnInit {
   constructor(
     private apollo: Apollo,
     private route: ActivatedRoute,
+    private router: Router,
     private title: Title,
   ) { }
 
   ngOnInit(): void {
-    const slug: string = this.route.snapshot.paramMap.get('slug');
+    const slug: string | null = this.route.snapshot.paramMap.get('slug');
 
-    (slug ? this.findPostBySlug(slug) : this.createNewPost()).subscribe((post: Post): void => {
-      this.post = post;
-    });
+    if (slug) {
+      this.findPostBySlug(slug);
+    } else {
+      this.createNewPost();
+    }
   }
 
   onChangeTitle(): void {
@@ -140,10 +143,10 @@ export class PostEditorComponent implements OnInit {
     });
   }
 
-  private createNewPost(): Observable<Post> {
+  private createNewPost(): void {
     this.title.setTitle(`Draft a new post - ${environment.title}`);
 
-    return this.apollo.mutate({
+    this.apollo.mutate({
       mutation: gql`
         mutation {
           createPost {
@@ -155,11 +158,24 @@ export class PostEditorComponent implements OnInit {
       `,
     }).pipe(
       map((result: ApolloQueryResult<{ createPost: Post }>): Post => result.data.createPost),
-    );
+    ).subscribe((post: Post): void => {
+      const createdAt: Date = new Date(
+        new Date(post.createdAt)
+          .toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
+      );
+
+      this.router.navigate([
+        createdAt.getFullYear().toString(),
+        (createdAt.getMonth() + 1).toString(),
+        createdAt.getDate().toString(),
+        post.slug,
+        'edit',
+      ]);
+    });
   }
 
-  private findPostBySlug(slug: string): Observable<Post> {
-    return this.apollo.query({
+  private findPostBySlug(slug: string): void {
+    this.apollo.query({
       query: gql`
         {
           post(slug: $slug) {
@@ -177,7 +193,9 @@ export class PostEditorComponent implements OnInit {
       tap((post: Post): void => {
         this.title.setTitle(`Edit · ${post.title || 'Untitled'} - ${environment.title}`);
       }),
-    );
+    ).subscribe((post: Post): void => {
+      this.post = post;
+    });
   }
 
 }
