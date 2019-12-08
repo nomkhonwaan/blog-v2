@@ -33,7 +33,7 @@
     <textarea appAutoResize class="post-markdown input --textarea" placeholder="Markdown" (change)="onChangeMarkdown()"
       [(ngModel)]="post.markdown"></textarea>
 
-    <div *ngIf="isFetching$ | async" class="status">
+    <div *ngIf="isFetching" class="status">
       <fa-icon [icon]="faSpinnerThird" [spin]="true"></fa-icon>Saving...
     </div>
   </div>

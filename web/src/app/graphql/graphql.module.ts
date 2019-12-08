@@ -1,35 +1,19 @@
 import { NgModule } from '@angular/core';
-import { Store, select } from '@ngrx/store';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ApolloModule, APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLinkModule, HttpLink } from 'apollo-angular-link-http';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { GraphQLRequest, ApolloLink } from 'apollo-link';
-import { setContext } from 'apollo-link-context';
-import { Observable } from 'rxjs';
-import { take } from 'rxjs/operators';
+import { ApolloLink } from 'apollo-link';
 
 import { environment } from 'src/environments/environment';
 
+import { AppHttpInterceptor } from '../app-http.interceptor';
+
 const uri = environment.graphql.endpoint;
 
-export function createApollo(httpLink: HttpLink, store: Store<{ app: AppState }>) {
-  const auth$: Observable<{ accessToken: string } > = store.pipe(select('app', 'auth'));
-
-  const authContext: ApolloLink = setContext((operation: GraphQLRequest, prevContext: any): Promise<any> | any => {
-    return auth$
-      .pipe(take(1))
-      .toPromise()
-      .then((auth?: { accessToken?: string }) => {
-        return auth && auth.accessToken ? {
-          headers: {
-            Authorization: `Bearer ${auth.accessToken}`,
-          },
-        } : {};
-      });
-  });
-
+export function createApollo(httpLink: HttpLink) {
   return {
-    link: ApolloLink.from([authContext, httpLink.create({ uri, withCredentials: true })]),
+    link: ApolloLink.from([httpLink.create({ uri, withCredentials: true })]),
     cache: new InMemoryCache(),
   };
 }
@@ -43,7 +27,12 @@ export function createApollo(httpLink: HttpLink, store: Store<{ app: AppState }>
     {
       provide: APOLLO_OPTIONS,
       useFactory: createApollo,
-      deps: [HttpLink, Store],
+      deps: [HttpLink],
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AppHttpInterceptor,
+      multi: true,
     },
   ],
 })

@@ -8,12 +8,14 @@ import { AdminComponent } from './admin.component';
 import { MyPostsComponent } from './my-posts.component';
 import { PostEditorComponent, AutoResizeDirective } from './post-editor.component';
 
+import { ApiModule } from '../api/api.module';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
 
 @NgModule({
   imports: [
     AdminRoutingModule,
+    ApiModule,
     CommonModule,
     GraphQLModule,
     FontAwesomeModule,

@@ -8,10 +8,12 @@ import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import { GraphQLError } from 'graphql';
 import gql from 'graphql-tag';
-import { map, tap } from 'rxjs/operators';
+import { map, tap, finalize } from 'rxjs/operators';
+
+import { ApiService } from '../api/api.service';
 
 import { environment } from 'src/environments/environment';
-import { BehaviorSubject } from 'rxjs';
+import { merge, Observable, forkJoin } from 'rxjs';
 
 @Directive({ selector: '[appAutoResize]' })
 export class AutoResizeDirective implements AfterViewInit {
@@ -57,12 +59,19 @@ export class PostEditorComponent implements OnInit {
   post: Post;
 
   /**
-   * Use to display when GraphQL returns
+   * Use to display when GraphQL returns errors
    */
-  isErrors$: BehaviorSubject<ReadonlyArray<GraphQLError>> = new BehaviorSubject(null);
-  isFetching$: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  errors: ReadonlyArray<GraphQLError> = null;
+
+  /**
+   * Use to indicate loading status
+   */
+  isFetching = false;
+
+  /**
+   * Use to prevent a new upload request while performing
+   */
   isUploadingAttachments = false;
-  isUploadingAttachments$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   faImage: IconDefinition = faImage;
   faSpinnerThird: IconDefinition = faSpinnerThird;
@@ -83,7 +92,10 @@ export class PostEditorComponent implements OnInit {
           name slug
         }
         featuredImage {
-          slug
+          fileName slug
+        }
+        attachments {
+          fileName slug
         }
         createdAt
         updatedAt
@@ -92,6 +104,7 @@ export class PostEditorComponent implements OnInit {
   };
 
   constructor(
+    private api: ApiService,
     private apollo: Apollo,
     private route: ActivatedRoute,
     private router: Router,
@@ -109,7 +122,7 @@ export class PostEditorComponent implements OnInit {
   }
 
   onChangeTitle(): void {
-    this.isFetching$.next(true);
+    this.isFetching = true;
 
     this.apollo.mutate({
       mutation: gql`
@@ -127,9 +140,9 @@ export class PostEditorComponent implements OnInit {
       },
       errorPolicy: 'all',
     }).pipe(
-      tap((result: ApolloQueryResult<any>): void => { this.isErrors$.next(result.errors) }),
+      tap((result: ApolloQueryResult<any>): void => { this.errors = result.errors; }),
       map((result: ApolloQueryResult<{ updatePostTitle: Post }>): Post => result.data.updatePostTitle),
-      tap((_: Post): void => { this.isFetching$.next(false); }),
+      finalize((): void => { this.isFetching = false; }),
     ).subscribe((post: Post): void => {
       this.title.setTitle(`Edit · ${post.title} - ${environment.title}`);
       this.post.slug = post.slug;
@@ -137,7 +150,7 @@ export class PostEditorComponent implements OnInit {
   }
 
   onChangeMarkdown(): void {
-    this.isFetching$.next(true);
+    this.isFetching = true;
 
     this.apollo.mutate({
       mutation: gql`
@@ -155,16 +168,33 @@ export class PostEditorComponent implements OnInit {
       },
       errorPolicy: 'all',
     }).pipe(
-      tap((result: ApolloQueryResult<any>): void => { this.isErrors$.next(result.errors) }),
+      tap((result: ApolloQueryResult<any>): void => { this.errors = result.errors; }),
       map((result: ApolloQueryResult<{ updatePostContent: Post }>): Post => result.data.updatePostContent),
-      tap((_: Post): void => { this.isFetching$.next(false); }),
+      finalize((): void => { this.isFetching = false }),
     ).subscribe((post: Post): void => {
       this.post.html = post.html;
     });
   }
 
   onChangeAttachments(files: FileList): void {
-    console.log(files);
+    this.isUploadingAttachments = true;
+
+    forkJoin(Array.
+      from(files).
+      map((file: File): Observable<Attachment> => this.api.uploadFile(file)),
+    ).subscribe((values): void => {
+      console.log(values);
+    });
+    // merge(
+    //   Array.
+    //     from(files).
+    //     map((file: File): Observable<Attachment> => this.api.uploadFile(file)),
+    // ).pipe(
+    //   finalize((): void => { this.isUploadingAttachments= false; }),
+    // ).subscribe((attachments: any): void => {
+    //   console.log(attachments);
+    //   // this.post.attachments = attachments;
+    // });
   }
 
   private createNewPost(): void {

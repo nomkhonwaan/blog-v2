@@ -52,12 +52,12 @@ interface Post {
   /**
    * A featured image to be shown in the social network as a cover image
    */
-  featuredImage: File;
+  featuredImage: Attachment;
 
   /**
    * List of attachments are belonging to the post
    */
-  Attachments: File[];
+  attachments: Attachment[];
 
   /**
    * A social network engagement of the post
