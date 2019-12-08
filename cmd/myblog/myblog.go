@@ -61,7 +61,7 @@ func init() {
 	flags.String("listen-address", "0.0.0.0:8080", "")
 	flags.String("cache-files-path", path.Join(workingDirectory, ".cache"), "")
 	flags.String("static-files-path", path.Join(workingDirectory, "dist", "web"), "")
-	flags.String("mongodb-uri", "", "")
+	flags.String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
 	flags.String("amazon-s3-access-key", "", "")
 	flags.String("amazon-s3-secret-key", "", "")
 	flags.String("auth0-audience", baseURL, "")
