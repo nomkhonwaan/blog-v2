@@ -18,10 +18,10 @@ type Downloader interface {
 
 // Uploader uses to uploading file from multipart body to the storage server
 type Uploader interface {
-	Upload(ctx context.Context, path string, body io.Reader) error
+	Upload(ctx context.Context, body io.Reader, path string) error
 }
 
-// CustomizedAmazonS3Client is an implementation of Downloader and Uploader interfaces
+// CustomizedAmazonS3Client is an implementation of Downloader and Uploader interfaces for using Amazon S3 as a storage
 type CustomizedAmazonS3Client struct {
 	session *session.Session
 
@@ -69,7 +69,7 @@ func (s CustomizedAmazonS3Client) Download(ctx context.Context, path string) (io
 	return bytes.NewReader(buf.Bytes()), nil
 }
 
-func (s CustomizedAmazonS3Client) Upload(ctx context.Context, path string, body io.Reader) error {
+func (s CustomizedAmazonS3Client) Upload(ctx context.Context, body io.Reader, path string) error {
 	uploader := s3manager.NewUploader(s.session)
 	_, err := uploader.UploadWithContext(ctx, &s3manager.UploadInput{
 		Bucket: aws.String(s.defaultBucketName),

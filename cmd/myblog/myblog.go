@@ -100,12 +100,23 @@ func action(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	// Create new Amazon S3 client which provides uploader and downloader functions
-	accessKey, _ := flags.GetString("amazon-s3-access-key")
-	secretKey, _ := flags.GetString("amazon-s3-secret-key")
-	s3, err := storage.NewCustomizedAmazonS3Client(accessKey, secretKey)
-	if err != nil {
-		return err
+	var (
+		uploader     storage.Uploader
+		downloader   storage.Downloader
+		accessKey, _ = flags.GetString("amazon-s3-access-key")
+		secretKey, _ = flags.GetString("amazon-s3-secret-key")
+	)
+	if accessKey != "" && secretKey != "" {
+		// Create new Amazon S3 client which provides uploader and downloader functions
+		accessKey, _ := flags.GetString("amazon-s3-access-key")
+		secretKey, _ := flags.GetString("amazon-s3-secret-key")
+		s3, err := storage.NewCustomizedAmazonS3Client(accessKey, secretKey)
+		if err != nil {
+			return err
+		}
+		uploader, downloader = s3, s3
+	} else {
+		uploader, downloader = storage.DiskStorage(cacheService), storage.DiskStorage(cacheService)
 	}
 
 	// Create new Facebook client which provides crawler bot handling and Graph API client
@@ -124,7 +135,7 @@ func action(cmd *cobra.Command, args []string) error {
 
 	// Create all HTTP handlers
 	ghHandler := github.NewHandler(cacheService, http.DefaultTransport)
-	storageHandler := storage.NewHandler(cacheService, file, s3, s3, image.NewLanczosResizer())
+	storageHandler := storage.NewHandler(cacheService, file, downloader, uploader, image.NewLanczosResizer())
 	sitemapHandler := sitemap.NewHandler(baseURL, cacheService, blogService)
 	schema := graphql.NewServer(blogService, fbClient, file).Schema()
 	introspection.AddIntrospectionToSchema(schema)

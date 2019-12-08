@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"io"
 	"os"
 	"path/filepath"
@@ -18,6 +19,18 @@ type Cache interface {
 	Store(body io.Reader, path string) error
 }
 
+// DiskStorage is an implementation of Downloader and Uploader interfaces.
+// This storage implements on top of DiskCache which will store all uploaded files at cache files path.
+type DiskStorage DiskCache
+
+func (s DiskStorage) Download(_ context.Context, path string) (io.Reader, error) {
+	return DiskCache(s).Retrieve(path)
+}
+
+func (s DiskStorage) Upload(_ context.Context, body io.Reader, path string) error {
+	return DiskCache(s).Store(body, path)
+}
+
 // DiskCache uses the hard-disk drive as a cache storage
 type DiskCache struct {
 	cacheFilesPath string
@@ -25,15 +38,10 @@ type DiskCache struct {
 
 // NewDiskCache returns new disk storage cache instance
 func NewDiskCache(cacheFilesPath string) (DiskCache, error) {
-	c := DiskCache{
-		cacheFilesPath: cacheFilesPath,
+	if err := os.MkdirAll(cacheFilesPath, 0755); err != nil {
+		return DiskCache{}, err
 	}
-	if !c.Exist(cacheFilesPath) {
-		if err := os.MkdirAll(cacheFilesPath, 0755); err != nil {
-			return DiskCache{}, err
-		}
-	}
-	return c, nil
+	return DiskCache{cacheFilesPath: cacheFilesPath}, nil
 }
 
 func (c DiskCache) Exist(path string) bool {
