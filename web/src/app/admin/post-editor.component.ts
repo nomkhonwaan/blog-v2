@@ -56,9 +56,13 @@ export class PostEditorComponent implements OnInit {
    */
   post: Post;
 
+  /**
+   * Use to display when GraphQL returns
+   */
   isErrors$: BehaviorSubject<ReadonlyArray<GraphQLError>> = new BehaviorSubject(null);
   isFetching$: BehaviorSubject<boolean> = new BehaviorSubject(false);
   isUploadingAttachments = false;
+  isUploadingAttachments$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
   faImage: IconDefinition = faImage;
   faSpinnerThird: IconDefinition = faSpinnerThird;

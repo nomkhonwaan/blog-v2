@@ -16,7 +16,7 @@ import { environment } from 'src/environments/environment';
 export class RecentPostsComponent implements OnInit {
 
   /**
-   * Used to display as list of recent posts
+   * Use to display as list of recent posts
    */
   latestPublishedPosts$: Observable<Post[]>;
 

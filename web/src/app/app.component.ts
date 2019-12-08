@@ -68,23 +68,23 @@ export class AppComponent implements OnInit {
   faMedium: BrandIconDefinition = faMedium;
 
   /**
-   * Used to toggle sidebar pane for showing or hiding
+   * Use to toggle sidebar pane for showing or hiding
    */
   @HostBinding('@slideInOut')
   hasSidebarExpanded = false;
 
   /**
-   * Used to display loading animation while fetching resources
+   * Use to display loading animation while fetching resources
    */
   isFetching = false;
 
   /**
-   * Used to display at sidebar as a sub-menu to the group of posts
+   * Use to display at sidebar as a sub-menu to the group of posts
    */
   categories$: Observable<Category[]>;
 
   /**
-   * Used to render with animation directive
+   * Use to render with animation directive
    */
   loadingAnimationData: any;
 
@@ -94,12 +94,12 @@ export class AppComponent implements OnInit {
   userInfo$: Observable<UserInfo | null>;
 
   /**
-   * Used to display at footer section as a build version number
+   * Use to display at footer section as a build version number
    */
   version: string = environment.version;
 
   /**
-   * Used to display at footer section as a commit ID
+   * Use to display at footer section as a commit ID
    */
   revision: string = environment.revision;
 

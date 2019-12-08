@@ -39,7 +39,7 @@ import { UserComponent } from './user.component';
 export class UserNavbarComponent extends UserComponent {
 
   /**
-   * Used to toggle menu pane for showing or hiding
+   * Use to toggle menu pane for showing or hiding
    */
   showMenu = false;
 

@@ -86,12 +86,12 @@ export class PostShareToComponent extends PostComponent implements OnInit {
   flow = 'row';
 
   /**
-   * Used to sharing to the social network
+   * Use to sharing to the social network
    */
   url: string = environment.url;
 
   /**
-   * Used to display number of social network engagement
+   * Use to display number of social network engagement
    */
   shareCount: string;
 
