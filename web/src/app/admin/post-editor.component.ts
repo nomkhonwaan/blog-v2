@@ -1,4 +1,3 @@
-import { trigger } from '@angular/animations';
 import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, Directive, ElementRef, HostListener, Inject, AfterViewInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
@@ -13,7 +12,8 @@ import { map, tap, finalize } from 'rxjs/operators';
 import { ApiService } from '../api/api.service';
 
 import { environment } from 'src/environments/environment';
-import { merge, Observable, forkJoin } from 'rxjs';
+import { Observable, forkJoin } from 'rxjs';
+import { Store, select } from '@ngrx/store';
 
 @Directive({ selector: '[appAutoResize]' })
 export class AutoResizeDirective implements AfterViewInit {
@@ -73,6 +73,16 @@ export class PostEditorComponent implements OnInit {
    */
   isUploadingAttachments = false;
 
+  /**
+   * An authenticated user information
+   */
+  userInfo$: Observable<UserInfo | null>;
+
+  /**
+   * To-be updated attachment
+   */
+  selectedAttachment: Attachment;
+
   faImage: IconDefinition = faImage;
   faSpinnerThird: IconDefinition = faSpinnerThird;
   faTimes: IconDefinition = faTimes;
@@ -108,8 +118,11 @@ export class PostEditorComponent implements OnInit {
     private apollo: Apollo,
     private route: ActivatedRoute,
     private router: Router,
+    private store: Store<{ app: AppState }>,
     private title: Title,
-  ) { }
+  ) {
+    this.userInfo$ = store.pipe(select('app', 'auth', 'userInfo'));
+  }
 
   ngOnInit(): void {
     const slug: string | null = this.route.snapshot.paramMap.get('slug');
@@ -146,7 +159,7 @@ export class PostEditorComponent implements OnInit {
     ).subscribe((post: Post): void => {
       this.title.setTitle(`Edit · ${post.title} - ${environment.title}`);
       this.post.slug = post.slug;
-    })
+    });
   }
 
   onChangeMarkdown(): void {
@@ -179,22 +192,15 @@ export class PostEditorComponent implements OnInit {
   onChangeAttachments(files: FileList): void {
     this.isUploadingAttachments = true;
 
-    forkJoin(Array.
-      from(files).
-      map((file: File): Observable<Attachment> => this.api.uploadFile(file)),
-    ).subscribe((values): void => {
-      console.log(values);
+    forkJoin(
+      Array.
+        from(files).
+        map((file: File): Observable<Attachment> => this.api.uploadFile(file)),
+    ).pipe(
+      finalize((): void => { this.isUploadingAttachments = false; }),
+    ).subscribe((attachments: Attachment[]): void => {
+      this.updatePostAttachments(this.post.attachments.concat(attachments));
     });
-    // merge(
-    //   Array.
-    //     from(files).
-    //     map((file: File): Observable<Attachment> => this.api.uploadFile(file)),
-    // ).pipe(
-    //   finalize((): void => { this.isUploadingAttachments= false; }),
-    // ).subscribe((attachments: any): void => {
-    //   console.log(attachments);
-    //   // this.post.attachments = attachments;
-    // });
   }
 
   private createNewPost(): void {
@@ -249,6 +255,32 @@ export class PostEditorComponent implements OnInit {
       }),
     ).subscribe((post: Post): void => {
       this.post = post;
+    });
+  }
+
+  private updatePostAttachments(attachments: Attachment[]): void {
+    this.isFetching = true;
+
+    this.apollo.mutate({
+      mutation: gql`
+        mutation {
+          updatePostAttachments(slug: $slug, attachmentSlugs: $attachmentSlugs) {
+            ...EditablePost
+          }
+        }
+
+        ${this.fragments.post}
+      `,
+      variables: {
+        slug: this.post.slug,
+        attachmentSlugs: attachments.map((attachment: Attachment): string => attachment.slug),
+      },
+    }).pipe(
+      tap((result: ApolloQueryResult<any>): void => { this.errors = result.errors; }),
+      map((result: ApolloQueryResult<{ updatePostAttachments: Post }>): Post => result.data.updatePostAttachments),
+      finalize((): void => { this.isFetching = false; }),
+    ).subscribe((post: Post): void => {
+      this.post.attachments = post.attachments;
     });
   }
 

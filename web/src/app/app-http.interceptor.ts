@@ -23,7 +23,7 @@ export class AppHttpInterceptor implements HttpInterceptor {
       mergeMap((req: HttpRequest<any>): ObservableInput<HttpEvent<any>> => {
         return next.handle(req);
       }),
-      finalize(() => { this.store.dispatch(isNotFetching()); }),
+      finalize((): void => { this.store.dispatch(isNotFetching()); }),
     );
   }
 

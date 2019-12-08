@@ -12,14 +12,14 @@ import { Component, Input, HostBinding } from '@angular/core';
         display: 'none',
         opacity: 0,
       })),
-      transition('* => show', [
-        style({ display: 'block', opacity: 0 }),
-        animate('.4s ease-in-out', style({ opacity: .16 })),
-      ]),
-      transition('show => hide', [
-        animate('.4s ease-in-out', style({ opacity: 0 })),
-        style({ display: 'none' }),
-      ])
+      // transition('* => show', [
+      //   style({ display: 'block', opacity: 0 }),
+      //   animate('.4s ease-in-out', style({ opacity: .16 })),
+      // ]),
+      // transition('show => hide', [
+      //   animate('.4s ease-in-out', style({ opacity: 0 })),
+      //   style({ display: 'none' }),
+      // ]),
     ]),
   ],
   selector: 'app-dialog',
