@@ -84,8 +84,9 @@ func action(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	logrus.Info("MongoDB connected")
 	db := client.Database("nomkhonwaan_com")
-
+	
 	// Create all MongoDB repositories
 	file := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
 	category := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
@@ -107,6 +108,7 @@ func action(cmd *cobra.Command, args []string) error {
 		secretKey, _ = flags.GetString("amazon-s3-secret-key")
 	)
 	if accessKey != "" && secretKey != "" {
+		logrus.Info("use Amazon S3 as a storage service")
 		// Create new Amazon S3 client which provides uploader and downloader functions
 		accessKey, _ := flags.GetString("amazon-s3-access-key")
 		secretKey, _ := flags.GetString("amazon-s3-secret-key")
@@ -116,6 +118,7 @@ func action(cmd *cobra.Command, args []string) error {
 		}
 		uploader, downloader = s3, s3
 	} else {
+		logrus.Info("use local disk as a storage service")
 		uploader, downloader = storage.DiskStorage(cacheService), storage.DiskStorage(cacheService)
 	}
 
