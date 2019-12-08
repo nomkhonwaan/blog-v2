@@ -96,6 +96,7 @@ func action(cmd *cobra.Command, args []string) error {
 	// Create all services; as well as repositories
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
 	cacheFilesPath, _ := flags.GetString("cache-files-path")
+	logrus.Infof("all cache files will be saved at: %s", cacheFilesPath)
 	cacheService, err := storage.NewDiskCache(cacheFilesPath)
 	if err != nil {
 		return err
