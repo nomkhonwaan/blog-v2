@@ -20,7 +20,7 @@
 
       <li *ngFor="let attachment of post.attachments;let i = index" class="attachment-item"
         (click)="selectedAttachment = attachment">
-        <img src="/api/v2.1/storage/{{attachment.slug}}?width=64" alt="{{attachment.name}}">
+        <img src="/api/v2.1/storage/{{attachment.slug}}?width=64" alt="{{attachment.fileName}}">
       </li>
     </ul>
   </aside>
@@ -40,7 +40,7 @@
       </div>
 
       <div class="selected-attachment">
-        <img src="/api/v2.1/storage/{{selectedAttachment.slug}}?width=420" alt="{{selectedAttachment.name}}" />
+        <img src="/api/v2.1/storage/{{selectedAttachment.slug}}?width=420" alt="{{selectedAttachment.fileName}}" />
 
         <div [style.margin-top]="'2.4rem'">
           <input class="post-attachment" value="/api/v2.1/storage/{{selectedAttachment.slug}}" />
