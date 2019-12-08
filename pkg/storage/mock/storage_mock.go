@@ -139,7 +139,7 @@ func (m *MockUploader) EXPECT() *MockUploaderMockRecorder {
 }
 
 // Upload mocks base method
-func (m *MockUploader) Upload(arg0 context.Context, arg1 string, arg2 io.Reader) error {
+func (m *MockUploader) Upload(arg0 context.Context, arg1 io.Reader, arg2 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Upload", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
