@@ -28,6 +28,43 @@
     height: 6.4rem;
     justify-content: flex-end;
   }
+
+  > ._section-title {
+    margin: 3.2rem;
+    margin-bottom: 2.4rem;
+  }
+}
+
+.attachments {
+  margin: 0 3.2rem!important;
+}
+
+.attachment-item {
+  height: 4.2rem;
+  margin: .4rem;
+  width: 4.2rem;
+
+  &.--new {
+    color: #bdbdbd;
+    cursor: pointer;
+    font-size: 2.2rem;
+    margin-left: 0;
+
+    > span {
+      align-items: center;
+      background: #eee;
+      display: flex;
+      justify-content: center;
+
+      height: 4.2rem;
+      width: 4.2rem;
+    }
+  }
+
+  > img {
+    height: 100%;
+    width: 100%;
+  }
 }
 
 .control-pane {

@@ -1,8 +1,9 @@
+import { trigger } from '@angular/animations';
 import { DOCUMENT } from '@angular/common';
 import { Component, OnInit, Directive, ElementRef, HostListener, Inject, AfterViewInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faImage, faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import { GraphQLError } from 'graphql';
@@ -10,7 +11,6 @@ import gql from 'graphql-tag';
 import { map, tap } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
-import { trigger } from '@angular/animations';
 import { BehaviorSubject } from 'rxjs';
 
 @Directive({ selector: '[appAutoResize]' })
@@ -44,9 +44,6 @@ export class AutoResizeDirective implements AfterViewInit {
 
 @Component({
   animations: [
-    trigger('popUpDown', [
-      // state('show')
-    ]),
   ],
   selector: 'app-post-editor',
   templateUrl: './post-editor.component.html',
@@ -62,6 +59,7 @@ export class PostEditorComponent implements OnInit {
   isErrors$: BehaviorSubject<ReadonlyArray<GraphQLError>> = new BehaviorSubject(null);
   isFetching$: BehaviorSubject<boolean> = new BehaviorSubject(false);
 
+  faImage: IconDefinition = faImage;
   faSpinnerThird: IconDefinition = faSpinnerThird;
   faTimes: IconDefinition = faTimes;
 

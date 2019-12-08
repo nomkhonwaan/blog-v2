@@ -7,13 +7,25 @@
       <app-button ariaLabel="Close Sidebar" [icon]="faTimes"></app-button>
     </header>
 
-    <div class="_section-title" [style.margin]="'3.2rem 3.2rem 2.4rem 3.2rem'">
+    <div class="_section-title">
       {{'Attachments' | uppercase}}
     </div>
+
+    <ul class="attachments _list-unstyled">
+      <li class="attachment-item --new">
+        <span>
+          <fa-icon [icon]="faImage"></fa-icon>
+        </span>
+      </li>
+      <li *ngFor="let f of post.attachments" class="attachment-item">
+        <img src="/api/v2.1/storage/{{f.slug}}" alt="{{f.name}}">
+      </li>
+    </ul>
   </aside>
 
   <div class="control-pane">
-    <app-button [style.margin-left]="'3.2rem'">{{'Editor' | uppercase }}</app-button>
+    <app-button [style.margin-left]="'3.2rem'">{{'Editor' | uppercase}}</app-button>
+    <app-button [style.margin-left]="'3.2rem'">{{'Preview' | uppercase}}</app-button>
   </div>
 
   <div class="title-and-markdown tam">
