@@ -231,7 +231,6 @@ func (h Handler) upload(w http.ResponseWriter, r *http.Request) {
 		Path:           path,
 		FileName:       fileName,
 		Slug:           slug,
-		OptionalField1: "CustomizedAmazonS3Client",
 	})
 	if err != nil {
 		h.responseError(w, err.Error(), http.StatusInternalServerError)
