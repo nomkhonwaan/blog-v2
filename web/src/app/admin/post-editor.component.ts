@@ -58,6 +58,7 @@ export class PostEditorComponent implements OnInit {
 
   isErrors$: BehaviorSubject<ReadonlyArray<GraphQLError>> = new BehaviorSubject(null);
   isFetching$: BehaviorSubject<boolean> = new BehaviorSubject(false);
+  isUploadingAttachments = false;
 
   faImage: IconDefinition = faImage;
   faSpinnerThird: IconDefinition = faSpinnerThird;
@@ -95,9 +96,6 @@ export class PostEditorComponent implements OnInit {
 
   ngOnInit(): void {
     const slug: string | null = this.route.snapshot.paramMap.get('slug');
-
-    this.isFetching$.subscribe(console.info);
-    this.isErrors$.subscribe(console.info);
 
     if (slug) {
       this.findPostBySlug(slug);
@@ -159,6 +157,10 @@ export class PostEditorComponent implements OnInit {
     ).subscribe((post: Post): void => {
       this.post.html = post.html;
     });
+  }
+
+  onChangeAttachments(files: FileList): void {
+    console.log(files);
   }
 
   private createNewPost(): void {

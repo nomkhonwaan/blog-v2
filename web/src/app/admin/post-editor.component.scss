@@ -36,29 +36,33 @@
 }
 
 .attachments {
-  margin: 0 3.2rem!important;
+  margin: 0 3.2rem !important;
 }
 
 .attachment-item {
   height: 4.2rem;
-  margin: .4rem;
+  margin: 0.4rem;
   width: 4.2rem;
 
   &.--new {
+    align-items: center;
+    background: #eee;
     color: #bdbdbd;
     cursor: pointer;
+    display: flex;
     font-size: 2.2rem;
+    height: 4.2rem;
+    justify-content: center;
     margin-left: 0;
+    width: 4.2rem;
 
-    > span {
-      align-items: center;
-      background: #eee;
-      display: flex;
-      justify-content: center;
-
-      height: 4.2rem;
-      width: 4.2rem;
+    > input[type="file"] {
+      display: none;
     }
+  }
+
+  &.--disabled {
+    cursor: default;
   }
 
   > img {

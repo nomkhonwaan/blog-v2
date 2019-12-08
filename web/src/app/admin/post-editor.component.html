@@ -12,10 +12,9 @@
     </div>
 
     <ul class="attachments _list-unstyled">
-      <li class="attachment-item --new">
-        <span>
-          <fa-icon [icon]="faImage"></fa-icon>
-        </span>
+      <li class="attachment-item --new" [ngClass]="{'--disabled': isUploadingAttachments}" (click)="isUploadingAttachments ? false : file.click()">
+        <fa-icon [icon]="isUploadingAttachments ? faSpinnerThird : faImage" [spin]="isUploadingAttachments"></fa-icon>
+        <input #file type="file" name="files" multiple="multiple" (change)="onChangeAttachments($event.target.files)" />
       </li>
       <li *ngFor="let f of post.attachments" class="attachment-item">
         <img src="/api/v2.1/storage/{{f.slug}}" alt="{{f.name}}">
