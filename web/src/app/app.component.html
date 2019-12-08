@@ -11,9 +11,9 @@
       <li (click)="toggleSidebar()">
         <a [routerLink]="['']" routerLinkActive="-actived">Home</a>
       </li>
-      <!-- <li *ngIf="!auth.isAuthenticated()">
-        <a (click)="auth.login(router.url)">Login / Register</a>
-      </li> -->
+      <li *ngIf="!isAuthenticated()">
+        <a (click)="login()">Login / Register</a>
+      </li>
       <li *ngFor="let cat of categories$ | async" (click)="toggleSidebar()">
         <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>
       </li>
@@ -21,13 +21,15 @@
   </nav>
 </div>
 
-<app-dialog *ngIf="sidebarExpanded"></app-dialog>
+<app-dialog [state]="hasSidebarExpanded ? 'show' : 'hide'"></app-dialog>
 
 <div class="navbar">
   <app-button ariaLabel="Open Sidebar" [icon]="faBars" (click)="toggleSidebar()"></app-button>
 
   <app-button ariaLabel="Search" [icon]="faSearch" [style.margin-left]="'auto'">
   </app-button>
+
+  <app-user-navbar *ngIf="isAuthenticated()" [userInfo]="userInfo$ | async"></app-user-navbar>
 </div>
 
 <main class="main">

@@ -1,10 +1,13 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
+import { AuthGuard } from './auth/auth.guard';
+import { LoginComponent } from './login.component';
+
 const routes: Routes = [
   {
-    path: ':year/:month/:date/:slug',
-    loadChildren: () => import('./single/single.module').then((m) => m.SingleModule),
+    path: '', pathMatch: 'full',
+    loadChildren: () => import('./recent-posts/recent-posts.module').then((m) => m.RecentPostsModule),
   },
   {
     path: 'category/:slug',
@@ -17,8 +20,22 @@ const routes: Routes = [
     loadChildren: () => import('./archive/archive.module').then((m) => m.ArchiveModule),
   },
   {
-    path: '', pathMatch: 'full',
-    loadChildren: () => import('./recent-posts/recent-posts.module').then((m) => m.RecentPostsModule),
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
+    path: 'admin',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
+  },
+  {
+    path: ':year/:month/:date/:slug',
+    loadChildren: () => import('./single/single.module').then((m) => m.SingleModule),
+  },
+  {
+    path: ':year/:month/:date/:slug/edit',
+    canActivate: [AuthGuard],
+    loadChildren: () => import('./admin/admin.module').then((m) => m.AdminModule),
   },
   {
     path: '**',

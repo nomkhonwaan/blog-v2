@@ -122,6 +122,9 @@ workflows:
             - build_web
       - hold:
           type: approval
+          filters:
+            branches:
+              only: master
       - deploy_to_docker_deploy_webhook:
           requires:
             - build_docker_image

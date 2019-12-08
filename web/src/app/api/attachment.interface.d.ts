@@ -1,7 +1,7 @@
 /**
  * An uploaded file on the storage server
  */
-interface File {
+interface Attachment {
   /**
    * An uploaded file name
    */

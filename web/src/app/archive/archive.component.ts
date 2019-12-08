@@ -6,6 +6,8 @@ import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { map, finalize } from 'rxjs/operators';
 
+import { environment } from 'src/environments/environment';
+
 @Component({
   selector: 'app-archive',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -61,7 +63,7 @@ export class ArchiveComponent implements OnInit {
         map((result: ApolloQueryResult<{ archive: Category | Tag }>): Category | Tag => result.data[type]),
         finalize((): void => this.changeDetectorRef.markForCheck()),
       ).subscribe((archive: Category | Tag): void => {
-        this.title.setTitle(`${archive.name} - Nomkhonwaan | Trust me I'm Petdo`);
+        this.title.setTitle(`${archive.name} - ${environment.title}`);
         this.archive = archive;
       });
     });

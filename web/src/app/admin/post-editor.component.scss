@@ -1,0 +1,174 @@
+:host {
+  background: #fff;
+  bottom: 0;
+  display: block;
+  left: 25.6rem;
+  position: absolute;
+  top: 0;
+  width: 100vw;
+  z-index: 100;
+}
+
+.editor {
+  display: grid;
+  grid-template: 6.4rem auto / 25.6rem auto;
+  min-height: 100%;
+  width: 100%;
+}
+
+.sidebar {
+  background: #fff;
+  border-right: 0.1rem solid #ececec;
+  grid-row: 1 / 3;
+  min-height: 100vh;
+
+  & > header {
+    border-bottom: 0.1rem solid #ececec;
+    display: flex;
+    height: 6.4rem;
+    justify-content: flex-end;
+  }
+
+  > ._section-title {
+    margin: 3.2rem;
+    margin-bottom: 2.4rem;
+  }
+}
+
+.navbar {
+  align-items: center;
+  border-bottom: 0.1rem solid #ececec;
+  display: flex;
+  grid-row: 1 / 2;
+}
+
+.article {
+  background: #f9f9f9;
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+  height: 100%;
+  padding: 3.2rem;
+  position: relative;
+}
+
+.attachments {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  margin: 0 3.2rem !important;
+}
+
+.attachment-item {
+  align-items: center;
+  background: #eee;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  height: 4.2rem;
+  margin-bottom: 0.8rem;
+  width: 4.2rem;
+
+  &.--new {
+    color: #bdbdbd;
+    font-size: 2.2rem;
+
+    > input[type="file"] {
+      display: none;
+    }
+  }
+
+  &.--disabled {
+    cursor: default;
+  }
+
+  > img {
+    max-height: 100%;
+    max-width: 100%;
+  }
+}
+
+.attachment-viewer {
+  background: rgba(51, 51, 51, 0.8);
+  bottom: 0;
+  left: 0;
+  opacity: 1 !important;
+  right: 0;
+  top: 0;
+
+  ::ng-deep app-button > button {
+    color: #fff !important;
+  }
+
+  > .selected-attachment {
+    background: #fff;
+    border-radius: 0.2rem;
+    display: inline-block;
+    left: 50%;
+    max-width: 48rem;
+    padding: 3.2rem;
+    position: absolute;
+    top: 50%;
+    transform: translate(-50%, -50%);
+
+    > img {
+      max-height: 42rem;
+      max-width: 100%;
+    }
+  }
+}
+
+.post-title,
+.post-markdown {
+  border: none;
+  background: #fff;
+  font: normal 300 1.6rem Pridi, sans-serif;
+  outline: none;
+  padding: 3.2rem;
+  width: 100%;
+
+  &::placeholder {
+    font: italic 400 1.6rem Lato, sans-serif;
+  }
+}
+
+.post-markdown {
+  min-height: calc(100% - 8.9rem - 3.2rem);
+  /*                      title    margin-bottom */
+  margin-top: 3.2rem;
+  overflow-y: hidden;
+}
+
+.post-attachment {
+  border: 0.1rem solid #ececec;
+  border-radius: .2rem;
+  font: normal 400 1.6rem Lato, sans-serif;
+  height: 3.2rem;
+  line-height: 3.2rem;
+  width: 100%;
+}
+
+.status {
+  background: #42a5f5;
+  border-radius: 0.2rem 0.2rem 0 0;
+  bottom: 0;
+  color: #e3f2fd;
+  font: normal 400 1.2rem Lato, sans-serif;
+  left: calc(50% + 25.6rem);
+  transform: translateX(-50%);
+  padding: 0.4rem 0.8rem;
+  position: fixed;
+
+  > fa-icon {
+    margin-right: 0.8rem;
+  }
+
+  &.--success {
+    background: #66bb6a;
+    color: #e8f5e9;
+  }
+
+  &.--error {
+    background: #ef5350;
+    color: #ffebee;
+  }
+}

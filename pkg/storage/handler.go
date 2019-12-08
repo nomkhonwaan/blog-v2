@@ -220,7 +220,7 @@ func (h Handler) upload(w http.ResponseWriter, r *http.Request) {
 	path := authorizedID.(string) + string(filepath.Separator) + slug
 
 	logrus.Infof("uploading file %s with size %d to the storage server...", path, header.Size)
-	err = h.service.Upload(r.Context(), path, f)
+	err = h.service.Upload(r.Context(), f, path)
 	if err != nil {
 		h.responseError(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -231,7 +231,6 @@ func (h Handler) upload(w http.ResponseWriter, r *http.Request) {
 		Path:           path,
 		FileName:       fileName,
 		Slug:           slug,
-		OptionalField1: "CustomizedAmazonS3Client",
 	})
 	if err != nil {
 		h.responseError(w, err.Error(), http.StatusInternalServerError)

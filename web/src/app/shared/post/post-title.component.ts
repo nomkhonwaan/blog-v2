@@ -36,7 +36,7 @@ import { PostComponent } from './post.component';
 export class PostTitleComponent extends PostComponent implements OnInit {
 
   /**
-   * Used to indiciate whether link or no-link
+   * Use to indiciate whether link or no-link
    */
   @Input()
   link = true;

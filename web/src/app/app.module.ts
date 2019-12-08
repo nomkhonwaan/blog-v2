@@ -15,6 +15,7 @@ import { GraphQLModule } from './graphql/graphql.module';
 import { SharedModule } from './shared/share.module';
 
 import { AppComponent, AnimationDirective } from './app.component';
+import { LoginComponent } from './login.component';
 
 import * as appReducer from './app.reducer';
 import { AppHttpInterceptor } from './app-http.interceptor';
@@ -25,7 +26,9 @@ import { AppHttpInterceptor } from './app-http.interceptor';
     BrowserAnimationsModule,
     FontAwesomeModule,
     HttpClientModule,
-    StoreModule.forRoot({ app: appReducer.reducer }, {
+    StoreModule.forRoot({
+      app: appReducer.reducer,
+    }, {
       runtimeChecks: {
         strictActionImmutability: true,
         strictStateImmutability: true,
@@ -44,6 +47,7 @@ import { AppHttpInterceptor } from './app-http.interceptor';
   declarations: [
     AppComponent,
     AnimationDirective,
+    LoginComponent,
   ],
   providers: [
     {

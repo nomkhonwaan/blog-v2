@@ -1,39 +1,37 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { trigger, state, style, transition, animate } from '@angular/animations';
+import { Component, Input, HostBinding } from '@angular/core';
 
 @Component({
+  animations: [
+    trigger('fadeInOut', [
+      state('show', style({
+        display: 'block',
+        opacity: .16,
+      })),
+      state('hide', style({
+        display: 'none',
+        opacity: 0,
+      })),
+      // transition('* => show', [
+      //   style({ display: 'block', opacity: 0 }),
+      //   animate('.4s ease-in-out', style({ opacity: .16 })),
+      // ]),
+      // transition('show => hide', [
+      //   animate('.4s ease-in-out', style({ opacity: 0 })),
+      //   style({ display: 'none' }),
+      // ]),
+    ]),
+  ],
   selector: 'app-dialog',
   template: `
-    <div click="onClick()">
-      <ng-content></ng-content>
-    </div>
+    <ng-content></ng-content>
   `,
-  styles: [
-    `
-      :host {
-          height: 100%;
-          min-height: 100vh;
-          position: absolute;
-          left: 25.6rem;
-          width: 100%;
-      }
-    `,
-    `
-      :host > div {
-          background: #333;
-          cursor: pointer;
-          height: 100%;
-          opacity: .16;
-      }
-    `,
-  ],
+  styleUrls: ['./dialog.component.scss'],
 })
 export class DialogComponent {
 
-  @Output()
-  hide: EventEmitter<null> = new EventEmitter();
-
-  onClick(): void {
-    this.hide.emit(null);
-  }
+  @Input()
+  @HostBinding('@fadeInOut')
+  state: string = 'hide';
 
 }

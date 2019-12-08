@@ -5,6 +5,7 @@ import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-recent-posts',
@@ -15,14 +16,15 @@ import { map } from 'rxjs/operators';
 export class RecentPostsComponent implements OnInit {
 
   /**
-   * Used to display as list of recent posts
+   * Use to display as list of recent posts
    */
   latestPublishedPosts$: Observable<Post[]>;
 
   constructor(private apollo: Apollo, private title: Title) { }
 
   ngOnInit(): void {
-    this.title.setTitle(`Nomkhonwaan | Trust me I'm Petdo`);
+    this.title.setTitle(environment.title);
+
     this.latestPublishedPosts$ = this.apollo.query({
       query: gql`
         {

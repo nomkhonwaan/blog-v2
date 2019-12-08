@@ -107,18 +107,17 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		uploader.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, path string, _ io.Reader) error {
+		uploader.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, _ io.Reader, path string) error {
 			id, err := Slug(path).GetID()
 
 			assert.Nil(t, err)
 			assert.False(t, id.(primitive.ObjectID).IsZero())
 
 			file.EXPECT().Create(gomock.Any(), File{
-				ID:             id.(primitive.ObjectID),
-				Path:           path,
-				FileName:       "test.txt",
-				Slug:           filepath.Base(path),
-				OptionalField1: "CustomizedAmazonS3Client",
+				ID:       id.(primitive.ObjectID),
+				Path:     path,
+				FileName: "test.txt",
+				Slug:     filepath.Base(path),
 			}).Return(File{}, nil)
 
 			return nil

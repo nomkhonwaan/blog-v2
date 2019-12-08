@@ -37,7 +37,7 @@ export class PostContentComponent extends PostComponent implements OnInit, After
     @Inject(DOCUMENT) private document: Document,
     private http: HttpClient,
     private renderer: Renderer2,
-    private store: Store<PostState>,
+    private store: Store<{ post: PostState }>,
   ) {
     super();
 
@@ -45,7 +45,7 @@ export class PostContentComponent extends PostComponent implements OnInit, After
       .pipe(select('post', 'content', 'fslightbox', 'closed'))
       .subscribe((closed: boolean): void => {
         this.isLightboxClosed = closed;
-      })
+      });
   }
 
   ngOnInit(): void {
@@ -64,15 +64,17 @@ export class PostContentComponent extends PostComponent implements OnInit, After
     this.addExtraQueryToImageSrc(imgs);
     this.renderGitHubGist(scripts);
 
-    window.refreshFsLightbox();
+    if (imgs.length > 0) {
+      window.refreshFsLightbox();
 
-    window.fsLightboxInstances[''].props.onOpen = (): void => {
-      this.store.dispatch(isLightboxOpened());
-    };
+      window.fsLightboxInstances[''].props.onOpen = (): void => {
+        this.store.dispatch(isLightboxOpened());
+      };
 
-    window.fsLightboxInstances[''].props.onClose = (): void => {
-      this.store.dispatch(isLightboxClosed());
-    };
+      window.fsLightboxInstances[''].props.onClose = (): void => {
+        this.store.dispatch(isLightboxClosed());
+      };
+    }
   }
 
   private addExtraClassNamesToAllImages(imgs: NodeList): void {

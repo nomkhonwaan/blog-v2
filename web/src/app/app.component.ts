@@ -25,12 +25,12 @@ export class AnimationDirective implements OnInit {
   @Input()
   data: any;
 
-  constructor(private el: ElementRef, private ngZone: NgZone) { }
+  constructor(private elementRef: ElementRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
     this.ngZone.runOutsideAngular((): void => {
       Lottie.loadAnimation({
-        container: this.el.nativeElement,
+        container: this.elementRef.nativeElement,
         renderer: 'svg',
         loop: true,
         autoplay: true,
@@ -45,12 +45,12 @@ export class AnimationDirective implements OnInit {
   animations: [
     trigger('slideInOut', [
       state('true', style({ transform: 'translateX(0)' })),
+      state('false', style({ transform: 'translateX(-25.6rem)' })),
       transition('* => true', [
         animate('.4s ease-in-out', style({ transform: 'translateX(0)' })),
       ]),
       transition('true => false', [
-        style({ transform: 'translateX(0)' }),
-        animate('.4s ease-in-out'),
+        animate('.4s ease-in-out', style({ transform: 'translateX(-25.6rem)' })),
       ]),
     ]),
   ],
@@ -68,33 +68,38 @@ export class AppComponent implements OnInit {
   faMedium: BrandIconDefinition = faMedium;
 
   /**
-   * Used to toggle sidebar pane for showing or hiding
+   * Use to toggle sidebar pane for showing or hiding
    */
   @HostBinding('@slideInOut')
-  sidebarExpanded = false;
+  hasSidebarExpanded = false;
 
   /**
-   * Used to display loading animation while fetching resources
+   * Use to display loading animation while fetching resources
    */
   isFetching = false;
 
   /**
-   * Used to display at sidebar as a sub-menu to the group of posts
+   * Use to display at sidebar as a sub-menu to the group of posts
    */
   categories$: Observable<Category[]>;
 
   /**
-   * Used to render with animation directive
+   * Use to render with animation directive
    */
   loadingAnimationData: any;
 
   /**
-   * Used to display at footer section as a build version number
+   * An authenticated user information
+   */
+  userInfo$: Observable<UserInfo | null>;
+
+  /**
+   * Use to display at footer section as a build version number
    */
   version: string = environment.version;
 
   /**
-   * Used to display at footer section as a commit ID
+   * Use to display at footer section as a commit ID
    */
   revision: string = environment.revision;
 
@@ -102,21 +107,16 @@ export class AppComponent implements OnInit {
     private apollo: Apollo,
     private auth: AuthService,
     private router: Router,
-    private store: Store<AppState>,
+    private store: Store<{ app: AppState }>,
   ) {
     this.loadingAnimationData = coffeeCup;
 
-    store
-      .pipe(select('app', 'isFetching'))
-      .subscribe((isFetching: boolean): void => {
-        this.isFetching = isFetching;
-      });
+    this.userInfo$ = store.pipe(select('app', 'auth', 'userInfo'));
 
-    store
-      .pipe(select('app'))
-      .subscribe(({ sidebar }: AppState): void => {
-        this.sidebarExpanded = !sidebar.collapsed;
-      });
+    store.pipe(select('app')).subscribe((app: AppState): void => {
+      this.isFetching = app.isFetching;
+      this.hasSidebarExpanded = !app.sidebar.collapsed;
+    });
   }
 
   ngOnInit(): void {
@@ -125,6 +125,14 @@ export class AppComponent implements OnInit {
 
     // Perform a query to the GraphQL server for retrieving a list of categories for displaying on sidebar menu
     this.queryAllCategories();
+  }
+
+  isAuthenticated(): boolean {
+    return this.auth.isAuthenticated();
+  }
+
+  login(): void {
+    this.auth.login(this.router.url);
   }
 
   renewTokenIfAuthenticated(): void {

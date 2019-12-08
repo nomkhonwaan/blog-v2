@@ -6,13 +6,15 @@ export const environment = {
   production: false,
 
   url: 'http://localhost:4300',
+  title: 'Nomkhonwaan | Trust me I\'m Petdo',
 
   version: 'v0.0.1',
   revision: 'development',
 
   auth0: {
     clientId: 'cSMgdzCX59n4TcL7H6RWRUYeRFGqCMbU',
-    redirectUri: 'http://localhost:4200/login',
+    redirectUri: 'http://localhost:4300/login',
+    audience: 'https://www.nomkhonwaan.com',
   },
 
   graphql: {

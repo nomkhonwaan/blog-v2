@@ -3,6 +3,7 @@
 :host {
   display: grid;
   grid-template: 6.4rem auto / 25.6rem auto;
+  height: 100%;
   transform: translateX(-25.6rem);
   width: calc(100% + 25.6rem);
 }
@@ -35,8 +36,13 @@
 }
 
 .navbar {
+  align-items: center;
   border-bottom: 0.1rem solid #ececec;
   display: flex;
+
+  app-user-navbar {
+    margin-right: 3.2rem;
+  }
 }
 
 .main {
