@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faTimes, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import { GraphQLError } from 'graphql';
@@ -47,6 +47,7 @@ export class PostEditorComponent implements OnInit {
   selectedAttachment: Attachment;
 
   faTimes: IconDefinition = faTimes;
+  faSpinnerThird: IconDefinition = faSpinnerThird;
 
   constructor(
     private apollo: Apollo,
