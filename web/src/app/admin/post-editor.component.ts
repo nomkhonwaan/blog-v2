@@ -9,7 +9,7 @@ import gql from 'graphql-tag';
 import { map, tap } from 'rxjs/operators';
 
 import { environment } from 'src/environments/environment';
-import { Observable, forkJoin } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Store, select } from '@ngrx/store';
 
 @Component({

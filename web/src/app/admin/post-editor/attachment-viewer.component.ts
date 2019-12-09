@@ -1,10 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 
 @Component({
   selector: 'app-attachment-viewer',
   template: `
     <app-dialog *ngIf="attachment" state="show">
-      <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin]="'3.2rem 3.2rem 0 0'">
+      <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin-top]="'3.2rem'">
         <app-button [style.margin-right]="'-1.6rem'" (click)="onClick()" [style.margin-top]="'.2rem'">
           {{'close' | uppercase}}
         </app-button>
@@ -12,10 +13,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
       </div>
 
       <div class="viewer">
-        <img src="/api/v2.1/storage/{{selectedAttachment.slug}}?width=420" alt="{{selectedAttachment.fileName}}" />
+        <img src="/api/v2.1/storage/{{attachment.slug}}?width=420" alt="{{attachment.fileName}}" />
 
         <div [style.margin-top]="'2.4rem'">
-          <input class="attachment-url" value="/api/v2.1/storage/{{selectedAttachment.slug}}" />
+          <input class="attachment-url" value="/api/v2.1/storage/{{attachment.slug}}" />
         </div>
       </div>
     </app-dialog>
@@ -32,11 +33,6 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
       }
     `,
     `
-      :ng-deep app-button > button {
-        color: #fff!important;
-      }
-    `,
-    `
       .viewer {
         background: #fff;
         border-radius: 0.2rem;
@@ -45,8 +41,13 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
         max-width: 48rem;
         padding: 3.2rem;
         position: absolute;
-        top: 50%;
-        transform: translate(-50%, -50%);
+        top: 24%;
+        transform: translateX(-50%);
+      }
+    `,
+    `
+      ::ng-deep app-button > button {
+        color: #fff!important;
       }
     `,
     `
@@ -56,7 +57,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
       }
     `,
     `
-      .attachment-uri {
+      .attachment-url {
         border: 0.1rem solid #ececec;
         border-radius: 0.2rem;
         font: normal 400 1.6rem Lato, sans-serif;
@@ -68,6 +69,8 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   ],
 })
 export class AttachmentViewerComponent {
+
+  faTimes: IconDefinition = faTimes;
 
   @Input()
   attachment: Attachment;

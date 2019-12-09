@@ -1,7 +1,6 @@
 import { Input, Output, EventEmitter } from '@angular/core';
 import { Apollo } from 'apollo-angular';
 import gql from 'graphql-tag';
-import { Observable } from 'rxjs';
 
 import { ApiService } from 'src/app/api/api.service';
 import { GraphQLError } from 'graphql';
@@ -22,8 +21,15 @@ export abstract class EditorComponent {
   @Output()
   changeSuccess: EventEmitter<Post> = new EventEmitter(null);
 
-  protected fragments: { [name: string]: any } = {
-    post: gql`
+  constructor(protected apollo: Apollo, protected api: ApiService) { }
+
+  protected mutate(query: string, variables: { [key: string]: any }): void {
+    this.change.emit(true);
+
+    this.apollo.mutate({
+      mutation: gql`
+        ${query}
+
         fragment EditablePost on Post {
           title
           slug
@@ -45,19 +51,6 @@ export abstract class EditorComponent {
           createdAt
           updatedAt
         }
-      `,
-  };
-
-  constructor(protected apollo: Apollo, protected api: ApiService) { }
-
-  protected mutate(query: string, variables: { [key: string]: any }): void {
-    this.change.emit(true);
-
-    this.apollo.mutate({
-      mutation: gql`
-        ${query}
-
-        ${this.fragments.post}
       `,
       variables,
     }).pipe(
