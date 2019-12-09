@@ -31,13 +31,15 @@ export class AppHttpInterceptor implements HttpInterceptor {
     return this.auth$.pipe(
       first(),
       mergeMap((auth?: { accessToken: string }): ObservableInput<any> => {
-        if (auth && auth.accessToken !== '') {
-          req = req.clone({
-            setHeaders: {
-              Authorization: `Bearer ${auth.accessToken}`,
-            },
-            withCredentials: true,
-          });
+        if (auth && auth.accessToken) {
+          return of<HttpRequest<any>>(
+            req.clone({
+              setHeaders: {
+                Authorization: `Bearer ${auth.accessToken}`,
+              },
+              withCredentials: true,
+            }),
+          );
         }
 
         return of<HttpRequest<any>>(req);

@@ -8,6 +8,7 @@ import { AuthModule } from './auth.module';
 
 import { LocalStorageService } from '../storage/local-storage.service';
 import { setAuthentication } from '../app.actions';
+import { environment } from 'src/environments/environment';
 
 @Injectable({
   providedIn: AuthModule,
@@ -35,13 +36,11 @@ export class AuthService {
    * Dispatch the @ngrx/store for updating `accessToken`, `idToken` and `userInfo` values
    */
   dispatchNgrxStore(): void {
-    if (this.isAuthenticated()) {
-      this.store.dispatch(setAuthentication({
-        accessToken: this.accessToken,
-        idToken: this.idToken,
-        userInfo: this.userInfo(),
-      }));
-    }
+    this.store.dispatch(setAuthentication({
+      accessToken: this.accessToken,
+      idToken: this.idToken,
+      userInfo: this.userInfo(),
+    }));
   }
 
   /**
@@ -115,6 +114,13 @@ export class AuthService {
     this.expiresAt = null;
 
     this.localStorage.clear();
+
+    this.dispatchNgrxStore();
+
+    this.webAuth.logout({
+      returnTo: environment.url,
+      clientID: environment.auth0.clientId,
+    });
   }
 
   /**
@@ -128,6 +134,6 @@ export class AuthService {
    * Return user info that decodes from an `id_token` string
    */
   userInfo(): UserInfo | null {
-    return this.isAuthenticated() ? jwtDecode(this.idToken) : null;
+    return this.isAuthenticated() ? jwtDecode(this.idToken) : {};
   }
 }
