@@ -12,7 +12,7 @@ import { environment } from 'src/environments/environment';
   selector: 'app-archive',
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './archive.component.html',
-  styleUrls: ['./archive.component.scss'],
+  styleUrls: ['./latest-published-posts.component.scss'],
 })
 export class ArchiveComponent implements OnInit {
 

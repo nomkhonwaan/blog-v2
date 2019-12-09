@@ -7,22 +7,8 @@
       <app-button ariaLabel="Close Sidebar" [icon]="faTimes"></app-button>
     </header>
 
-    <div class="_section-title">
-      {{'Attachments' | uppercase}}
-    </div>
-
-    <ul class="attachments _list-unstyled">
-      <li class="attachment-item --new" [ngClass]="{'--disabled': isUploadingAttachments}"
-        (click)="isUploadingAttachments ? false : file.click()">
-        <fa-icon [icon]="isUploadingAttachments ? faSpinnerThird : faImage" [spin]="isUploadingAttachments"></fa-icon>
-        <input #file type="file" name="files" multiple="multiple" (change)="onChangeAttachments($event.target.files)" />
-      </li>
-
-      <li *ngFor="let attachment of post.attachments;let i = index" class="attachment-item"
-        (click)="selectedAttachment = attachment">
-        <img src="/api/v2.1/storage/{{attachment.slug}}?width=64" alt="{{attachment.fileName}}">
-      </li>
-    </ul>
+    <app-attachments-editor [post]="post" (change)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)" (selectAttachment)="onSelectingAttachment($event)"></app-attachments-editor>
   </aside>
 
   <div class="navbar">
@@ -31,29 +17,15 @@
   </div>
 
   <div class="article">
-    <app-dialog *ngIf="selectedAttachment" class="attachment-viewer" state="show">
-      <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin]="'3.2rem 3.2rem 0 0'">
-        <app-button [style.margin-right]="'-1.6rem'" (click)="selectedAttachment = null" [style.margin-top]="'.2rem'">
-          {{'close' | uppercase}}
-        </app-button>
-        <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="selectedAttachment = null"></app-button>
-      </div>
+    <app-attachment-viewer [attachment]="selectedAttachment" (click)="selectedAttachment = null"></app-attachment-viewer>
 
-      <div class="selected-attachment">
-        <img src="/api/v2.1/storage/{{selectedAttachment.slug}}?width=420" alt="{{selectedAttachment.fileName}}" />
+    <app-title-editor [post]="post" (change)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-title-editor>
 
-        <div [style.margin-top]="'2.4rem'">
-          <input class="post-attachment" value="/api/v2.1/storage/{{selectedAttachment.slug}}" />
-        </div>
-      </div>
-    </app-dialog>
+    <app-markdown-editor [post]="post" (change)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-markdown-editor>
 
-    <input class="post-title" placeholder="Title" (change)="onChangeTitle()" [(ngModel)]="post.title" />
-
-    <textarea appAutoResize class="post-markdown" placeholder="Markdown" (change)="onChangeMarkdown()"
-      [(ngModel)]="post.markdown"></textarea>
-
-    <div *ngIf="isFetching" class="status">
+    <div *ngIf="isFetching" class="saving-status">
       <fa-icon [icon]="faSpinnerThird" [spin]="true"></fa-icon>Saving...
     </div>
   </div>

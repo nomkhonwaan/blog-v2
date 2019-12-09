@@ -1,25 +1,91 @@
-<div class="_narrow">
-  <div class="_section-title">
-    Recent Posts
-  </div>
+<div class="sidebar">
+  <header>
+    <app-button ariaLabel="Close Sidebar" (click)="toggleSidebar()" [style.margin-right]="'-1.6rem'">
+      {{'close' | uppercase}}
+    </app-button>
+    <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="toggleSidebar()"></app-button>
+  </header>
 
-  <ul class="latest-published-posts _list-unstyled">
-    <li *ngFor="let post of latestPublishedPosts$ | async | slice:0:5">
-      <app-post-featured-image [post]="post"></app-post-featured-image>
-
-      <app-post-title [post]="post">
-        <h2>{{post.title}}</h2>
-      </app-post-title>
-
-      <app-post-tags [post]="post"></app-post-tags>
-
-      <app-post-excerpt [post]="post"></app-post-excerpt>
-
-      <app-post-metadata [post]="post"></app-post-metadata>
-    </li>
-  </ul>
-
-  <div *ngIf="(latestPublishedPosts$ | async)?.length > 5" class="_text-right" [style.margin-top]="'6.4rem'">
-    <app-outline-button>Older Posts</app-outline-button>
-  </div>
+  <nav>
+    <ul class="_list-unstyled">
+      <li (click)="toggleSidebar()">
+        <a [routerLink]="['']" routerLinkActive="-actived">Home</a>
+      </li>
+      <li *ngIf="!isAuthenticated()">
+        <a (click)="login()">Login / Register</a>
+      </li>
+      <li *ngFor="let cat of categories$ | async" (click)="toggleSidebar()">
+        <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>
+      </li>
+    </ul>
+  </nav>
 </div>
+
+<app-dialog [state]="hasSidebarExpanded ? 'show' : 'hide'"></app-dialog>
+
+<div class="navbar">
+  <app-button ariaLabel="Open Sidebar" [icon]="faBars" (click)="toggleSidebar()"></app-button>
+
+  <app-button ariaLabel="Search" [icon]="faSearch" [style.margin-left]="'auto'">
+  </app-button>
+
+  <app-user-navbar *ngIf="isAuthenticated()" [userInfo]="userInfo$ | async"></app-user-navbar>
+</div>
+
+<main class="main">
+  <div *ngIf="isFetching;else main" class="loading-animation _flex _flex-horizontal-align-center">
+    <div appLottieAnimation class="_flex _flex-horizontal-align-center" [data]="loadingAnimationData"></div>
+  </div>
+
+  <ng-template #main>
+    <router-outlet></router-outlet>
+  </ng-template>
+</main>
+
+<div class="pre-footer"></div>
+
+<footer class="footer">
+  <div class="_wide">
+    <div>
+      <div class="creative-commons">
+        <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License"
+            style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"
+            class="lazyload" /></a><br />This work is
+        licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
+          Attribution-ShareAlike 4.0 International License</a>.
+      </div>
+
+      <div class="copyright">&copy; 2011 - 2019</div>
+
+      <div class="social-networks">
+        <a href="https://github.com/nomkhonwaan" aria-label="GitHub">
+          <fa-icon [icon]="faGithubSquare"></fa-icon>
+        </a>
+
+        <a href="https://medium.com/@nomkhonwaan" aria-label="Medium">
+          <fa-icon [icon]="faMedium"></fa-icon>
+        </a>
+      </div>
+    </div>
+
+    <div class="_flex _flex-direction-column _flex-horizontal-align-center">
+      <img src="../assets/images/appenginegopher.svg" alt="Made with love by Gopher for Developers" />
+
+      <div class="editorial">Made with <fa-icon [icon]="faHeart"></fa-icon> by <strong>Gopher</strong> for <strong>Developers</strong></div>
+
+      <div class="version-and-revision var">{{version | slice:0:6}} · {{revision | slice:0:7}}</div>
+    </div>
+
+    <div>
+      <div class="section-title">Links</div>
+
+      <ul class="_list-unstyled">
+        <li><a href="/rss">RSS</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/graphiql">Graphiql</a></li>
+        <li><a href="https://github.com/nomkhonwaan/myblog/blob/master/CONTRIBUTING.md">Contribution</a></li>
+        <li><a href="/terms">Terms of Use</a></li>
+      </ul>
+    </div>
+  </div>
+</footer>

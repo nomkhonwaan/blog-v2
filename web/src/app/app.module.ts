@@ -1,8 +1,7 @@
-import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HttpClientModule } from '@angular/common/http';
+import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { NgModule } from '@angular/core';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
@@ -11,20 +10,17 @@ import { environment } from 'src/environments/environment';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AuthModule } from './auth/auth.module';
-import { GraphQLModule } from './graphql/graphql.module';
-import { SharedModule } from './shared/share.module';
 
-import { AppComponent, AnimationDirective } from './app.component';
+import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
+import { LogoutComponent } from './logout.component';
 
 import * as appReducer from './app.reducer';
-import { AppHttpInterceptor } from './app-http.interceptor';
 
 @NgModule({
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    FontAwesomeModule,
     HttpClientModule,
     StoreModule.forRoot({
       app: appReducer.reducer,
@@ -41,20 +37,11 @@ import { AppHttpInterceptor } from './app-http.interceptor';
     }),
     AppRoutingModule,
     AuthModule,
-    GraphQLModule,
-    SharedModule,
   ],
   declarations: [
     AppComponent,
-    AnimationDirective,
     LoginComponent,
-  ],
-  providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AppHttpInterceptor,
-      multi: true,
-    },
+    LogoutComponent,
   ],
   bootstrap: [AppComponent]
 })
