@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, OnInit, Directive, ElementRef, HostListener, Inject, AfterViewInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faImage, faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
@@ -14,35 +13,6 @@ import { ApiService } from '../api/api.service';
 import { environment } from 'src/environments/environment';
 import { Observable, forkJoin } from 'rxjs';
 import { Store, select } from '@ngrx/store';
-
-@Directive({ selector: '[appAutoResize]' })
-export class AutoResizeDirective implements AfterViewInit {
-
-  constructor(@Inject(DOCUMENT) private document: Document, private elementRef: ElementRef) { }
-
-  ngAfterViewInit(): void {
-    setTimeout(() => this.resize());
-  }
-
-  @HostListener('change')
-  onChange(): void {
-    this.resize();
-  }
-
-  @HostListener('document:keypress', ['$event'])
-  onKeyPress(event: KeyboardEvent): void {
-    this.resize();
-  }
-
-  private resize(): void {
-    const elem: HTMLElement = this.elementRef.nativeElement as HTMLElement;
-    const body: HTMLElement = this.document.body;
-
-    elem.style.height = elem.scrollHeight.toString() + 'px';
-    body.style.height = body.scrollHeight.toString() + 'px';
-  }
-
-}
 
 @Component({
   animations: [
