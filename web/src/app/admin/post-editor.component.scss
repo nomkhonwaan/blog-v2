@@ -24,9 +24,9 @@
     justify-content: flex-end;
   }
 
-  > ._section-title {
-    margin: 3.2rem;
-    margin-bottom: 2.4rem;
+  ::ng-deep ._section-title {
+    margin: 3.2rem!important;
+    margin-bottom: 2.4rem!important;
   }
 }
 
@@ -46,112 +46,16 @@
   position: relative;
 }
 
-.attachments {
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: space-between;
-  margin: 0 3.2rem !important;
-}
-
-.attachment-item {
-  align-items: center;
-  background: #eee;
-  cursor: pointer;
-  display: flex;
-  justify-content: center;
-  height: 4.2rem;
-  margin-bottom: 0.8rem;
-  width: 4.2rem;
-
-  &.--new {
-    color: #bdbdbd;
-    font-size: 2.2rem;
-
-    > input[type="file"] {
-      display: none;
-    }
-  }
-
-  &.--disabled {
-    cursor: default;
-  }
-
-  > img {
-    max-height: 100%;
-    max-width: 100%;
-  }
-}
-
-.attachment-viewer {
-  background: rgba(51, 51, 51, 0.8);
-  bottom: 0;
-  left: 0;
-  opacity: 1 !important;
-  right: 0;
-  top: 0;
-
-  ::ng-deep app-button > button {
-    color: #fff !important;
-  }
-
-  > .selected-attachment {
-    background: #fff;
-    border-radius: 0.2rem;
-    display: inline-block;
-    left: 50%;
-    max-width: 48rem;
-    padding: 3.2rem;
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-
-    > img {
-      max-height: 42rem;
-      max-width: 100%;
-    }
-  }
-}
-
-.post-title,
-.post-markdown {
-  border: none;
-  background: #fff;
-  font: normal 300 1.6rem Pridi, sans-serif;
-  outline: none;
-  padding: 3.2rem;
-  width: 100%;
-
-  &::placeholder {
-    font: italic 400 1.6rem Lato, sans-serif;
-  }
-}
-
-.post-markdown {
-  min-height: calc(100% - 8.9rem - 3.2rem);
-  /*                      title    margin-bottom */
-  margin-top: 3.2rem;
-  overflow-y: hidden;
-}
-
-.post-attachment {
-  border: 0.1rem solid #ececec;
-  border-radius: .2rem;
-  font: normal 400 1.6rem Lato, sans-serif;
-  height: 3.2rem;
-  line-height: 3.2rem;
-  width: 100%;
-}
-
-.status {
+.saving-status {
   background: #42a5f5;
   border-radius: 0.2rem 0.2rem 0 0;
   bottom: 0;
   color: #e3f2fd;
   font: normal 400 1.2rem Lato, sans-serif;
   left: calc(50% + 25.6rem);
-  transform: translateX(-50%);
   padding: 0.4rem 0.8rem;
   position: fixed;
+  transform: translateX(calc(-50% - 25.6rem / 2));
 
   > fa-icon {
     margin-right: 0.8rem;
