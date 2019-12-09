@@ -6,7 +6,7 @@ import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
   template: `
     <app-dialog *ngIf="attachment" state="show">
       <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin-top]="'3.2rem'">
-        <app-button [style.margin-right]="'-1.6rem'" (click)="onClick()" [style.margin-top]="'.2rem'">
+        <app-button [style.margin-right]="'-1.6rem'" (click)="onClick()">
           {{'close' | uppercase}}
         </app-button>
         <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="onClick()"></app-button>
@@ -41,7 +41,7 @@ import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
         max-width: 48rem;
         padding: 3.2rem;
         position: absolute;
-        top: 24%;
+        top: 16%;
         transform: translateX(-50%);
       }
     `,
