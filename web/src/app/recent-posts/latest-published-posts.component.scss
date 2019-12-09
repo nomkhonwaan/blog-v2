@@ -1,0 +1,41 @@
+@import '../../styles.scss';
+
+.latest-published-posts {
+    li {
+        margin: 4.8rem 0 0;
+    }
+
+    app-post-featured-image {
+      margin: 3.2rem 0;
+    }
+
+    ::ng-deep {
+        app-post-author .display-name {
+            display: none;
+
+            @include md {
+                display: inline-block;
+            }
+        }
+
+        app-post-metadata {
+            .published-at {
+                margin-top: -5.6rem;
+
+                @include md {
+                    margin-top: -2.8rem;
+                }
+            }
+
+            app-post-categories  {
+                display: block;
+                margin-top: .8rem;
+
+                @include md {
+                    display: inline-block;
+                    margin-top: 0;
+                }
+            }
+        }
+    }
+}

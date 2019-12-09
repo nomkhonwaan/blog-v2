@@ -14,7 +14,7 @@ import { AuthModule } from './auth/auth.module';
 import { GraphQLModule } from './graphql/graphql.module';
 import { SharedModule } from './shared/share.module';
 
-import { AppComponent, AnimationDirective } from './app.component';
+import { AppComponent } from './app.component';
 import { LoginComponent } from './login.component';
 
 import * as appReducer from './app.reducer';
@@ -24,7 +24,6 @@ import { AppHttpInterceptor } from './app-http.interceptor';
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
-    FontAwesomeModule,
     HttpClientModule,
     StoreModule.forRoot({
       app: appReducer.reducer,
@@ -40,21 +39,10 @@ import { AppHttpInterceptor } from './app-http.interceptor';
       logOnly: environment.production,
     }),
     AppRoutingModule,
-    AuthModule,
-    GraphQLModule,
-    SharedModule,
   ],
   declarations: [
     AppComponent,
-    AnimationDirective,
     LoginComponent,
-  ],
-  providers: [
-    {
-      provide: HTTP_INTERCEPTORS,
-      useClass: AppHttpInterceptor,
-      multi: true,
-    },
   ],
   bootstrap: [AppComponent]
 })
