@@ -20,6 +20,6 @@
   </ul>
 
   <div *ngIf="(latestPublishedPosts$ | async)?.length > 5" class="_text-right" [style.margin-top]="'6.4rem'">
-    <app-outline-button class="app-outline-button" [routerLink]="['/page', '2']">Older Posts</app-outline-button>
+    <app-outline-button class="app-outline-button" [routerLink]="['/', '2']">Older Posts</app-outline-button>
   </div>
 </div>
