@@ -81,7 +81,7 @@ func (s *Server) updatePostStatus(ctx context.Context, args struct {
 	if args.Status == blog.Published {
 		post, _ := s.service.Post().FindByID(ctx, id)
 		if post.PublishedAt.IsZero() {
-			qb.WithPublishedAt(time.Now())
+			qb = qb.WithPublishedAt(time.Now())
 		}
 	}
 

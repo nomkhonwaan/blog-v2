@@ -33,8 +33,10 @@ export abstract class EditorComponent {
         fragment EditablePost on Post {
           title
           slug
+          status
           markdown
           html
+          publishedAt
           authorId
           categories {
             name slug
