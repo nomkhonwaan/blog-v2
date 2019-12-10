@@ -248,6 +248,7 @@ func TestMongoPostRepository_Save(t *testing.T) {
 
 	ctx := context.Background()
 	now := time.Now()
+	publishedAt := time.Now()
 	repo := NewPostRepository(col, timer)
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
@@ -275,10 +276,20 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"slug": "test-update-post-slug", "updatedAt": now}},
 		},
+		"When updating post's status": {
+			q:      NewPostQueryBuilder().WithStatus(Published).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"status": Published, "updatedAt": now}},
+		},
 		"When updating post's content": {
 			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>", "updatedAt": now}},
+		},
+		"When updating post's published date-time": {
+			q:      NewPostQueryBuilder().WithPublishedAt(publishedAt).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"publishedAt": publishedAt, "updatedAt": now}},
 		},
 		"When updating post's categories": {
 			q:      NewPostQueryBuilder().WithCategories([]Category{{ID: catID, Name: "Web Development", Slug: "web-development-" + catID.Hex()}}).Build(),

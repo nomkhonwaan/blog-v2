@@ -9,6 +9,7 @@ import (
 	"github.com/russross/blackfriday/v2"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 // RegisterMutation registers pre-defined mutation fields to the provided schema
@@ -17,6 +18,7 @@ func (s *Server) RegisterMutation(schema *schemabuilder.Schema) {
 
 	obj.FieldFunc("createPost", s.createPostMutation)
 	obj.FieldFunc("updatePostTitle", s.updatePostTitleMutation)
+	obj.FieldFunc("updatePostStatus", s.updatePostStatus)
 	obj.FieldFunc("updatePostContent", s.updatePostContentMutation)
 	obj.FieldFunc("updatePostCategories", s.updatePostCategoriesMutation)
 	obj.FieldFunc("updatePostTags", s.updatePostTagsMutation)
@@ -56,6 +58,34 @@ func (s *Server) updatePostTitleMutation(ctx context.Context, args struct {
 
 	slug := fmt.Sprintf("%s-%s", slugify.Make(args.Title), id.(primitive.ObjectID).Hex())
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithTitle(args.Title).WithSlug(slug).Build())
+}
+
+// mutation {
+//	updatePostStatus(slug: string!, status: string!) {
+//		...
+//	}
+// }
+func (s *Server) updatePostStatus(ctx context.Context, args struct {
+	Slug   Slug
+	Status blog.Status
+}) (blog.Post, error) {
+	id := args.Slug.MustGetID()
+
+	err := s.validateAuthority(ctx, id)
+	if err != nil {
+		return blog.Post{}, err
+	}
+
+	qb := blog.NewPostQueryBuilder().WithStatus(args.Status)
+
+	if args.Status == blog.Published {
+		post, _ := s.service.Post().FindByID(ctx, id)
+		if post.PublishedAt.IsZero() {
+			qb.WithPublishedAt(time.Now())
+		}
+	}
+
+	return s.service.Post().Save(ctx, id, qb.Build())
 }
 
 // mutation {
