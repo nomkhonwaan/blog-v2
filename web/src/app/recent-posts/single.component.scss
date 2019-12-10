@@ -13,7 +13,7 @@
   }
 }
 
-app-post-featured-image.-with-featured-image {
+.app-post-featured-image.-with-featured-image {
   margin-top: 6.4rem;
 
   @include md {
@@ -21,11 +21,11 @@ app-post-featured-image.-with-featured-image {
   }
 }
 
-app-post-title {
+.app-post-title {
   margin-top: 8rem;
 }
 
-app-post-featured-image.-with-featured-image + app-post-title {
+.app-post-featured-image.-with-featured-image + .app-post-title {
   margin-top: 3.2rem;
 
   @include md {
@@ -61,7 +61,7 @@ app-post-featured-image.-with-featured-image + app-post-title {
     padding: 0;
   }
 
-  app-post-metadata {
+  .app-post-metadata {
     margin: 0 auto;
 
     @include md {
@@ -69,7 +69,7 @@ app-post-featured-image.-with-featured-image + app-post-title {
     }
   }
 
-  app-post-share-to {
+  .app-post-share-to {
     margin: 2.4rem auto 0 auto;
 
     @include md {
@@ -78,14 +78,14 @@ app-post-featured-image.-with-featured-image + app-post-title {
   }
 
   ::ng-deep {
-    app-post-metadata {
+    .app-post-metadata {
       display: block;
 
       @include md {
         display: grid;
       }
 
-      app-post-author {
+      .app-post-author {
         align-items: center;
         flex-direction: column;
 

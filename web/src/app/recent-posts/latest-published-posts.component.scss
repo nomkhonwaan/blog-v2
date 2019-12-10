@@ -5,12 +5,12 @@
         margin: 4.8rem 0 0;
     }
 
-    app-post-featured-image {
+    .app-post-featured-image {
       margin: 3.2rem 0;
     }
 
     ::ng-deep {
-        app-post-author .display-name {
+        .app-post-author .display-name {
             display: none;
 
             @include md {
@@ -18,7 +18,7 @@
             }
         }
 
-        app-post-metadata {
+        .app-post-metadata {
             .published-at {
                 margin-top: -5.6rem;
 
@@ -27,7 +27,7 @@
                 }
             }
 
-            app-post-categories  {
+            .app-post-categories  {
                 display: block;
                 margin-top: .8rem;
 

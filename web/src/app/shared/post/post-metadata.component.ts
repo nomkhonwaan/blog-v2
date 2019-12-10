@@ -6,9 +6,9 @@ import { PostComponent } from './post.component';
   selector: 'app-post-metadata',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <app-post-author [post]="post"></app-post-author>
+    <app-post-author class="app-post-author" [post]="post"></app-post-author>
 
-    <div class="published-at">{{post.publishedAt | dateFormat}} on <app-post-categories [post]="post"></app-post-categories></div>
+    <div class="published-at">{{post.publishedAt | dateFormat}} on <app-post-categories class="app-post-categories" [post]="post"></app-post-categories></div>
   `,
   styles: [
     `
@@ -19,7 +19,7 @@ import { PostComponent } from './post.component';
       }
     `,
     `
-      app-post-author {
+      .app-post-author {
         grid-column: 1 / 3;
       }
     `,
@@ -33,7 +33,7 @@ import { PostComponent } from './post.component';
       }
     `,
     `
-      app-post-categories {
+      .app-post-categories {
         display: inline-block;
       }
     `,

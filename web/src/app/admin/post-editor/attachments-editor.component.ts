@@ -13,7 +13,7 @@ import { finalize } from 'rxjs/operators';
     </div>
 
     <ul class="attachments _list-unstyled">
-      <li class="attachment-item --new" [ngClass]="{'--disabled': isUploading}" (click)="isUploading ? false : file.click()">
+      <li class="attachment-item -new" [ngClass]="{'-disabled': isUploading}" (click)="isUploading ? false : file.click()">
         <fa-icon [icon]="isUploading ? faSpinnerThird : faImage" [spin]="isUploading"></fa-icon>
 
         <input #file type="file" name="files" multiple="multiple" (change)="onChange($event.target.files)" />
@@ -46,13 +46,13 @@ import { finalize } from 'rxjs/operators';
       }
     `,
     `
-      .attachment-item.--new {
+      .attachment-item.-new {
         color: #bdbdbd;
         font-size: 2.2rem;
       }
     `,
     `
-      .attachment-item.--disabled {
+      .attachment-item.-disabled {
         cursor: default;
       }
     `,
