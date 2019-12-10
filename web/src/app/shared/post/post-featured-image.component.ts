@@ -7,7 +7,7 @@ import { PostTitleComponent } from './post-title.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a [routerLink]="isDisabledLink() ? null : href" [attr.aria-label]="post.title">
-      <img *ngIf="src" [src]="src" [alt]="post.title" class="lazyload">
+      <img class="lazyload" *ngIf="src" [attr.alt]="post.title" [attr.src]="src" />
     </a>
   `,
   styles: [
