@@ -21,6 +21,11 @@ export class ArchiveComponent implements OnInit {
    */
   archive: Category | Tag;
 
+  /**
+   * Type of the archive page
+   */
+  type: string;
+
   constructor(
     private apollo: Apollo,
     private route: ActivatedRoute,
@@ -29,38 +34,40 @@ export class ArchiveComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    const type: string = (this.route.snapshot.data as { type: string }).type;
+    this.type = (this.route.snapshot.data as { type: string }).type;
+
 
     this.route.paramMap.subscribe((paramMap: ParamMap): void => {
+      const query: string = this.type === 'all'
+        ? this.buildLatestPublishedPostsQuery()
+        : this.buildArchiveQuery(this.type);
+
       this.apollo.query({
         query: gql`
-        {
-          ${type}(slug: $slug) {
-            name
+          ${query}
+
+          fragment PublishedPost on Post {
+            title
             slug
-            latestPublishedPosts(offset: 0, limit: 6) {
-              title
+            html
+            publishedAt
+            categories {
+              name slug
+            }
+            tags {
+              name slug
+            }
+            featuredImage {
               slug
-              html
-              publishedAt
-              categories {
-                name slug
-              }
-              tags {
-                name slug
-              }
-              featuredImage {
-                slug
-              }
             }
           }
-        }
-      `,
+        `,
         variables: {
           slug: paramMap.get('slug'),
+          offset: 0,
         },
       }).pipe(
-        map((result: ApolloQueryResult<{ archive: Category | Tag }>): Category | Tag => result.data[type]),
+        map((result: ApolloQueryResult<{ archive: Category | Tag }>): Category | Tag => result.data[this.type]),
         finalize((): void => this.changeDetectorRef.markForCheck()),
       ).subscribe((archive: Category | Tag): void => {
         this.title.setTitle(`${archive.name} - ${environment.title}`);
@@ -69,4 +76,27 @@ export class ArchiveComponent implements OnInit {
     });
   }
 
+  buildLatestPublishedPostsQuery(): string {
+    return `
+      {
+        latestPublishedPosts(offset: $offset, limit: 6) {
+          ...PublishedPost
+        }
+      }
+    `;
+  }
+
+  buildArchiveQuery(type: string): string {
+    return `
+      {
+        ${type}(slug: $slug) {
+          name
+          slug
+          latestPublishedPosts(offset: $offset, limit: 6) {
+            ...PublishedPost
+          }
+        }
+      }
+    `;
+  }
 }

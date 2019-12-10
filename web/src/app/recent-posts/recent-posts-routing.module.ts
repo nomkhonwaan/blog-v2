@@ -12,9 +12,12 @@ const routes: Routes = [
     path: '', component: RecentPostsComponent,
     children: [
       { path: '', pathMatch: 'full', component: LatestPublishedPostsComponent },
-      { path: 'category/:slug', component: ArchiveComponent, data: { type: 'category' } },
-      { path: 'tag/:slug', component: ArchiveComponent, data: { type: 'tag' } },
-      { path: ':year/:month/:date/:slug', component: SingleComponent },
+      { path: ':page', pathMatch: 'full', component: ArchiveComponent, data: { type: 'all' } },
+      { path: 'category/:slug', pathMatch: 'full', component: ArchiveComponent, data: { type: 'category' } },
+      { path: 'category/:slug/:page', pathMatch: 'full', component: ArchiveComponent, data: { type: 'category' } },
+      { path: 'tag/:slug', pathMatch: 'full', component: ArchiveComponent, data: { type: 'tag' } },
+      { path: 'tag/:slug/:page', pathMatch: 'full', component: ArchiveComponent, data: { type: 'tag' } },
+      { path: ':year/:month/:date/:slug', pathMatch: 'full', component: SingleComponent },
       { path: '**', component: PageNotFoundComponent },
     ]
   },
