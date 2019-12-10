@@ -31,11 +31,11 @@ const coffeeCup = require('../../assets/lottie-files/lf30_editor_pohhBA.json');
       ]),
     ]),
   ],
-  selector: 'app-recent-posts',
-  templateUrl: './recent-posts.component.html',
-  styleUrls: ['./recent-posts.component.scss'],
+  selector: 'app-publishing',
+  templateUrl: './publishing.component.html',
+  styleUrls: ['./publishing.component.scss'],
 })
-export class RecentPostsComponent implements OnInit {
+export class PublishingComponent implements OnInit {
 
   faBars: IconDefinition = faBars;
   faHeart: SolidIconDefinition = faHeart;

@@ -2,16 +2,16 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 
 import { ArchiveComponent } from './archive.component';
-import { LatestPublishedPostsComponent } from './latest-published-posts.component';
 import { PageNotFoundComponent } from './page-not-found.component';
+import { PublishingComponent } from './publishing.component';
 import { RecentPostsComponent } from './recent-posts.component';
 import { SingleComponent } from './single.component';
 
 const routes: Routes = [
   {
-    path: '', component: RecentPostsComponent,
+    path: '', component: PublishingComponent,
     children: [
-      { path: '', pathMatch: 'full', component: LatestPublishedPostsComponent },
+      { path: '', pathMatch: 'full', component: RecentPostsComponent },
       { path: ':page', pathMatch: 'full', component: ArchiveComponent, data: { type: 'all' } },
       { path: 'category/:slug', pathMatch: 'full', component: ArchiveComponent, data: { type: 'category' } },
       { path: 'category/:slug/:page', pathMatch: 'full', component: ArchiveComponent, data: { type: 'category' } },
@@ -31,4 +31,4 @@ const routes: Routes = [
     RouterModule,
   ],
 })
-export class RecentPostsRoutingModule { }
+export class PublishingRoutingModule { }

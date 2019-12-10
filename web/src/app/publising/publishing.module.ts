@@ -4,11 +4,11 @@ import { NgModule } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { ArchiveComponent } from './archive.component';
-import { LatestPublishedPostsComponent } from './latest-published-posts.component';
 import { LottieAnimationDirective } from './lottie-animation.directive';
 import { PageNotFoundComponent } from './page-not-found.component';
+import { PublishingComponent } from './publishing.component';
+import { PublishingRoutingModule } from './publishing-routing.module';
 import { RecentPostsComponent } from './recent-posts.component';
-import { RecentPostsRoutingModule } from './recent-posts-routing.module';
 import { SingleComponent } from './single.component';
 
 import { AppHttpInterceptor } from '../app-http.interceptor';
@@ -23,13 +23,13 @@ import { SharedModule } from '../shared/share.module';
     FontAwesomeModule,
     GraphQLModule,
     SharedModule,
-    RecentPostsRoutingModule,
+    PublishingRoutingModule,
   ],
   declarations: [
     ArchiveComponent,
-    LatestPublishedPostsComponent,
     LottieAnimationDirective,
     PageNotFoundComponent,
+    PublishingComponent,
     RecentPostsComponent,
     SingleComponent,
   ],
@@ -42,4 +42,4 @@ import { SharedModule } from '../shared/share.module';
   ],
   bootstrap: [RecentPostsComponent]
 })
-export class RecentPostsModule { }
+export class PublishingModule { }
