@@ -6,7 +6,7 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <button [attr.aria-label]="ariaLabel">
-      <fa-icon *ngIf="icon" [icon]="icon"></fa-icon>
+      <fa-icon class="icon" *ngIf="icon" [icon]="icon"></fa-icon>
 
       <ng-content></ng-content>
     </button>
@@ -14,26 +14,26 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
   styles: [
     `
       :host {
-          align-items: center;
-          cursor: pointer;
-          display: inline-flex;
-          height: 100%;
-          justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        display: inline-flex;
+        height: 100%;
+        justify-content: center;
       }
     `,
     `
       button {
-          background: none;
-          border: none;
-          color: #808080;
-          font: normal 400 1.3rem Lato, sans-serif;
-          padding: 0;
+        background: none;
+        border: none;
+        color: #808080;
+        font: normal 400 1.3rem Lato, sans-serif;
+        padding: 0;
       }
     `,
     `
-      button > fa-icon {
-          font-size: 2.2rem;
-          padding: 0 3.2rem;
+      button > .icon {
+        font-size: 2.2rem;
+        padding: 0 3.2rem;
       }
     `,
   ],

@@ -29,7 +29,7 @@
   <app-button ariaLabel="Search" [icon]="faSearch" [style.margin-left]="'auto'">
   </app-button>
 
-  <app-user-navbar *ngIf="isAuthenticated()" [userInfo]="userInfo$ | async"></app-user-navbar>
+  <app-user-navbar class="app-user-navbar" *ngIf="isAuthenticated()" [userInfo]="userInfo$ | async"></app-user-navbar>
 </div>
 
 <main class="main">
@@ -71,7 +71,7 @@
     <div class="_flex _flex-direction-column _flex-horizontal-align-center">
       <img src="../assets/images/appenginegopher.svg" alt="Made with love by Gopher for Developers" />
 
-      <div class="editorial">Made with <fa-icon [icon]="faHeart"></fa-icon> by <strong>Gopher</strong> for <strong>Developers</strong></div>
+      <div class="editorial">Made with <fa-icon class="icon-heart" [icon]="faHeart"></fa-icon> by <strong>Gopher</strong> for <strong>Developers</strong></div>
 
       <div class="version-and-revision var">{{version | slice:0:6}} · {{revision | slice:0:7}}</div>
     </div>

@@ -174,11 +174,17 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 	if slug := q.Slug(); slug != "" {
 		update["$set"].(bson.M)["slug"] = slug
 	}
+	if status := q.Status(); status != "" {
+		update["$set"].(bson.M)["status"] = status
+	}
 	if markdown := q.Markdown(); markdown != "" {
 		update["$set"].(bson.M)["markdown"] = markdown
 	}
 	if html := q.HTML(); html != "" {
 		update["$set"].(bson.M)["html"] = html
+	}
+	if publishedAt := q.PublishedAt(); !publishedAt.IsZero() {
+		update["$set"].(bson.M)["publishedAt"] = publishedAt
 	}
 	if categories := q.Categories(); categories != nil {
 		update["$set"].(bson.M)["categories"] = make(primitive.A, 0)
@@ -253,6 +259,12 @@ func (qb *PostQueryBuilder) WithSlug(slug string) *PostQueryBuilder {
 	return qb
 }
 
+// WithStatus allows to set status to the post query object
+func (qb *PostQueryBuilder) WithStatus(status Status) *PostQueryBuilder {
+	qb.postQuery.status = status
+	return qb
+}
+
 // WithMarkdown allows to set markdown to the post query object
 func (qb *PostQueryBuilder) WithMarkdown(markdown string) *PostQueryBuilder {
 	qb.postQuery.markdown = markdown
@@ -265,9 +277,9 @@ func (qb *PostQueryBuilder) WithHTML(html string) *PostQueryBuilder {
 	return qb
 }
 
-// WithStatus allows to set status to the post query object
-func (qb *PostQueryBuilder) WithStatus(status Status) *PostQueryBuilder {
-	qb.postQuery.status = status
+// WithPublishedAt allows to set a date-time which the post was published
+func (qb *PostQueryBuilder) WithPublishedAt(publishedAt time.Time) *PostQueryBuilder {
+	qb.postQuery.publishedAt = publishedAt
 	return qb
 }
 
@@ -328,9 +340,10 @@ func (qb *PostQueryBuilder) Build() PostQuery {
 type PostQuery struct {
 	title         string
 	slug          string
+	status        Status
 	markdown      string
 	html          string
-	status        Status
+	publishedAt   time.Time
 	category      Category
 	categories    []Category
 	tag           Tag
@@ -352,6 +365,11 @@ func (q PostQuery) Slug() string {
 	return q.slug
 }
 
+// Status return status value
+func (q PostQuery) Status() Status {
+	return q.status
+}
+
 // Markdown returns markdown value
 func (q PostQuery) Markdown() string {
 	return q.markdown
@@ -362,9 +380,9 @@ func (q PostQuery) HTML() string {
 	return q.html
 }
 
-// Status return status value
-func (q PostQuery) Status() Status {
-	return q.status
+// PublishedAt returns date-time value
+func (q PostQuery) PublishedAt() time.Time {
+	return q.publishedAt
 }
 
 // Category returns category object

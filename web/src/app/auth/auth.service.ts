@@ -29,13 +29,13 @@ export class AuthService {
     this.idToken = this.localStorage.get('idToken');
     this.expiresAt = this.localStorage.getNumber('expiresAt');
 
-    this.dispatchNgrxStore();
+    this.dispatchStore();
   }
 
   /**
    * Dispatch the @ngrx/store for updating `accessToken`, `idToken` and `userInfo` values
    */
-  dispatchNgrxStore(): void {
+  dispatchStore(): void {
     this.store.dispatch(setAuthentication({
       accessToken: this.accessToken,
       idToken: this.idToken,
@@ -91,7 +91,7 @@ export class AuthService {
       expiresAt: this.expiresAt.toString()
     });
 
-    this.dispatchNgrxStore();
+    this.dispatchStore();
   }
 
   /**
@@ -115,7 +115,7 @@ export class AuthService {
 
     this.localStorage.clear();
 
-    this.dispatchNgrxStore();
+    this.dispatchStore();
 
     this.webAuth.logout({
       returnTo: environment.url,

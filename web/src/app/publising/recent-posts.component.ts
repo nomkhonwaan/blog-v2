@@ -9,12 +9,12 @@ import { map } from 'rxjs/operators';
 import { environment } from 'src/environments/environment';
 
 @Component({
-  selector: 'app-latest-published-posts',
+  selector: 'app-recent-posts',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './latest-published-posts.component.html',
-  styleUrls: ['./latest-published-posts.component.scss'],
+  templateUrl: './recent-posts.component.html',
+  styleUrls: ['./recent-posts.component.scss'],
 })
-export class LatestPublishedPostsComponent implements OnInit {
+export class RecentPostsComponent implements OnInit {
 
   /**
    * Use to display as list of recent posts

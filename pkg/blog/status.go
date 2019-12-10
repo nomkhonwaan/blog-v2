@@ -3,6 +3,10 @@ package blog
 // Status for indicating the access level of the post
 type Status string
 
+func (s Status) String() string {
+	return string(s)
+}
+
 // Published indicates that post is public, accessible to everyone
 const Published Status = "PUBLISHED"
 

@@ -1,3 +1,4 @@
+import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -51,6 +52,7 @@ export class PostEditorComponent implements OnInit {
 
   constructor(
     private apollo: Apollo,
+    private location: Location,
     private route: ActivatedRoute,
     private router: Router,
     private store: Store<{ app: AppState }>,
@@ -67,6 +69,10 @@ export class PostEditorComponent implements OnInit {
     } else {
       this.createNewPost();
     }
+  }
+
+  goBack(): void {
+    this.location.back();
   }
 
   onChaging(isFetching: boolean): void {
@@ -123,8 +129,10 @@ export class PostEditorComponent implements OnInit {
           post(slug: $slug) {
             title
             slug
+            status
             markdown
             html
+            publishedAt
             authorId
             categories {
               name slug

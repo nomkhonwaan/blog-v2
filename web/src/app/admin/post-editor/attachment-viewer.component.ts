@@ -1,15 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 
 @Component({
   selector: 'app-attachment-viewer',
   template: `
-    <app-dialog *ngIf="attachment" state="show">
+    <app-dialog class="app-dialog" *ngIf="attachment" state="show">
       <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin-top]="'3.2rem'">
-        <app-button [style.margin-right]="'-1.6rem'" (click)="onClick()" [style.margin-top]="'.2rem'">
+        <app-button class="app-button" [style.margin-right]="'3.2rem'" (click)="onClick()">
           {{'close' | uppercase}}
         </app-button>
-        <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="onClick()"></app-button>
       </div>
 
       <div class="viewer">
@@ -23,7 +21,7 @@ import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
   `,
   styles: [
     `
-      app-dialog {
+      .app-dialog {
         background: rgba(51, 51, 51, 0.8);
         bottom: 0;
         left: 0;
@@ -41,12 +39,12 @@ import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
         max-width: 48rem;
         padding: 3.2rem;
         position: absolute;
-        top: 24%;
+        top: 16%;
         transform: translateX(-50%);
       }
     `,
     `
-      ::ng-deep app-button > button {
+      ::ng-deep .app-button > button {
         color: #fff!important;
       }
     `,
@@ -70,16 +68,14 @@ import { faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 })
 export class AttachmentViewerComponent {
 
-  faTimes: IconDefinition = faTimes;
-
   @Input()
   attachment: Attachment;
 
   @Output()
-  click: EventEmitter<null> = new EventEmitter(null);
+  close: EventEmitter<null> = new EventEmitter(null);
 
   onClick(): void {
-    this.click.emit(null);
+    this.close.emit(null);
   }
 
 }

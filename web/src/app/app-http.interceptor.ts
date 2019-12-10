@@ -5,13 +5,14 @@ import { Observable, ObservableInput, of } from 'rxjs';
 import { finalize, first, mergeMap } from 'rxjs/operators';
 
 import { isFetching, isNotFetching } from './app.actions';
+import { AuthService } from './auth/auth.service';
 
 @Injectable()
 export class AppHttpInterceptor implements HttpInterceptor {
 
   auth$: Observable<{ accessToken: string }>;
 
-  constructor(private store: Store<{ app: AppState }>) {
+  constructor(private auth: AuthService, private store: Store<{ app: AppState }>) {
     this.auth$ = store.pipe(select('app', 'auth'));
   }
 
@@ -31,7 +32,7 @@ export class AppHttpInterceptor implements HttpInterceptor {
     return this.auth$.pipe(
       first(),
       mergeMap((auth?: { accessToken: string }): ObservableInput<any> => {
-        if (auth && auth.accessToken) {
+        if (this.auth.isAuthenticated()) {
           return of<HttpRequest<any>>(
             req.clone({
               setHeaders: {

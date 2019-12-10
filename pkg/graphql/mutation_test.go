@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 )
 
 func TestServer_RegisterMutation(t *testing.T) {
@@ -188,6 +189,88 @@ func TestServer_RegisterMutation(t *testing.T) {
 			_ = json.NewDecoder(w.Body).Decode(&result)
 
 			assert.Equal(t, "updatePostTitle: Forbidden", result["errors"].([]interface{})[0].(string))
+		})
+	})
+
+	t.Run("Update post status", func(t *testing.T) {
+		t.Run("With successful updating post status", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			status := blog.Published
+			q := query{
+				Query: `mutation { updatePostStatus(slug: $slug, status: $status) { status publishedAt } }`,
+				Variables: map[string]interface{}{
+					"slug":   "test-post-" + id.Hex(),
+					"status": status,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil).AnyTimes()
+			post.EXPECT().Save(gomock.Any(), id, gomock.Any()).DoAndReturn(func(_ context.Context, q blog.PostQuery) (blog.Post, error) {
+				assert.Equal(t, blog.Published, q.Status())
+				assert.NotZero(t, q.PublishedAt())
+
+				return blog.Post{}, nil
+			})
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When the post was published before", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			status := blog.Published
+			publishedAt := time.Now()
+			q := query{
+				Query: `mutation { updatePostStatus(slug: $slug, status: $status) { status publishedAt } }`,
+				Variables: map[string]interface{}{
+					"slug":   "test-post-" + id.Hex(),
+					"status": status,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID", PublishedAt: publishedAt}, nil).AnyTimes()
+			post.EXPECT().Save(gomock.Any(), id, gomock.Any()).DoAndReturn(func(_ context.Context, q blog.PostQuery) (blog.Post, error) {
+				assert.Equal(t, blog.Published, q.Status())
+				assert.Zero(t, q.PublishedAt())
+
+				return blog.Post{}, nil
+			})
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
+		t.Run("When unable to retrieve authorized ID", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			status := blog.Published
+			q := query{
+				Query: `mutation { updatePostStatus(slug: $slug, status: $status) { status publishedAt } }`,
+				Variables: map[string]interface{}{
+					"slug":   "test-post-" + id.Hex(),
+					"status": status,
+				},
+			}
+			w := httptest.NewRecorder()
+
+			// When
+			h.ServeHTTP(w, newGraphQLRequest(q))
+
+			// Then
+			var result map[string]interface{}
+			_ = json.NewDecoder(w.Body).Decode(&result)
+
+			assert.Equal(t, "updatePostStatus: Unauthorized", result["errors"].([]interface{})[0].(string))
 		})
 	})
 

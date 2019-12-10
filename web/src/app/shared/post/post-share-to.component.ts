@@ -14,16 +14,16 @@ import { environment } from '../../../environments/environment';
       </span>
       <a
         href="https://www.facebook.com/sharer/sharer.php?u={{getEncodedURL()}}&amp;src=sdkpreparse"
-        class="icon -facebook"
+        class="share-to"
         target="_blank">
-        <fa-icon [icon]="faFacebookF"></fa-icon>
+        <fa-icon class="icon-facebook" [icon]="faFacebookF"></fa-icon>
       </a>
 
       <a
-        class="icon -twitter"
+        class="share-to"
         href="https://twitter.com/intent/tweet?text={{getURL()}}"
         target="_blank">
-        <fa-icon [icon]="faTwitter"></fa-icon>
+        <fa-icon class="icon-twitter" [icon]="faTwitter"></fa-icon>
       </a>
   `,
   styles: [
@@ -40,7 +40,7 @@ import { environment } from '../../../environments/environment';
       }
     `,
     `
-      .icon {
+      .share-to {
         align-items: center;
         border: .1rem solid #b3b3b3;
         border-radius: 50%;
@@ -53,27 +53,28 @@ import { environment } from '../../../environments/environment';
       }
     `,
     `
-      .icon:first-child {
+      .share-to:first-child {
         margin-left: 0;
       }
     `,
     `
-      .icon:last-child {
+      .share-to:last-child {
         margin-right: 0;
       }
     `,
     `
-      .icon > fa-icon {
+      .share-to > .icon-facebook,
+      .share-to > .icon-twitter {
         display: block;
       }
     `,
     `
-      .icon.-facebook > fa-icon {
+      .share-to > .icon-facebook {
         margin-top: .3rem;
       }
     `,
     `
-      .icon.-twitter > fa-icon {
+      .share-to > .icon-twitter {
         margin-top: .3rem;
         margin-left: .2rem;
       }

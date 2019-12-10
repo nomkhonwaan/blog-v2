@@ -29,7 +29,7 @@ const routes: Routes = [
   },
   {
     path: '',
-    loadChildren: () => import('./recent-posts/recent-posts.module').then((m) => m.RecentPostsModule),
+    loadChildren: () => import('./publising/publishing.module').then((m) => m.PublishingModule),
   },
 ];
 
