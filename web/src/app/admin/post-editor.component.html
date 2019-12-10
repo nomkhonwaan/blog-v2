@@ -17,7 +17,7 @@
   </div>
 
   <div class="article">
-    <app-attachment-viewer [attachment]="selectedAttachment" (click)="selectedAttachment = null"></app-attachment-viewer>
+    <app-attachment-viewer [attachment]="selectedAttachment" (close)="selectedAttachment = null"></app-attachment-viewer>
 
     <app-title-editor [post]="post" (change)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChagningErrors($event)"></app-title-editor>

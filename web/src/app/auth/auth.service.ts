@@ -25,13 +25,9 @@ export class AuthService {
     private store: Store<AppState>,
     private webAuth: WebAuth,
   ) {
-    if (this.isAuthenticated()) {
-      this.accessToken = this.localStorage.get('accessToken');
-      this.idToken = this.localStorage.get('idToken');
-      this.expiresAt = this.localStorage.getNumber('expiresAt');
-    } else {
-      this.localStorage.clear();
-    }
+    this.accessToken = this.localStorage.get('accessToken');
+    this.idToken = this.localStorage.get('idToken');
+    this.expiresAt = this.localStorage.getNumber('expiresAt');
 
     this.dispatchStore();
   }
