@@ -15,7 +15,7 @@
         <a (click)="login()">Login / Register</a>
       </li>
       <li *ngFor="let cat of categories$ | async" (click)="toggleSidebar()">
-        <a routerLinkActive="-actived" [routerLink]="['category', cat.slug]">{{cat.name}}</a>
+        <a routerLinkActive="-actived" [routerLink]="['/category', cat.slug]">{{cat.name}}</a>
       </li>
     </ul>
   </nav>
