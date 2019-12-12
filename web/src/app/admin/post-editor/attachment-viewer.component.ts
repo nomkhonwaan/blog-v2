@@ -39,7 +39,7 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
         max-width: 48rem;
         padding: 3.2rem;
         position: absolute;
-        top: 16%;
+        top: 24rem;
         transform: translateX(-50%);
       }
     `,
