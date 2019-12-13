@@ -13,23 +13,28 @@
   }
 }
 
+.aside {
+  display: none;
+
+  @include xl {
+    align-items: center;
+    display: flex;
+    flex-flow: column;
+    left: 0;
+    position: absolute;
+    top: 16rem;
+  }
+}
+
 .app-post-featured-image.-with-featured-image {
+  margin: 3.2rem 0;
+}
+
+.app-post-title {
   margin-top: 6.4rem;
 
   @include md {
     margin-top: 8rem;
-  }
-}
-
-.app-post-title {
-  margin-top: 8rem;
-}
-
-.app-post-featured-image.-with-featured-image + .app-post-title {
-  margin-top: 3.2rem;
-
-  @include md {
-    margin-top: 4.8rem;
   }
 }
 
@@ -47,7 +52,6 @@
 }
 
 .mast {
-  background: #f5f5f5;
   display: flex;
   flex-direction: column;
   margin: 0 -3.2rem;
