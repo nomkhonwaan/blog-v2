@@ -1,11 +1,9 @@
-<div *ngIf="post" class="_wide">
-  <!-- <div>
-      <app-post-author class="app-post-author" [displayName]="false"></app-post-author>
+<div *ngIf="post" class="_wide" [style.position]="'relative'">
+  <aside class="aside">
+    <app-post-author class="app-post-author" [displayName]="false"></app-post-author>
 
-      <div class="facebook-share-count"></div>
-
-      <app-post-share-to class="app-post-share-to -column" [flow]="column"></app-post-share-to>
-    </div> -->
+    <app-post-share-to class="app-post-share-to" flow="column" [post]="post"></app-post-share-to>
+  </aside>
 
   <div class="_narrow">
     <app-post-title class="app-post-title" [post]="post" [link]="false">

@@ -13,12 +13,29 @@
   }
 }
 
+.aside {
+  display: none;
+
+  @include xl {
+    align-items: center;
+    display: flex;
+    flex-flow: column;
+    left: 0;
+    position: absolute;
+    top: 16rem;
+  }
+}
+
 .app-post-featured-image.-with-featured-image {
   margin: 3.2rem 0;
 }
 
 .app-post-title {
-  margin-top: 8rem;
+  margin-top: 6.4rem;
+
+  @include md {
+    margin-top: 8rem;
+  }
 }
 
 .horizontal-separator {

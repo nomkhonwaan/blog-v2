@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectionStrategy, HostBinding } from '@angular/core';
 import { faFacebookF, faTwitter, IconDefinition } from '@fortawesome/free-brands-svg-icons';
 
 import { PostComponent } from './post.component';
@@ -12,6 +12,7 @@ import { environment } from '../../../environments/environment';
       <span *ngIf="shareCount" class="share-count">
         {{shareCount}}
       </span>
+
       <a
         href="https://www.facebook.com/sharer/sharer.php?u={{getEncodedURL()}}&amp;src=sdkpreparse"
         class="share-to"
@@ -33,10 +34,24 @@ import { environment } from '../../../environments/environment';
       }
     `,
     `
+      :host.-column {
+        align-items: center;
+        display: flex;
+        flex-flow: column;
+        justify-content: center;
+      }
+    `,
+    `
       .share-count {
+        color: #808080;
         display: inline-block;
-        font-size: 3.2rem;
-        text-transform: uppercase;
+        font: normal 400 1.5rem Lato, sans-serif;
+        margin: 3.2rem 0 1.2rem;
+      }
+    `,
+    `
+      :host.-column .share-count + .share-to:first-child {
+        margin-top: 0;
       }
     `,
     `
@@ -50,6 +65,16 @@ import { environment } from '../../../environments/environment';
         justify-content: center;
         margin: 0 1.2rem;
         width: 4.8rem;
+      }
+    `,
+    `
+      :host.-column .share-to:first-child {
+        margin-top: 2.4rem;
+      }
+    `,
+    `
+      :host.-column > .share-to {
+        margin: 1.2rem 0;
       }
     `,
     `
@@ -86,13 +111,18 @@ export class PostShareToComponent extends PostComponent implements OnInit {
   @Input()
   flow = 'row';
 
+  @HostBinding('class.-column')
+  get classes(): boolean {
+    return this.flow === 'column';
+  }
+
   /**
    * Use to sharing to the social network
    */
   url: string = environment.url;
 
   /**
-   * Use to display number of social network engagement
+   * Use to display an engagement number with human readable format
    */
   shareCount: string;
 
@@ -100,9 +130,15 @@ export class PostShareToComponent extends PostComponent implements OnInit {
   faTwitter: IconDefinition = faTwitter;
 
   ngOnInit(): void {
-    if (this.flow === 'column') {
-      if (this.post.engagement.shareCount > 0) {
-        this.shareCount = this.post.engagement.shareCount.toString();
+    const shareCount: number = this.post.engagement.shareCount;
+
+    if (shareCount > 0) {
+      if (shareCount < 1000) {
+        this.shareCount = shareCount.toString();
+      } else if (shareCount < 1000000) {
+        this.shareCount = `${(shareCount / 1000).toFixed(2)}k`;
+      } else {
+        this.shareCount = `${(shareCount / 1000000).toFixed(2)}m`;
       }
     }
   }
