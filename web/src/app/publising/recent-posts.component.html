@@ -5,13 +5,13 @@
 
   <ul class="latest-published-posts _list-unstyled">
     <li *ngFor="let post of latestPublishedPosts$ | async | slice:0:5">
-      <app-post-featured-image class="app-post-featured-image" [post]="post"></app-post-featured-image>
-
       <app-post-title class="app-post-title" [post]="post">
         <h2>{{post.title}}</h2>
       </app-post-title>
 
       <app-post-tags class="app-post-tags" [post]="post"></app-post-tags>
+
+      <app-post-featured-image class="app-post-featured-image" [post]="post"></app-post-featured-image>
 
       <app-post-excerpt class="app-post-excerpt" [post]="post"></app-post-excerpt>
 
