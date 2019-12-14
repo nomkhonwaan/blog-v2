@@ -1,0 +1,109 @@
+import { Component, OnInit, HostBinding } from '@angular/core';
+import { Router } from '@angular/router';
+import { IconDefinition, faBars, faSearch, faTimes } from '@fortawesome/pro-light-svg-icons';
+import { IconDefinition as SolidIconDefinition, faHeart } from '@fortawesome/fontawesome-free-solid';
+import { IconDefinition as BrandIconDefinition, faGithubSquare, faMedium } from '@fortawesome/free-brands-svg-icons';
+import { Store, select } from '@ngrx/store';
+import { Apollo } from 'apollo-angular';
+import gql from 'graphql-tag';
+
+import { toggleSidebar } from '../index';
+import { AuthService } from '../auth';
+
+import { environment } from '../../environments/environment';
+import { ApolloQueryResult } from 'apollo-client';
+import { map } from 'rxjs/operators';
+
+
+@Component({
+  selector: 'app-content',
+  templateUrl: './content.component.html',
+  styleUrls: ['./content.component.scss'],
+})
+export class ContentComponent implements OnInit {
+
+  /**
+   * List of FontAesome icons
+   */
+  icons: Array<IconDefinition | SolidIconDefinition | BrandIconDefinition> = [
+    faBars,
+    faHeart,
+    faSearch,
+    faTimes,
+    faGithubSquare,
+    faMedium,
+  ];
+
+  /**
+   * Use to toggle application sidebar
+   */
+  @HostBinding('@slideInOut')
+  hasSidebarExpanded = false;
+
+  /**
+   * List of categories to-be rendered as sidebar menu-item(s)
+   */
+  categories: Array<Category>;
+
+  /**
+   * An authenticated user info object
+   */
+  userInfo: UserInfo | null;
+
+  /**
+   * A version number which will collect from Git tag
+   */
+  version: string = environment.version;
+
+  /**
+   * A revision number which will collect from Git commit ID
+   */
+  revision: string = environment.revision;
+
+  constructor(
+    private apollo: Apollo,
+    private auth: AuthService,
+    private router: Router,
+    private store: Store<{ app: AppState }>,
+  ) {
+    this.store.pipe(select('app')).subscribe((app: AppState): void => {
+      this.hasSidebarExpanded = !app.sidebar.collapsed;
+      this.userInfo = app.auth.userInfo;
+    });
+  }
+
+  ngOnInit(): void {
+    if (this.isLoggedIn()) {
+      this.auth.renewTokens();
+    }
+
+    this.renderSidebar();
+  }
+
+  isLoggedIn(): boolean {
+    return this.auth.isLoggedIn();
+  }
+
+  login(): void {
+    this.auth.login(this.router.url);
+  }
+
+  toggleSidebar(): void {
+    this.store.dispatch(toggleSidebar());
+  }
+
+  renderSidebar(): void {
+    this.apollo.query({
+      query: gql`
+        {
+          categories { name slug }
+        }
+      `,
+    }).pipe(
+      map((result: ApolloQueryResult<{ categories: Array<Category> }>): Array<Category> => result.data.categories),
+    ).subscribe((categories: Array<Category>): void => {
+      this.categories = categories;
+    });
+  }
+
+}

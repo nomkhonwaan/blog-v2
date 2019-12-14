@@ -105,7 +105,7 @@ export class PublishingComponent implements OnInit {
   }
 
   isAuthenticated(): boolean {
-    return this.auth.isAuthenticated();
+    return this.auth.isLoggedIn();
   }
 
   login(): void {
@@ -113,7 +113,7 @@ export class PublishingComponent implements OnInit {
   }
 
   renewTokenIfAuthenticated(): void {
-    if (this.auth.isAuthenticated()) {
+    if (this.auth.isLoggedIn()) {
       this.auth.renewTokens();
     }
   }

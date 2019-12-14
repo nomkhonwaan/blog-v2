@@ -6,9 +6,10 @@ import jwtDecode from 'jwt-decode';
 
 import { AuthModule } from './auth.module';
 
-import { LocalStorageService } from '../storage/local-storage.service';
-import { setAuthentication } from '../app.actions';
-import { environment } from 'src/environments/environment';
+import { setAuthentication } from '../index';
+import { environment } from '../../environments/environment';
+import { LocalStorageService } from '../storage';
+
 
 @Injectable({
   providedIn: AuthModule,
@@ -126,7 +127,7 @@ export class AuthService {
   /**
    * Check whether the user's Access Token is set and its expiry time has passed.
    */
-  isAuthenticated(): boolean {
+  isLoggedIn(): boolean {
     return this.accessToken !== '' && this.idToken !== '' && Date.now() < this.expiresAt;
   }
 
@@ -134,6 +135,6 @@ export class AuthService {
    * Return user info that decodes from an `id_token` string
    */
   userInfo(): UserInfo | null {
-    return this.isAuthenticated() ? jwtDecode(this.idToken) : {};
+    return this.isLoggedIn() ? jwtDecode(this.idToken) : {};
   }
 }

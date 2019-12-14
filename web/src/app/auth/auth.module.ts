@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 import { StoreModule } from '@ngrx/store';
 import { WebAuth } from 'auth0-js';
 
-import { StorageModule } from '../storage/storage.module';
+import { StorageModule } from '../storage';
 
 import { environment } from '../../environments/environment';
 
