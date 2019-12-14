@@ -112,7 +112,11 @@ export class ContentComponent implements OnInit {
     }).pipe(
       map((result: ApolloQueryResult<{ categories: Array<Category> }>): Array<Category> => result.data.categories),
     ).subscribe((categories: Array<Category>): void => {
-      this.categories = categories;
+      const names: Array<string> = categories.map((cat: Category): string => cat.name).sort();
+
+      this.categories = names.map((name: string): Category => {
+        return categories.find((cat: Category): boolean => cat.name === name);
+      });
     });
   }
 
