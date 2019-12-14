@@ -18,7 +18,7 @@ export class PostShareToComponent extends PostComponent implements OnInit {
   flow = 'row';
 
   /**
-   * Use to binding with host the its class names
+   * Use to binding to host class names when direction is specified
    */
   @HostBinding('class.-column')
   get classes(): boolean {
