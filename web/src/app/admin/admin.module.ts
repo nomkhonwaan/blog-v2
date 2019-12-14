@@ -2,21 +2,19 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-
-import { AdminRoutingModule } from './admin-routing.module';
-import { AdminComponent } from './admin.component';
-import { AutoResizeDirective } from './auto-resize.directive';
-import { MyPostsComponent } from './my-posts.component';
-import { PostEditorComponent } from './post-editor.component';
-import { AttachmentsEditorComponent } from './post-editor/attachments-editor.component';
-import { AttachmentViewerComponent } from './post-editor/attachment-viewer.component';
-import { MarkdownEditorComponent } from './post-editor/markdown-editor.component';
-import { StatusEditorComponent } from './post-editor/status-editor.component';
-import { TitleEditorComponent } from './post-editor/title-editor.component';
-
 import { ApiModule } from '../api/api.module';
 import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
+import { AdminRoutingModule } from './admin-routing.module';
+import { AdminComponent } from './admin.component';
+import { EditorComponent } from './editor';
+import { HeightAsScrollDirective } from './editor/height-as-scroll.directive';
+import { PostTitleEditorComponent } from './editor/title';
+import { MyPostsComponent } from './my-posts';
+import { AttachmentViewerComponent } from './post-editor/attachment-viewer.component';
+import { AttachmentsEditorComponent } from './post-editor/attachments-editor.component';
+import { MarkdownEditorComponent } from './post-editor/markdown-editor.component';
+import { StatusEditorComponent } from './post-editor/status-editor.component';
 
 @NgModule({
   imports: [
@@ -32,12 +30,12 @@ import { SharedModule } from '../shared/share.module';
     AdminComponent,
     AttachmentsEditorComponent,
     AttachmentViewerComponent,
-    AutoResizeDirective,
+    EditorComponent,
+    HeightAsScrollDirective,
     MarkdownEditorComponent,
     MyPostsComponent,
-    PostEditorComponent,
     StatusEditorComponent,
-    TitleEditorComponent,
+    PostTitleEditorComponent,
   ],
   bootstrap: [AdminComponent],
 })
