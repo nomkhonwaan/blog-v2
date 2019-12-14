@@ -31,8 +31,8 @@ import { Component, Input } from '@angular/core';
     ]),
   ],
   selector: 'app-user-navbar',
-  templateUrl: './user-navbar.component.html',
-  styleUrls: ['./user-navbar.component.scss'],
+  templateUrl: './navbar.component.html',
+  styleUrls: ['./navbar.component.scss'],
 })
 export class UserNavbarComponent {
 

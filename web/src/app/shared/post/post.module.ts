@@ -5,7 +5,7 @@ import { RouterModule } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { StoreModule } from '@ngrx/store';
 
-import { PostAuthorComponent } from './post-author.component';
+import { PostAuthorComponent } from './author';
 import { PostCategoriesComponent } from './post-categories.component';
 import { PostContentComponent } from './post-content.component';
 import { PostExcerptComponent } from './post-excerpt.component';

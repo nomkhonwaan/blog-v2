@@ -1,0 +1,17 @@
+:host {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.avatar {
+  border-radius: 50%;
+  height: 6.4rem;
+  width: 6.4rem;
+}
+
+.display-name {
+  color: #333;
+  display: inline-block;
+  font: normal 400 1.6rem Lato, sans-serif;
+  margin: 0.8rem 0 0 1.6rem;
+}
