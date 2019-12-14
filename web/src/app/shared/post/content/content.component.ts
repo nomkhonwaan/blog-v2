@@ -4,7 +4,7 @@ import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Inject, 
 import { select, Store } from '@ngrx/store';
 import 'fslightbox';
 import { isLightboxClosed, isLightboxOpened } from '../post.actions';
-import { PostComponent } from '../post.component';
+import { AbstractPostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-content',
@@ -12,7 +12,7 @@ import { PostComponent } from '../post.component';
   templateUrl: './content.component.html',
   styleUrls: ['./content.component.scss'],
 })
-export class PostContentComponent extends PostComponent implements OnInit, AfterViewInit {
+export class PostContentComponent extends AbstractPostComponent implements OnInit, AfterViewInit {
 
   /**
    * An HTML content of the post

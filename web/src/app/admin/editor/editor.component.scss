@@ -25,8 +25,8 @@
   }
 
   ::ng-deep ._section-title {
-    margin: 3.2rem!important;
-    margin-bottom: 2.4rem!important;
+    margin: 3.2rem !important;
+    margin-bottom: 2.4rem !important;
   }
 }
 
@@ -56,18 +56,18 @@
   padding: 0.4rem 0.8rem;
   position: fixed;
   transform: translateX(calc(-50% - 25.6rem / 2));
+}
 
-  > .icon-spinner {
-    margin-right: 0.8rem;
-  }
+.saving-status.-success {
+  background: #66bb6a;
+  color: #e8f5e9;
+}
 
-  &.--success {
-    background: #66bb6a;
-    color: #e8f5e9;
-  }
+.saving-status.-error {
+  background: #ef5350;
+  color: #ffebee;
+}
 
-  &.--error {
-    background: #ef5350;
-    color: #ffebee;
-  }
+.saving-status .icon {
+  margin-right: 0.8rem;
 }

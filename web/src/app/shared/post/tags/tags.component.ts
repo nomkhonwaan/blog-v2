@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { PostComponent } from '../post.component';
+import { AbstractPostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-tags',
@@ -7,4 +7,4 @@ import { PostComponent } from '../post.component';
   templateUrl: './tags.component.html',
   styleUrls: ['./tags.component.scss'],
 })
-export class PostTagsComponent extends PostComponent { }
+export class PostTagsComponent extends AbstractPostComponent { }

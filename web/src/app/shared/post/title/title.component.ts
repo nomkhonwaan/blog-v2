@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
-import { PostComponent } from '../post.component';
+import { AbstractPostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-title',
@@ -7,7 +7,7 @@ import { PostComponent } from '../post.component';
   templateUrl: './title.component.html',
   styleUrls: ['./title.component.scss'],
 })
-export class PostTitleComponent extends PostComponent implements OnInit {
+export class PostTitleComponent extends AbstractPostComponent implements OnInit {
 
   /**
    * Use to indiciate whether link should enable or not

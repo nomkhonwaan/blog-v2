@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { PostComponent } from '../post.component';
+import { AbstractPostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-categories',
@@ -7,7 +7,7 @@ import { PostComponent } from '../post.component';
   templateUrl: './categories.component.html',
   styleUrls: ['./categories.component.scss'],
 })
-export class PostCategoriesComponent extends PostComponent implements OnInit {
+export class PostCategoriesComponent extends AbstractPostComponent implements OnInit {
 
   /**
    * List of categories

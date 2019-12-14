@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { PostComponent } from '../post.component';
+import { AbstractPostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-metadata',
@@ -7,4 +7,4 @@ import { PostComponent } from '../post.component';
   templateUrl: './metadata.component.html',
   styleUrls: ['./metadata.component.scss'],
 })
-export class PostMetadataComponent extends PostComponent { }
+export class PostMetadataComponent extends AbstractPostComponent { }

@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { PostComponent } from '../post.component';
+import { AbstractPostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-excerpt',
@@ -7,7 +7,7 @@ import { PostComponent } from '../post.component';
   templateUrl: './excerpt.component.html',
   styleUrls: ['../content/content.component.scss'],
 })
-export class PostExcerptComponent extends PostComponent implements OnInit {
+export class PostExcerptComponent extends AbstractPostComponent implements OnInit {
 
   /**
    * A first paragraph of the post for using as a summary

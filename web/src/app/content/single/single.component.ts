@@ -31,7 +31,7 @@ export class SingleComponent implements OnInit {
     const year: number = parseInt(this.route.snapshot.paramMap.get('year'), 10);
     const slug: string = this.route.snapshot.paramMap.get('slug');
 
-    // When year less than 2019, redirect to v1 sub-domain
+    // When year less than 2019, redirect to the v1 sub-domain
     if (year < 2019) {
       window.location.href = [
         'https://v1.nomkhonwaan.com',

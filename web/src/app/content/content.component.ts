@@ -80,14 +80,14 @@ export class ContentComponent implements OnInit {
     private auth: AuthService,
     private router: Router,
     private store: Store<{ app: AppState }>,
-  ) {
+  ) { }
+
+  ngOnInit(): void {
     this.store.pipe(select('app')).subscribe((app: AppState): void => {
       this.hasSidebarExpanded = !app.sidebar.collapsed;
       this.userInfo = app.auth.userInfo;
     });
-  }
 
-  ngOnInit(): void {
     if (this.isLoggedIn()) {
       this.auth.renewTokens();
     }

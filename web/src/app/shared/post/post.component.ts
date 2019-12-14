@@ -1,6 +1,6 @@
 import { HostListener, Input } from '@angular/core';
 
-export abstract class PostComponent {
+export abstract class AbstractPostComponent {
 
   /**
    * A post object

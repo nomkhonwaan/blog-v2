@@ -2,25 +2,21 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { faTimes, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { select, Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import { GraphQLError } from 'graphql';
 import gql from 'graphql-tag';
 import { map, tap } from 'rxjs/operators';
-
-import { environment } from 'src/environments/environment';
-import { Observable } from 'rxjs';
-import { Store, select } from '@ngrx/store';
+import { environment } from '../../../environments/environment';
 
 @Component({
-  animations: [
-  ],
-  selector: 'app-post-editor',
-  templateUrl: './post-editor.component.html',
-  styleUrls: ['./post-editor.component.scss'],
+  selector: 'app-editor',
+  templateUrl: './editor.component.html',
+  styleUrls: ['./editor.component.scss'],
 })
-export class PostEditorComponent implements OnInit {
+export class EditorComponent implements OnInit {
 
   /**
    * A post object
@@ -38,17 +34,22 @@ export class PostEditorComponent implements OnInit {
   isFetching = false;
 
   /**
-   * An authenticated user information
+   * An authenticated user info object
    */
-  userInfo$: Observable<UserInfo | null>;
+  userInfo: UserInfo | null;
 
   /**
    * To-be updated attachment
    */
   selectedAttachment: Attachment;
 
-  faTimes: IconDefinition = faTimes;
-  faSpinnerThird: IconDefinition = faSpinnerThird;
+  /**
+   * List of FontAwesome icons
+   */
+  icons: { [name: string]: IconDefinition } = {
+    faTimes,
+    faSpinnerThird,
+  };
 
   constructor(
     private apollo: Apollo,
@@ -57,11 +58,13 @@ export class PostEditorComponent implements OnInit {
     private router: Router,
     private store: Store<{ app: AppState }>,
     private title: Title,
-  ) {
-    this.userInfo$ = store.pipe(select('app', 'auth', 'userInfo'));
-  }
+  ) { }
 
   ngOnInit(): void {
+    this.store.pipe(select('app')).subscribe((app: AppState): void => {
+      this.userInfo = app.auth.userInfo;
+    });
+
     const slug: string | null = this.route.snapshot.paramMap.get('slug');
 
     if (slug) {
@@ -127,27 +130,15 @@ export class PostEditorComponent implements OnInit {
       query: gql`
         {
           post(slug: $slug) {
-            title
-            slug
-            status
-            markdown
-            html
+            title slug
+            markdown html
             publishedAt
             authorId
-            categories {
-              name slug
-            }
-            tags {
-              name slug
-            }
-            featuredImage {
-              fileName slug
-            }
-            attachments {
-              fileName slug
-            }
-            createdAt
-            updatedAt
+            categories { name slug }
+            tags { name slug }
+            featuredImage { slug }
+            attachments { fileName slug }
+            createdAt updatedAt
           }
         }
       `,

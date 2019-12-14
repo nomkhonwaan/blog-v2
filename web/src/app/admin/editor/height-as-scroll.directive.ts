@@ -1,7 +1,7 @@
-import { Directive, AfterViewInit, ElementRef, HostListener } from '@angular/core';
+import { AfterViewInit, Directive, ElementRef, HostListener } from '@angular/core';
 
-@Directive({ selector: '[appAutoResize]' })
-export class AutoResizeDirective implements AfterViewInit {
+@Directive({ selector: '[appHeightAsScroll]' })
+export class HeightAsScrollDirective implements AfterViewInit {
 
   constructor(private elementRef: ElementRef) { }
 
