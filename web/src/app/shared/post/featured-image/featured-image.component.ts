@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, HostBinding, OnInit } from '@angular/core';
-import { PostTitleComponent } from '../post-title.component';
+import { PostTitleComponent } from '../title';
 
 @Component({
   selector: 'app-post-featured-image',

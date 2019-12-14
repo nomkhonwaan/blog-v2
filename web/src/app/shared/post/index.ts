@@ -1,7 +1,11 @@
 export * from './author';
 export * from './categories';
+export * from './content';
+export * from './excerpt';
+export * from './featured-image';
 export * from './metadata';
 export * from './post.actions';
 export * from './post.module';
 export * from './share-to';
-
+export * from './tags';
+export * from './title';
