@@ -1,9 +1,8 @@
+import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { HttpInterceptor, HttpEvent, HttpHandler, HttpRequest } from '@angular/common/http';
-import { Store, select } from '@ngrx/store';
+import { select, Store } from '@ngrx/store';
 import { Observable, ObservableInput, of } from 'rxjs';
 import { first, mergeMap } from 'rxjs/operators';
-
 import { AuthService } from './auth/auth.service';
 
 @Injectable()

@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-
 import { StorageModule } from './storage.module';
 
 @Injectable({
