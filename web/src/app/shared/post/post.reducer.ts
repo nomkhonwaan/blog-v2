@@ -1,7 +1,6 @@
 import { Action, createReducer, on } from '@ngrx/store';
 import update from 'immutability-helper';
-
-import { isLightboxOpened, isLightboxClosed } from './post.actions';
+import { isLightboxClosed, isLightboxOpened } from './post.actions';
 
 const initialState: PostState = {
   content: {

@@ -5,17 +5,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { EffectsModule } from '@ngrx/effects';
 import { StoreModule } from '@ngrx/store';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
-
 import { environment } from 'src/environments/environment';
-
 import { AppRoutingModule } from './app-routing.module';
-import { AuthModule } from './auth/auth.module';
-
 import { AppComponent } from './app.component';
+import * as appReducer from './app.reducer';
+import { AuthModule } from './auth/auth.module';
 import { LoginComponent } from './login.component';
 import { LogoutComponent } from './logout.component';
-
-import * as appReducer from './app.reducer';
 
 @NgModule({
   imports: [

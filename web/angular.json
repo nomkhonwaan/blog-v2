@@ -73,7 +73,8 @@
           },
           "configurations": {
             "production": {
-              "browserTarget": "web:build:production"
+              "browserTarget": "web:build:production",
+              "buildOptimizer": true
             }
           }
         },

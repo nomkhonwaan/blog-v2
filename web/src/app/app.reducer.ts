@@ -1,12 +1,6 @@
 import { Action, createReducer, on } from '@ngrx/store';
 import update from 'immutability-helper';
-
-import {
-  isFetching,
-  isNotFetching,
-  setAuthentication,
-  toggleSidebar,
-} from './app.actions';
+import { isFetching, isNotFetching, setAuthentication, toggleSidebar } from './app.actions';
 
 const initialState: AppState = {
   isFetching: false,

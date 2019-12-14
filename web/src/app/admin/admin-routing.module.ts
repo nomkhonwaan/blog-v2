@@ -1,23 +1,19 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
-import { MyPostsComponent } from './my-posts.component';
-import { PostEditorComponent } from './post-editor.component';
 import { AdminComponent } from './admin.component';
+import { EditorComponent } from './editor';
+import { MyPostsComponent } from './my-posts';
 
 const routes: Routes = [
   {
     path: '',
     component: AdminComponent,
     children: [
-      { path: '', pathMatch: 'full', component: PostEditorComponent },
-      { path: 'new-post', component: PostEditorComponent },
-    ]
+      { path: '', component: EditorComponent },
+      { path: 'new-post', pathMatch: 'full', component: EditorComponent },
+      { path: 'my-posts', pathMatch: 'full', component: MyPostsComponent },
+    ],
   },
-
-  // { path: '', component: PostEditorComponent },
-  // { path: 'new-post', component: PostEditorComponent },
-  // { path: 'posts', component: MyPostsComponent },
 ];
 
 @NgModule({

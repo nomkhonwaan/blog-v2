@@ -1,0 +1,30 @@
+<div *ngIf="posts" class="_narrow">
+
+  <div class="archive-title _section-title">
+    {{(from === 'all' ? 'Recent Posts' : archive.name) | uppercase}}
+  </div>
+
+  <ul class="latest-published-posts _list-unstyled">
+    <li *ngFor="let post of posts | slice:0:5" class="post-item">
+      <app-post-title class="post-title" [post]="post">
+        <h2>{{post.title}}</h2>
+      </app-post-title>
+
+      <app-post-tags class="post-tags" [post]="post"></app-post-tags>
+
+      <app-post-featured-image class="post-featured-image" [post]="post"></app-post-featured-image>
+
+      <app-post-excerpt class="post-excerpt" [post]="post"></app-post-excerpt>
+
+      <app-post-metadata class="post-metadata" [post]="post"></app-post-metadata>
+    </li>
+  </ul>
+
+  <div class="_flex _flex-vertical-align-middle" [style.margin-top]="'6.4rem'">
+    <app-outline-button *ngIf="previousPage" [routerLink]="previousPage">Newer Posts</app-outline-button>
+
+    <app-outline-button *ngIf="nextPage" [routerLink]="nextPage" [style.margin-left]="'auto'">Older Posts
+    </app-outline-button>
+  </div>
+
+</div>

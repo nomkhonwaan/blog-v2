@@ -1,0 +1,38 @@
+<div *ngIf="post" class="editor">
+  <aside class="sidebar">
+    <header>
+      <app-button [style.margin-right]="'-1.6rem'" (click)="goBack()">
+        {{'close' | uppercase}}
+      </app-button>
+
+      <app-button ariaLabel="Close Sidebar" [icon]="icons.faTimes" (click)="goBack()"></app-button>
+    </header>
+
+    <app-post-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-post-status-editor>
+
+    <app-post-attachments-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)" (selectAttachment)="onSelectingAttachment($event)">
+    </app-post-attachments-editor>
+  </aside>
+
+  <div class="navbar">
+    <!-- <app-button [style.margin-left]="'3.2rem'">{{'Editor' | uppercase}}</app-button>
+    <app-button [style.margin-left]="'3.2rem'">{{'Preview' | uppercase}}</app-button> -->
+  </div>
+
+  <div class="article">
+    <app-post-attachment-viewer [attachment]="selectedAttachment" (closed)="selectedAttachment = null">
+    </app-post-attachment-viewer>
+
+    <app-post-title-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-post-title-editor>
+
+    <app-post-markdown-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-post-markdown-editor>
+
+    <div *ngIf="isFetching" class="saving-status">
+      <fa-icon class="icon" [icon]="icons.faSpinnerThird" [spin]="true"></fa-icon>Saving...
+    </div>
+  </div>
+</div>
