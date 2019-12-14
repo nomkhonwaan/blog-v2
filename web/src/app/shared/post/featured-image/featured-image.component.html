@@ -1,3 +1,3 @@
 <a *ngIf="src" [routerLink]="isDisabledLink() ? null : href" [attr.aria-label]="post.title">
-  <img class="featured-image lazyload" [alt]="{{post.title}}" [attr.src]="src" />
+  <img class="featured-image lazyload" alt="{{post.title}}" [attr.src]="src" />
 </a>
