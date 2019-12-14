@@ -1,3 +1,4 @@
+import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Component, OnInit, HostBinding } from '@angular/core';
 import { Router } from '@angular/router';
 import { IconDefinition, faBars, faSearch, faTimes } from '@fortawesome/pro-light-svg-icons';
@@ -16,6 +17,18 @@ import { map } from 'rxjs/operators';
 
 
 @Component({
+  animations: [
+    trigger('slideInOut', [
+      state('true', style({ transform: 'translateX(0)' })),
+      state('false', style({ transform: 'translateX(-25.6rem)' })),
+      transition('* => true', [
+        animate('.4s ease-in-out', style({ transform: 'translateX(0)' })),
+      ]),
+      transition('true => false', [
+        animate('.4s ease-in-out', style({ transform: 'translateX(-25.6rem)' })),
+      ]),
+    ]),
+  ],
   selector: 'app-content',
   templateUrl: './content.component.html',
   styleUrls: ['./content.component.scss'],
@@ -25,14 +38,14 @@ export class ContentComponent implements OnInit {
   /**
    * List of FontAesome icons
    */
-  icons: Array<IconDefinition | SolidIconDefinition | BrandIconDefinition> = [
+  icons: { [name: string]: IconDefinition | SolidIconDefinition | BrandIconDefinition } = {
     faBars,
     faHeart,
     faSearch,
     faTimes,
     faGithubSquare,
     faMedium,
-  ];
+  };
 
   /**
    * Use to toggle application sidebar

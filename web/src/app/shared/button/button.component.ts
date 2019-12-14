@@ -1,5 +1,7 @@
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid'
+import { IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
 
 @Component({
   selector: 'app-button',
@@ -41,7 +43,7 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
 export class ButtonComponent {
 
   @Input()
-  icon: IconDefinition;
+  icon: IconDefinition | SolidIconDefinition | BrandIconDefinition;
 
   @Input()
   ariaLabel: string;
