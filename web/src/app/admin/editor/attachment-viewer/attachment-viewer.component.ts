@@ -17,10 +17,10 @@ export class PostAttachmentViewerComponent {
    * For emitting on view closed event
    */
   @Output()
-  closeViewer: EventEmitter<null> = new EventEmitter(null);
+  closed: EventEmitter<null> = new EventEmitter(null);
 
   onClick(): void {
-    this.closeViewer.emit(null);
+    this.closed.emit(null);
   }
 
 }

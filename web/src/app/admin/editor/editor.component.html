@@ -22,7 +22,7 @@
   </div>
 
   <div class="article">
-    <app-post-attachment-viewer [attachment]="selectedAttachment" (close)="selectedAttachment = null">
+    <app-post-attachment-viewer [attachment]="selectedAttachment" (closed)="selectedAttachment = null">
     </app-post-attachment-viewer>
 
     <app-post-title-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"

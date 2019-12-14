@@ -27,8 +27,6 @@ export class PostStatusEditorComponent extends AbstractPostEditorComponent imple
           : null,
       ).
       filter((item: DropdownItem): DropdownItem => item)[0];
-
-      console.log(this.currentStatus, this.post);
   }
 
   onChange(selectedItem: { label: string, value?: any }): void {

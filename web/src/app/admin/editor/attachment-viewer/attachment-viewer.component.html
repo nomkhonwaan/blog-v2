@@ -1,6 +1,6 @@
-<app-dialog class="app-dialog" *ngIf="attachment" state="show">
+<app-dialog class="dialog" *ngIf="attachment" state="show">
   <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin-top]="'3.2rem'">
-    <app-button class="app-button" [style.margin-right]="'3.2rem'" (click)="onClick()">
+    <app-button class="close" [style.margin-right]="'3.2rem'" (click)="onClick()">
       {{'close' | uppercase}}
     </app-button>
   </div>
