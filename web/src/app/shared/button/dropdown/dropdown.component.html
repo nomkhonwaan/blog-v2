@@ -10,6 +10,6 @@
 
 <ul class="dropdown-menu _list-unstyled" [@slideUpDown]="showMenu ? true : false">
 
-  <li class="menu-item" *ngFor="let item of items" (click)="onClick(item);toggleMenu()">{{item.label}}</li>
+  <li *ngFor="let item of items" class="menu-item" (click)="onClick(item);toggleMenu()">{{item.label}}</li>
 
 </ul>

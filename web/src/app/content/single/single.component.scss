@@ -53,15 +53,15 @@
   }
 }
 
-::ng-deep .post-metadata {
-  display: block !important;
+.mast ::ng-deep .post-metadata {
+  display: block;
 
   @include md {
     display: grid;
   }
 }
 
-::ng-deep .post-metadata .published-at {
+.mast ::ng-deep .post-metadata .published-at {
   margin: 0.8rem 0 0 0;
 
   @include md {
@@ -69,7 +69,11 @@
   }
 }
 
-::ng-deep .post-metadata .post-author {
+.mast ::ng-deep .post-metadata .published-at .post-categories {
+  display: inline-block;
+}
+
+.mast ::ng-deep .post-metadata .post-author {
   align-items: center;
   flex-direction: column;
 
@@ -80,7 +84,7 @@
   }
 }
 
-::ng-deep .post-metadata .post-author .display-name {
+.mast ::ng-deep .post-metadata .post-author .display-name {
   display: inline-block;
   margin: 1.6rem 0 0 0;
 
