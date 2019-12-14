@@ -2,7 +2,7 @@
 
 :host {
   color: #333;
-  font: normal 300 1.6rem Pridi, sans-setif;
+  font: normal 300 1.6rem Pridi, sans-serif;
 }
 
 .content ::ng-deep a {
@@ -24,7 +24,7 @@
   padding-bottom: 1.6rem;
 }
 
-.content ::ng-deep core,
+.content ::ng-deep code,
 .content ::ng-deep pre {
   font-family: Roboto Mono, monospace;
 }

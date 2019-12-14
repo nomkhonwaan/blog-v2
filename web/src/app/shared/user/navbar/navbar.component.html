@@ -1,4 +1,4 @@
-<img class="picture" [attr.alt]="userInfo.name" [attr.src]="userInfo.picture" (click)="toggleMenu()" />
+<img class="picture" alt="{{userInfo.name}}" [attr.src]="userInfo.picture" (click)="toggleMenu()" />
 
 <ul [@slideUpDown]="showMenu ? true : false" class="menu _list-unstyled">
   <li class="menu-item" (click)="toggleMenu()">
