@@ -1,7 +1,5 @@
-import { trigger, style, state, transition, animate } from '@angular/animations';
-import { Component } from '@angular/core';
-
-import { UserComponent } from './user.component';
+import { animate, state, style, transition, trigger } from '@angular/animations';
+import { Component, Input } from '@angular/core';
 
 @Component({
   animations: [
@@ -36,7 +34,13 @@ import { UserComponent } from './user.component';
   templateUrl: './user-navbar.component.html',
   styleUrls: ['./user-navbar.component.scss'],
 })
-export class UserNavbarComponent extends UserComponent {
+export class UserNavbarComponent {
+
+  /**
+   * An authenticated user info object
+   */
+  @Input()
+  userInfo: UserInfo;
 
   /**
    * Use to toggle menu pane for showing or hiding

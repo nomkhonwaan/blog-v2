@@ -3,13 +3,10 @@ import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { WebAuth } from 'auth0-js';
 import jwtDecode from 'jwt-decode';
-
-import { AuthModule } from './auth.module';
-
-import { setAuthentication } from '../index';
 import { environment } from '../../environments/environment';
+import { setAuthentication } from '../index';
 import { LocalStorageService } from '../storage';
-
+import { AuthModule } from './auth.module';
 
 @Injectable({
   providedIn: AuthModule,

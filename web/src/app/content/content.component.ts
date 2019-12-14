@@ -1,20 +1,17 @@
 import { animate, state, style, transition, trigger } from '@angular/animations';
-import { Component, OnInit, HostBinding } from '@angular/core';
+import { Component, HostBinding, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { IconDefinition, faBars, faSearch, faTimes } from '@fortawesome/pro-light-svg-icons';
-import { IconDefinition as SolidIconDefinition, faHeart } from '@fortawesome/fontawesome-free-solid';
-import { IconDefinition as BrandIconDefinition, faGithubSquare, faMedium } from '@fortawesome/free-brands-svg-icons';
-import { Store, select } from '@ngrx/store';
+import { faHeart, IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid';
+import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
+import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { select, Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
-import gql from 'graphql-tag';
-
-import { toggleSidebar } from '../index';
-import { AuthService } from '../auth';
-
-import { environment } from '../../environments/environment';
 import { ApolloQueryResult } from 'apollo-client';
+import gql from 'graphql-tag';
 import { map } from 'rxjs/operators';
-
+import { environment } from '../../environments/environment';
+import { AuthService } from '../auth';
+import { toggleSidebar } from '../index';
 
 @Component({
   animations: [

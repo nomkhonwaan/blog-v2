@@ -1,5 +1,5 @@
-import { trigger, state, style, transition, animate } from '@angular/animations';
-import { Component, Input, HostBinding } from '@angular/core';
+import { state, style, trigger } from '@angular/animations';
+import { Component, HostBinding, Input } from '@angular/core';
 
 @Component({
   animations: [
@@ -23,15 +23,16 @@ import { Component, Input, HostBinding } from '@angular/core';
     ]),
   ],
   selector: 'app-dialog',
-  template: `
-    <ng-content></ng-content>
-  `,
+  templateUrl: './dialog.component.html',
   styleUrls: ['./dialog.component.scss'],
 })
 export class DialogComponent {
 
+  /**
+   * Use to indiciate whether dialog should show or not
+   */
   @Input()
   @HostBinding('@fadeInOut')
-  state: string = 'hide';
+  state = 'hide';
 
 }

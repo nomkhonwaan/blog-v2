@@ -1,9 +1,8 @@
 import { NgModule } from '@angular/core';
-import { Routes, RouterModule } from '@angular/router';
-
+import { RouterModule, Routes } from '@angular/router';
+import { ArchiveComponent } from './archive';
 import { ContentComponent } from './content.component';
 import { RecentPostsComponent } from './recent-posts';
-import { ArchiveComponent } from './archive';
 
 const routes: Routes = [
   {

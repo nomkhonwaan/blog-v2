@@ -1,8 +1,7 @@
-import { Component, ChangeDetectionStrategy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { Apollo } from 'apollo-angular';
 import { environment } from 'src/environments/environment';
-import gql from 'graphql-tag';
 
 @Component({
   selector: 'app-recent-posts',

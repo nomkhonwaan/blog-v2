@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { RouterModule } from '@angular/router';
 
-import { UserNavbarComponent } from './user-navbar.component';
+import { UserNavbarComponent } from './navbar';
 
 @NgModule({
   imports: [

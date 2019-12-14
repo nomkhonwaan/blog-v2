@@ -1,0 +1,7 @@
+<button class="button" [attr.aria-label]="ariaLabel" [ngClass]="{'-icon': hasIcon()}">
+
+  <fa-icon class="icon" *ngIf="icon" [icon]="icon"></fa-icon>
+
+  <ng-content></ng-content>
+
+</button>
