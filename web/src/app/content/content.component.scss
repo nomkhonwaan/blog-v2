@@ -36,6 +36,20 @@
   border-bottom: 0.1rem solid #ececec;
 }
 
+.main {
+  grid-column: 2 / 3;
+  grid-row: 2 / 3;
+}
+
+.loading {
+  height: 64%;
+
+  @include md {
+    height: auto;
+    width: 24%;
+  }
+}
+
 .pre-footer {
   background: right bottom / 100% auto repeat url("../../assets/images/computer-3163436.svg");
   grid-column: 2 / 3;

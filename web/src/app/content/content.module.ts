@@ -9,6 +9,7 @@ import { SharedModule } from '../shared';
 import { ArchiveComponent } from './archive';
 import { ContentRoutingModule } from './content-routing.module';
 import { ContentComponent } from './content.component';
+import { LottieDirective } from './lottie.directive';
 import { PageNotFoundComponent } from './page-not-found';
 import { RecentPostsComponent } from './recent-posts';
 import { SingleComponent } from './single';
@@ -23,6 +24,7 @@ import { SingleComponent } from './single';
     SharedModule,
   ],
   declarations: [
+    LottieDirective,
     ArchiveComponent,
     ContentComponent,
     RecentPostsComponent,

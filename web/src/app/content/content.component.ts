@@ -33,6 +33,17 @@ import { toggleSidebar } from '../index';
 export class ContentComponent implements OnInit {
 
   /**
+   * Use to toggle application sidebar
+   */
+  @HostBinding('@slideInOut')
+  hasSidebarExpanded = false;
+
+  /**
+   * Use to indicate whether loading animation should show or not
+   */
+  isFetching: boolean;
+
+  /**
    * List of FontAwesome icons
    */
   icons: { [name: string]: IconDefinition | SolidIconDefinition | BrandIconDefinition } = {
@@ -43,12 +54,6 @@ export class ContentComponent implements OnInit {
     faGithubSquare,
     faMedium,
   };
-
-  /**
-   * Use to toggle application sidebar
-   */
-  @HostBinding('@slideInOut')
-  hasSidebarExpanded = false;
 
   /**
    * List of categories to-be rendered as sidebar menu-item(s)

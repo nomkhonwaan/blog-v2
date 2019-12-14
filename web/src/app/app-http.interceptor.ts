@@ -2,7 +2,8 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/c
 import { Injectable } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Observable, ObservableInput, of } from 'rxjs';
-import { first, mergeMap } from 'rxjs/operators';
+import { finalize, first, mergeMap } from 'rxjs/operators';
+import { isFetching, isNotFetching } from './app.actions';
 import { AuthService } from './auth/auth.service';
 
 @Injectable()
@@ -15,11 +16,14 @@ export class AppHttpInterceptor implements HttpInterceptor {
   }
 
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    this.store.dispatch(isFetching());
+
     return this.withAuthorization(req).pipe(
       first(),
       mergeMap((authorizedRequest: HttpRequest<any>): ObservableInput<HttpEvent<any>> => {
         return next.handle(authorizedRequest);
       }),
+      finalize((): void => this.store.dispatch(isNotFetching())),
     );
   }
 

@@ -1,8 +1,8 @@
-import { Directive, OnInit, Input, ElementRef, NgZone } from '@angular/core';
+import { Directive, ElementRef, Input, NgZone, OnInit } from '@angular/core';
 import Lottie from 'lottie-web';
 
-@Directive({ selector: '[appLottieAnimation]' })
-export class LottieAnimationDirective implements OnInit {
+@Directive({ selector: '[appLottie]' })
+export class LottieDirective implements OnInit {
 
   @Input()
   data: any;
