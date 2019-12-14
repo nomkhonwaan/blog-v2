@@ -1,0 +1,13 @@
+.tag-item {
+  display: inline-block;
+  margin-left: 1.6rem;
+}
+
+.tag-item:first-child {
+  margin-left: 0;
+}
+
+.tag-item a {
+  color: #0091ea;
+  font: normal 300 1.5rem Lato, sans-serif;
+}

@@ -7,14 +7,14 @@ import { StoreModule } from '@ngrx/store';
 import { TemplateModule } from '../template/template.module';
 import { PostAuthorComponent } from './author';
 import { PostCategoriesComponent } from './categories';
+import { PostContentComponent } from './content';
+import { PostExcerptComponent } from './excerpt';
 import { PostFeaturedImageComponent } from './featured-image';
 import { PostMetadataComponent } from './metadata';
-import { PostContentComponent } from './post-content.component';
-import { PostExcerptComponent } from './post-excerpt.component';
-import { PostTagsComponent } from './post-tags.component';
-import { PostTitleComponent } from './post-title.component';
 import * as postReducer from './post.reducer';
 import { PostShareToComponent } from './share-to';
+import { PostTagsComponent } from './tags';
+import { PostTitleComponent } from './title';
 
 @NgModule({
   imports: [

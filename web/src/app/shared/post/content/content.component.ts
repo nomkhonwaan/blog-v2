@@ -1,35 +1,32 @@
 import { DOCUMENT } from '@angular/common';
-import {
-  AfterViewInit,
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  OnInit,
-  Renderer2,
-  ViewChild,
-  Inject,
-} from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Store, select } from '@ngrx/store';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Inject, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { select, Store } from '@ngrx/store';
 import 'fslightbox';
-
-import { PostComponent } from './post.component';
-import { isLightboxOpened, isLightboxClosed } from './post.actions';
+import { isLightboxClosed, isLightboxOpened } from '../post.actions';
+import { PostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-content',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <article #content></article>
-  `,
-  styleUrls: ['./post-content.component.scss'],
+  templateUrl: './content.component.html',
+  styleUrls: ['./content.component.scss'],
 })
 export class PostContentComponent extends PostComponent implements OnInit, AfterViewInit {
 
+  /**
+   * An HTML content of the post
+   */
   content: string;
 
+  /**
+   * Use to indicate whether Lightbox has open or not
+   */
   isLightboxClosed: boolean;
 
+  /**
+   * For escaping XSS protection while rendering HTML with Angular
+   */
   @ViewChild('content', { static: false })
   private elementRef: ElementRef;
 
@@ -40,21 +37,20 @@ export class PostContentComponent extends PostComponent implements OnInit, After
     private store: Store<{ post: PostState }>,
   ) {
     super();
+  }
 
-    store
+  ngOnInit(): void {
+    this.store
       .pipe(select('post', 'content', 'fslightbox', 'closed'))
       .subscribe((closed: boolean): void => {
         this.isLightboxClosed = closed;
       });
   }
 
-  ngOnInit(): void {
-    this.content = this.post.html.replace(new RegExp('/api/v1/attachments', 'g'), 'https://www.nomkhonwaan.com/api/v1/attachments');
-  }
-
   ngAfterViewInit(): void {
+    console.log(this.content);
     this.elementRef.nativeElement.appendChild(
-      this.document.createRange().createContextualFragment(this.content),
+      this.document.createRange().createContextualFragment(this.post.html),
     );
 
     const imgs: NodeList = this.elementRef.nativeElement.querySelectorAll('img');
@@ -90,7 +86,7 @@ export class PostContentComponent extends PostComponent implements OnInit, After
       node.setAttribute('src', `${src}?width=${this.innerWidth}`);
 
       const anchor: Element = this.renderer.createElement('a');
-      const img: Element = <Element>node.cloneNode();
+      const img: Element = node.cloneNode() as Element;
 
       this.renderer.setAttribute(anchor, 'data-fslightbox', '');
       this.renderer.setAttribute(anchor, 'href', src);

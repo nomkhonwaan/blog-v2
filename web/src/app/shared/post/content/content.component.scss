@@ -1,0 +1,114 @@
+@import "../../../../styles.scss";
+
+:host {
+  color: #333;
+  font: normal 300 1.6rem Pridi, sans-setif;
+}
+
+.content ::ng-deep a {
+  color: #0091ea;
+}
+
+.content ::ng-deep blockquote {
+  border-left: 0.8rem solid #ececec;
+  display: block;
+  margin: 3.2rem 0;
+  padding: 0 1.6rem;
+}
+
+.content ::ng-deep blockquote p:first-child {
+  padding-top: 1.6rem;
+}
+
+.content ::ng-deep blockquote p:last-child {
+  padding-bottom: 1.6rem;
+}
+
+.content ::ng-deep core,
+.content ::ng-deep pre {
+  font-family: Roboto Mono, monospace;
+}
+
+.content ::ng-deep pre {
+  margin: 3.2rem 0;
+}
+
+.content ::ng-deep h2,
+.content ::ng-deep h3,
+.content ::ng-deep h4 {
+  font-family: Athiti, sans-serif;
+  font-weight: 500;
+}
+
+.content ::ng-deep h2 {
+  font-size: 3.6rem;
+}
+
+.content ::ng-deep h3 {
+  font-size: 2.8rem;
+}
+
+.content ::ng-deep h4 {
+  font-size: 1.8rem;
+}
+
+.content ::ng-deep hr {
+  border: none;
+  border-bottom: 0.1rem solid #ececec;
+  display: block;
+  margin: 2.4rem auto;
+  padding-top: 0.8rem;
+  width: 100%;
+
+  @include md {
+    width: 51.4rem;
+  }
+}
+
+.content ::ng-deep iframe {
+  border: none;
+  margin: 0.8rem 0;
+  max-width: 100%;
+  min-height: 32rem;
+  width: 100%;
+}
+
+.content ::ng-deep img {
+  border-radius: 0.2rem;
+  display: block;
+  max-width: 100%;
+  margin-top: 3.2rem;
+}
+
+.content ::ng-deep img + div.caption {
+  margin: 0.8rem 0 3.2rem 0;
+}
+
+.content ::ng-deep p {
+  margin: 2.4rem 0;
+}
+
+.content ::ng-deep .caption {
+  color: #333;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.content ::ng-deep .fill-width {
+  margin: 0 -3.2rem !important;
+
+  @include sm {
+    margin: 0 calc((100vw / 2 * -1) + 25.6rem + 6.4rem) !important;
+    /*                                Sidebar   Padding */
+  }
+
+  @include lg {
+    margin: 0 calc((100vw / 2 * -1) + 25.6rem + 12.8rem) !important;
+    /*                                Sidebar   Padding  */
+  }
+}
+
+.content ::ng-deep .fill-width img {
+  border-radius: 0;
+  width: 100%;
+}

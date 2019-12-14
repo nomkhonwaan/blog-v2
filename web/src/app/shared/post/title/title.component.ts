@@ -1,46 +1,23 @@
-import { Component, OnInit, Input, ChangeDetectionStrategy } from '@angular/core';
-
-import { PostComponent } from './post.component';
+import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core';
+import { PostComponent } from '../post.component';
 
 @Component({
   selector: 'app-post-title',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: `
-    <a [routerLink]="isDisabledLink() ? null : href">
-      <ng-content></ng-content>
-    </a>
-  `,
-  styles: [
-    `
-      :host {
-        color: #333;
-        display: block;
-        font-family: Athiti, sans-serif;
-        font-weight: 500;
-      }
-    `,
-    `
-      ::ng-deep h1 {
-        font-size: 4.8rem;
-        font-weight: inherit;
-      }
-    `,
-    `
-      ::ng-deep h2 {
-        font-size: 3.6rem;
-        font-weight: inherit;
-      }
-    `,
-  ],
+  templateUrl: './title.component.html',
+  styleUrls: ['./title.component.scss'],
 })
 export class PostTitleComponent extends PostComponent implements OnInit {
 
   /**
-   * Use to indiciate whether link or no-link
+   * Use to indiciate whether link should enable or not
    */
   @Input()
   link = true;
 
+  /**
+   * An array of string to be composed to router link
+   */
   href: string[];
 
   ngOnInit(): void {
