@@ -11,10 +11,10 @@ import { PostCategoriesComponent } from './post-categories.component';
 import { PostContentComponent } from './post-content.component';
 import { PostExcerptComponent } from './post-excerpt.component';
 import { PostFeaturedImageComponent } from './post-featured-image.component';
-import { PostShareToComponent } from './post-share-to.component';
 import { PostTagsComponent } from './post-tags.component';
 import { PostTitleComponent } from './post-title.component';
 import * as postReducer from './post.reducer';
+import { PostShareToComponent } from './share-to';
 
 @NgModule({
   imports: [

@@ -33,7 +33,7 @@ import { toggleSidebar } from '../index';
 export class ContentComponent implements OnInit {
 
   /**
-   * List of FontAesome icons
+   * List of FontAwesome icons
    */
   icons: { [name: string]: IconDefinition | SolidIconDefinition | BrandIconDefinition } = {
     faBars,

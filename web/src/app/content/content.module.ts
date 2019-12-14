@@ -9,7 +9,9 @@ import { SharedModule } from '../shared';
 import { ArchiveComponent } from './archive';
 import { ContentRoutingModule } from './content-routing.module';
 import { ContentComponent } from './content.component';
+import { PageNotFoundComponent } from './page-not-found';
 import { RecentPostsComponent } from './recent-posts';
+import { SingleComponent } from './single';
 
 @NgModule({
   imports: [
@@ -24,6 +26,8 @@ import { RecentPostsComponent } from './recent-posts';
     ArchiveComponent,
     ContentComponent,
     RecentPostsComponent,
+    SingleComponent,
+    PageNotFoundComponent
   ],
   providers: [
     {

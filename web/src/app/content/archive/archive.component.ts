@@ -66,56 +66,60 @@ export class ArchiveComponent implements OnInit {
     ).subscribe(({ page, slug }: { page: number, slug: string }): void => {
       const offset: number = (page - 1) * this.itemsPerPage;
 
-      this.apollo.query({
-        query: gql`
-          ${this.buildQueryFrom(this.from)}
+      this.renderLatestPublishedPosts(page, slug, offset, 6);
+    });
+  }
 
-          fragment PublishedPost on Post {
-            title slug
-            html
-            publishedAt
-            categories { name slug }
-            tags { name slug }
-            featuredImage { slug }
-          }
-        `,
-        variables: {
-          slug,
-          offset,
-          limit: 6,
-        },
-      }).pipe(
-        finalize((): void => this.changeDetectorRef.markForCheck()),
-      ).subscribe((result: ApolloQueryResult<{ archive?: Category | Tag, latestPublishedPosts?: Array<Post> }>): void => {
-        if (result.data.latestPublishedPosts) {
-          this.posts = result.data.latestPublishedPosts;
+  renderLatestPublishedPosts(page: number, slug: string, offset: number, limit: number): void {
+    this.apollo.query({
+      query: gql`
+        ${this.buildQueryFrom(this.from)}
 
-          this.title.setTitle(environment.title);
-        } else if (result.data.archive) {
-          this.archive = result.data.archive;
-          this.posts = result.data.archive.latestPublishedPosts;
-
-          this.title.setTitle(`${this.archive.name} - ${environment.title}`);
+        fragment PublishedPost on Post {
+          title slug
+          html
+          publishedAt
+          categories { name slug }
+          tags { name slug }
+          featuredImage { slug }
         }
+      `,
+      variables: {
+        slug,
+        offset,
+        limit,
+      },
+    }).pipe(
+      finalize((): void => this.changeDetectorRef.markForCheck()),
+    ).subscribe((result: ApolloQueryResult<{ archive?: Category | Tag, latestPublishedPosts?: Array<Post> }>): void => {
+      if (result.data.latestPublishedPosts) {
+        this.posts = result.data.latestPublishedPosts;
 
-        if (page > 1) {
-          this.title.setTitle(`Page ${page} · ${this.title.getTitle()}`);
+        this.title.setTitle(environment.title);
+      } else if (result.data.archive) {
+        this.archive = result.data.archive;
+        this.posts = result.data.archive.latestPublishedPosts;
 
-          this.previousPage = this.from === 'all'
-            ? ['/', (page - 1).toString()]
-            : ['/', this.from, this.archive.slug, (page - 1).toString()];
-        } else {
-          this.previousPage = null;
-        }
+        this.title.setTitle(`${this.archive.name} - ${environment.title}`);
+      }
 
-        if (this.posts.length > 5) {
-          this.nextPage = this.from === 'all'
-            ? ['/', (page + 1).toString()]
-            : ['/', this.from, this.archive.slug, (page + 1).toString()];
-        } else {
-          this.nextPage = null;
-        }
-      });
+      if (page > 1) {
+        this.title.setTitle(`Page ${page} · ${this.title.getTitle()}`);
+
+        this.previousPage = this.from === 'all'
+          ? ['/', (page - 1).toString()]
+          : ['/', this.from, this.archive.slug, (page - 1).toString()];
+      } else {
+        this.previousPage = null;
+      }
+
+      if (this.posts.length > 5) {
+        this.nextPage = this.from === 'all'
+          ? ['/', (page + 1).toString()]
+          : ['/', this.from, this.archive.slug, (page + 1).toString()];
+      } else {
+        this.nextPage = null;
+      }
     });
   }
 

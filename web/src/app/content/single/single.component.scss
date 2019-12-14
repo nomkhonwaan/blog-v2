@@ -1,0 +1,90 @@
+@import "../../../styles.scss";
+
+:host {
+  display: block;
+  width: 100vw;
+}
+
+.single {
+  padding: 0;
+  position: relative;
+
+  @include lg {
+    padding: 0 3.2rem;
+  }
+}
+
+.aside {
+  display: none;
+
+  @include xl {
+    display: flex;
+    left: 0;
+    position: absolute;
+    top: 16rem;
+  }
+}
+
+.post-title {
+  margin-top: 6.4rem;
+
+  @include md {
+    margin-top: 8rem;
+  }
+}
+
+.horizontal-separator {
+  border-top: none;
+  border-left: none;
+  border-right: none;
+  border-bottom: 0.1rem solid #ececec;
+  margin: 4.8rem 0;
+}
+
+.mast {
+  flex-direction: column;
+  margin: 0 -3.2rem;
+  padding: 3.2rem 0;
+
+  @include md {
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+::ng-deep .post-metadata {
+  display: block !important;
+
+  @include md {
+    display: grid;
+  }
+}
+
+::ng-deep .post-metadata .published-at {
+  margin: 0.8rem 0 0 0;
+
+  @include md {
+    margin: -2.8rem 0 0 1.6rem;
+  }
+}
+
+::ng-deep .post-metadata .post-author {
+  align-items: center;
+  flex-direction: column;
+
+  @include md {
+    align-items: flex-start;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
+}
+
+::ng-deep .post-metadata .post-author .display-name {
+  display: inline-block;
+  margin: 1.6rem 0 0 0;
+
+  @include md {
+    margin: 0.8rem 0 0 1.6rem;
+  }
+}

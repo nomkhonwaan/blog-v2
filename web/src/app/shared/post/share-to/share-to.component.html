@@ -1,0 +1,12 @@
+<span *ngIf="shareCount" class="share-count">
+  {{shareCount}}
+</span>
+
+<a href="https://www.facebook.com/sharer/sharer.php?u={{getEncodedURL()}}&amp;src=sdkpreparse" class="share-to"
+  target="_blank">
+  <fa-icon class="icon -facebook" [icon]="icons.faFacebookF"></fa-icon>
+</a>
+
+<a class="share-to" href="https://twitter.com/intent/tweet?text={{getURL()}}" target="_blank">
+  <fa-icon class="icon -twitter" [icon]="icons.faTwitter"></fa-icon>
+</a>

@@ -12,12 +12,12 @@
 }
 
 .display-name {
+  color: #333;
   display: none;
+  font: normal 400 1.6rem Lato, sans-serif;
+  margin: 0.8rem 0 0 1.6rem;
 
   @include md {
-    color: #333;
     display: inline-block;
-    font: normal 400 1.6rem Lato, sans-serif;
-    margin: 0.8rem 0 0 1.6rem;
   }
 }
