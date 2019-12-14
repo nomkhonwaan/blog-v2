@@ -84,9 +84,8 @@ func action(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	logrus.Info("MongoDB connected")
 	db := client.Database("nomkhonwaan_com")
-	
+
 	// Create all MongoDB repositories
 	file := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
 	category := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
@@ -96,7 +95,7 @@ func action(cmd *cobra.Command, args []string) error {
 	// Create all services; as well as repositories
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
 	cacheFilesPath, _ := flags.GetString("cache-files-path")
-	logrus.Infof("all cache files will be saved at: %s", cacheFilesPath)
+	logrus.Infof("use cache files path: %s", cacheFilesPath)
 	cacheService, err := storage.NewDiskCache(cacheFilesPath)
 	if err != nil {
 		return err
@@ -109,7 +108,7 @@ func action(cmd *cobra.Command, args []string) error {
 		secretKey, _ = flags.GetString("amazon-s3-secret-key")
 	)
 	if accessKey != "" && secretKey != "" {
-		logrus.Info("use Amazon S3 as a storage service")
+		logrus.Info("storage service: Amazon S3")
 		// Create new Amazon S3 client which provides uploader and downloader functions
 		accessKey, _ := flags.GetString("amazon-s3-access-key")
 		secretKey, _ := flags.GetString("amazon-s3-secret-key")
@@ -119,7 +118,7 @@ func action(cmd *cobra.Command, args []string) error {
 		}
 		uploader, downloader = s3, s3
 	} else {
-		logrus.Info("use local disk as a storage service")
+		logrus.Info("storage service: cache")
 		uploader, downloader = storage.DiskStorage(cacheService), storage.DiskStorage(cacheService)
 	}
 
