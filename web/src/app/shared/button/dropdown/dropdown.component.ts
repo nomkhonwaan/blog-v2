@@ -45,7 +45,7 @@ export class DropdownButtonComponent extends ButtonComponent {
   items: Array<DropdownItem>;
 
   /**
-   * An item that has been selected when from list of items
+   * An item that has been selected from the list of items
    */
   @Input()
   selectedItem: DropdownItem;

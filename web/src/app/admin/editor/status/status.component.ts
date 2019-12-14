@@ -1,24 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import update from 'immutability-helper';
-
-import { EditorComponent } from './editor.component';
-
+import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
 
 @Component({
-  selector: 'app-status-editor',
-  template: `
-    <app-dropdown-button class="app-dropdown-button"
-      [items]="availableStatuses" [selectedItem]="currentStatus" (change)="onChange($event)"></app-dropdown-button>
-  `,
-  styles: [
-    `
-      .app-dropdown-button {
-        margin: 3.2rem;
-      }
-    `
-  ],
+  selector: 'app-post-status-editor',
+  templateUrl: './status.component.html',
+  styleUrls: ['./status.component.scss'],
 })
-export class StatusEditorComponent extends EditorComponent implements OnInit {
+export class PostStatusEditorComponent extends AbstractPostEditorComponent implements OnInit {
 
   /**
    * Available actions
@@ -38,6 +27,8 @@ export class StatusEditorComponent extends EditorComponent implements OnInit {
           : null,
       ).
       filter((item: DropdownItem): DropdownItem => item)[0];
+
+      console.log(this.currentStatus, this.post);
   }
 
   onChange(selectedItem: { label: string, value?: any }): void {

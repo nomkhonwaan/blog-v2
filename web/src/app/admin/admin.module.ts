@@ -7,14 +7,16 @@ import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin.component';
-import { EditorComponent } from './editor';
-import { HeightAsScrollDirective } from './editor/height-as-scroll.directive';
-import { PostTitleEditorComponent } from './editor/title';
+import {
+  EditorComponent,
+  HeightAsScrollDirective,
+  PostAttachmentsEditorComponent,
+  PostAttachmentViewerComponent,
+  PostMarkdownEditorComponent,
+  PostStatusEditorComponent,
+  PostTitleEditorComponent,
+} from './editor';
 import { MyPostsComponent } from './my-posts';
-import { AttachmentViewerComponent } from './post-editor/attachment-viewer.component';
-import { AttachmentsEditorComponent } from './post-editor/attachments-editor.component';
-import { MarkdownEditorComponent } from './post-editor/markdown-editor.component';
-import { StatusEditorComponent } from './post-editor/status-editor.component';
 
 @NgModule({
   imports: [
@@ -28,13 +30,13 @@ import { StatusEditorComponent } from './post-editor/status-editor.component';
   ],
   declarations: [
     AdminComponent,
-    AttachmentsEditorComponent,
-    AttachmentViewerComponent,
     EditorComponent,
     HeightAsScrollDirective,
-    MarkdownEditorComponent,
     MyPostsComponent,
-    StatusEditorComponent,
+    PostAttachmentsEditorComponent,
+    PostAttachmentViewerComponent,
+    PostMarkdownEditorComponent,
+    PostStatusEditorComponent,
     PostTitleEditorComponent,
   ],
   bootstrap: [AdminComponent],

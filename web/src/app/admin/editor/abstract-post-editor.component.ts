@@ -43,6 +43,7 @@ export abstract class AbstractPostEditorComponent {
 
         fragment EditablePost on Post {
           title slug
+          status
           markdown html
           publishedAt
           authorId

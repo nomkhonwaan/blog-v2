@@ -1,15 +1,9 @@
 <button class="button" [attr.aria-label]="ariaLabel" (click)="toggleMenu()">
-
   <span [style.margin-left]="'auto'"></span>
-
   <span>{{selectedItem.label}}</span>
-
   <fa-icon class="icon" [icon]="faChevronDown"></fa-icon>
-
 </button>
 
 <ul class="dropdown-menu _list-unstyled" [@slideUpDown]="showMenu ? true : false">
-
   <li *ngFor="let item of items" class="menu-item" (click)="onClick(item);toggleMenu()">{{item.label}}</li>
-
 </ul>

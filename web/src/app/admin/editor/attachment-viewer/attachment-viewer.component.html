@@ -1,0 +1,15 @@
+<app-dialog class="app-dialog" *ngIf="attachment" state="show">
+  <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin-top]="'3.2rem'">
+    <app-button class="app-button" [style.margin-right]="'3.2rem'" (click)="onClick()">
+      {{'close' | uppercase}}
+    </app-button>
+  </div>
+
+  <div class="viewer">
+    <img src="/api/v2.1/storage/{{attachment.slug}}?width=420" alt="{{attachment.fileName}}" />
+
+    <div [style.margin-top]="'2.4rem'">
+      <input class="attachment-url" value="/api/v2.1/storage/{{attachment.slug}}" />
+    </div>
+  </div>
+</app-dialog>

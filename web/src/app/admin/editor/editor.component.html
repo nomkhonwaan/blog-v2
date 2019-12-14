@@ -5,15 +5,15 @@
         {{'close' | uppercase}}
       </app-button>
 
-      <app-button ariaLabel="Close Sidebar" [icon]="faTimes" (click)="goBack()"></app-button>
+      <app-button ariaLabel="Close Sidebar" [icon]="icons.faTimes" (click)="goBack()"></app-button>
     </header>
 
-    <app-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
-      (changeErrors)="onChagningErrors($event)"></app-status-editor>
+    <app-post-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-post-status-editor>
 
-    <app-attachments-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+    <app-post-attachments-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChagningErrors($event)" (selectAttachment)="onSelectingAttachment($event)">
-    </app-attachments-editor>
+    </app-post-attachments-editor>
   </aside>
 
   <div class="navbar">
@@ -22,17 +22,17 @@
   </div>
 
   <div class="article">
-    <app-attachment-viewer [attachment]="selectedAttachment" (close)="selectedAttachment = null">
-    </app-attachment-viewer>
+    <app-post-attachment-viewer [attachment]="selectedAttachment" (close)="selectedAttachment = null">
+    </app-post-attachment-viewer>
 
     <app-post-title-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChagningErrors($event)"></app-post-title-editor>
 
-    <app-markdown-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
-      (changeErrors)="onChagningErrors($event)"></app-markdown-editor>
+    <app-post-markdown-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChagningErrors($event)"></app-post-markdown-editor>
 
     <div *ngIf="isFetching" class="saving-status">
-      <fa-icon class="icon" [icon]="faSpinnerThird" [spin]="true"></fa-icon>Saving...
+      <fa-icon class="icon" [icon]="icons.faSpinnerThird" [spin]="true"></fa-icon>Saving...
     </div>
   </div>
 </div>

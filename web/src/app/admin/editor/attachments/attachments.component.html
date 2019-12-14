@@ -1,0 +1,16 @@
+<div class="_section-title">
+  {{'Attachments' | uppercase}}
+</div>
+
+<ul class="attachments _list-unstyled">
+  <li class="attachment-item -new" [ngClass]="{'-disabled': isUploading}" (click)="isUploading ? false : file.click()">
+    <fa-icon [icon]="isUploading ? icons.faSpinnerThird : icons.faImage" [spin]="isUploading"></fa-icon>
+
+    <input #file type="file" name="files" multiple="multiple" (change)="onChange($event.target.files)" />
+  </li>
+
+  <li *ngFor="let attachment of post.attachments;let i = index" class="attachment-item"
+    (click)="onClickAttachment(attachment)">
+    <img src="/api/v2.1/storage/{{attachment.slug}}?width=64" alt="{{attachment.fileName}}" />
+  </li>
+</ul>

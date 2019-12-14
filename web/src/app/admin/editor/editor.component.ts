@@ -131,6 +131,7 @@ export class EditorComponent implements OnInit {
         {
           post(slug: $slug) {
             title slug
+            status
             markdown html
             publishedAt
             authorId
