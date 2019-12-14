@@ -6,8 +6,6 @@ import { PostComponent } from '../post.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './author.component.html',
   styleUrls: ['./author.component.scss'],
-  styles: [
-  ]
 })
 export class PostAuthorComponent extends PostComponent {
 

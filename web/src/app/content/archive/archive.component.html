@@ -1,7 +1,7 @@
 <div *ngIf="posts" class="_narrow">
 
-  <div class="archive-title">
-    {{from === 'all' ? 'Recent Posts' : archive.name}}
+  <div class="archive-title _section-title">
+    {{from === 'all' ? 'Recent Posts' : archive.name | uppercase}}
   </div>
 
   <ul class="latest-published-posts _list-unstyled">
