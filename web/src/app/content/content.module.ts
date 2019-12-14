@@ -5,6 +5,8 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { ContentComponent } from './content.component';
 import { ContentRoutingModule } from './content-routing.module';
+
+import { ArchiveComponent } from './archive';
 import { RecentPostsComponent } from './recent-posts';
 
 import { AppHttpInterceptor } from '../index';
@@ -22,6 +24,7 @@ import { SharedModule } from '../shared';
     SharedModule,
   ],
   declarations: [
+    ArchiveComponent,
     ContentComponent,
     RecentPostsComponent,
   ],
