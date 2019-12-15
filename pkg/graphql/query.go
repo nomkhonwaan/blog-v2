@@ -17,6 +17,7 @@ func (s *Server) RegisterQuery(schema *schemabuilder.Schema) {
 	obj.FieldFunc("tag", s.findTagBySlugQuery)
 	obj.FieldFunc("tags", s.findAllTagsQuery)
 	obj.FieldFunc("latestPublishedPosts", s.findLatestPublishedPostsQuery)
+	obj.FieldFunc("myPosts", s.findMyPostsQuery)
 	obj.FieldFunc("post", s.findPostBySlugQuery)
 }
 
@@ -68,6 +69,19 @@ func (s *Server) findLatestPublishedPostsQuery(ctx context.Context, args struct{
 }
 
 // query {
+//	myPosts(offset: int!, limit: int!) {
+//
+//	}
+// }
+func (s *Server) findMyPostsQuery(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
+	authorizedID, err := s.getAuthorizedID(ctx)
+	if err != nil {
+		return nil, err
+	}
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithAuthorID(authorizedID.(string)).WithOffset(args.Offset).WithLimit(args.Limit).Build())
+}
+
+// query {
 //	post(slug: string!) {
 //		...
 //	}
@@ -86,7 +100,7 @@ func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 		return p, nil
 	}
 
-	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
+	authorizedID, err := s.getAuthorizedID(ctx)
 	if err != nil {
 		return blog.Post{}, err
 	}
