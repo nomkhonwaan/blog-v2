@@ -114,61 +114,90 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	tests := map[string]struct {
 		q       PostQuery
 		filter  interface{}
-		options func() *options.FindOptions
+		options *options.FindOptions
 		err     error
 	}{
 		"With default query options": {
 			q:      NewPostQueryBuilder().Build(),
 			filter: bson.M{},
-			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
-			},
+			options: options.Find().
+				SetSort(bson.D{
+					{"status", 1},
+					{"createdAt", -1},
+				}).
+				SetSkip(0).
+				SetLimit(5),
 		},
 		"With specified offset and limit": {
 			q:      NewPostQueryBuilder().WithOffset(10).WithLimit(5).Build(),
 			filter: bson.M{},
-			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(10).SetLimit(5)
-			},
+			options: options.Find().
+				SetSort(bson.D{
+					{"status", 1},
+					{"createdAt", -1},
+				}).
+				SetSkip(10).
+				SetLimit(5),
 		},
 		"With status draft": {
 			q:      NewPostQueryBuilder().WithStatus(Draft).Build(),
 			filter: bson.M{"status": Draft},
-			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
-			},
+			options: options.Find().
+				SetSort(bson.D{{"createdAt", -1}}).
+				SetSkip(0).
+				SetLimit(5),
 		},
 		"With status published": {
 			q:      NewPostQueryBuilder().WithStatus(Published).Build(),
 			filter: bson.M{"status": Published},
-			options: func() *options.FindOptions {
-				opts := (&options.FindOptions{}).SetSkip(0).SetLimit(5)
-				opts.Sort = map[string]interface{}{
-					"publishedAt": -1,
-				}
-				return opts
-			},
+			options: options.Find().
+				SetSort(bson.D{{"publishedAt", -1}}).
+				SetSkip(0).
+				SetLimit(5),
+		},
+		"With specific authorID": {
+			q:      NewPostQueryBuilder().WithAuthorID("authorizedID").Build(),
+			filter: bson.M{"authorId": "authorizedID"},
+			options: options.Find().
+				SetSort(bson.D{
+					{"status", 1},
+					{"createdAt", -1},
+				}).
+				SetSkip(0).
+				SetLimit(5),
 		},
 		"With specific category": {
 			q:      NewPostQueryBuilder().WithCategory(Category{ID: catID}).Build(),
 			filter: bson.M{"categories.$id": catID},
-			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
-			},
+			options: options.Find().
+				SetSort(bson.D{
+					{"status", 1},
+					{"createdAt", -1},
+				}).
+				SetSkip(0).
+				SetLimit(5),
 		},
 		"With specific tag": {
 			q:      NewPostQueryBuilder().WithTag(Tag{ID: tagID}).Build(),
 			filter: bson.M{"tags.$id": tagID},
-			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(0).SetLimit(5)
-			},
+			options: options.Find().
+				SetSort(bson.D{
+					{"status", 1},
+					{"createdAt", -1},
+				}).
+				SetSkip(0).
+				SetLimit(5),
 		},
 		"When an error has occurred while finding the result": {
-			q:      PostQuery{},
+			q:      NewPostQueryBuilder().Build(),
 			filter: bson.M{},
-			options: func() *options.FindOptions {
-				return (&options.FindOptions{}).SetSkip(0).SetLimit(0)
-			},
+			options: options.Find().
+				SetSort(bson.D{
+					{"status", 1},
+					{"createdAt", -1},
+				}).
+				SetSkip(0).
+				SetLimit(5),
 			err: errors.New("something went wrong"),
 		},
 	}
@@ -176,7 +205,7 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			col.EXPECT().Find(ctx, test.filter, test.options()).Return(cur, test.err)
+			col.EXPECT().Find(ctx, test.filter, test.options).Return(cur, test.err)
 
 			if test.err == nil {
 				cur.EXPECT().Close(ctx).Return(nil)

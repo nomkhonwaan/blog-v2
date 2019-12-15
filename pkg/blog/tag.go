@@ -3,6 +3,7 @@ package blog
 import (
 	"context"
 	"encoding/json"
+	"go.mongodb.org/mongo-driver/mongo/options"
 
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -56,7 +57,8 @@ type MongoTagRepository struct {
 }
 
 func (repo MongoTagRepository) FindAll(ctx context.Context) ([]Tag, error) {
-	cur, err := repo.col.Find(ctx, bson.D{})
+	opts := options.Find().SetSort(bson.D{{"name", 1}})
+	cur, err := repo.col.Find(ctx, bson.D{}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -69,11 +71,9 @@ func (repo MongoTagRepository) FindAll(ctx context.Context) ([]Tag, error) {
 }
 
 func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error) {
-	cur, err := repo.col.Find(ctx, bson.M{
-		"_id": bson.M{
-			"$in": ids.([]primitive.ObjectID),
-		},
-	})
+	filter := bson.M{"_id": bson.M{"$in": ids.([]primitive.ObjectID)}}
+	opts := options.Find().SetSort(bson.D{{"name", 1}})
+	cur, err := repo.col.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}
