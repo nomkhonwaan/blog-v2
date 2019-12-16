@@ -6,7 +6,7 @@
 
   <app-more>
     <ul class="latest-published-posts _list-unstyled">
-      <li *ngFor="let post of posts | slice:0:5" class="post-item">
+      <li *ngFor="let post of posts | slice:0:10" class="post-item">
         <app-post-title class="post-title" [goToEditor]="true" [post]="post">
           <h2>{{post.title || 'Untitled'}}</h2>
         </app-post-title>
