@@ -16,6 +16,12 @@ export class PostTitleComponent extends AbstractPostComponent implements OnInit 
   link = true;
 
   /**
+   * When this proprety true; a generated link will go to editor page rather than single page
+   */
+  @Input()
+  goToEditor = false;
+
+  /**
    * An array of string to be composed to router link
    */
   href: string[];
@@ -33,7 +39,8 @@ export class PostTitleComponent extends AbstractPostComponent implements OnInit 
         (publishedAt.getMonth() + 1).toString(), // a month number start at 0 not 1
         publishedAt.getDate().toString(),
         this.post.slug,
-      ];
+        this.goToEditor ? 'edit' : undefined,
+      ].filter((val: string): string => val);
     }
   }
 
