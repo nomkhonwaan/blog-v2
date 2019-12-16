@@ -7,16 +7,7 @@ import { GraphQLModule } from '../graphql/graphql.module';
 import { SharedModule } from '../shared/share.module';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin.component';
-import {
-  EditorComponent,
-  HeightAsScrollDirective,
-  PostAttachmentsEditorComponent,
-  PostAttachmentViewerComponent,
-  PostMarkdownEditorComponent,
-  PostStatusEditorComponent,
-  PostTitleEditorComponent,
-} from './editor';
-import { MyPostsComponent } from './my-posts';
+import { EditorComponent, HeightAsScrollDirective, PostAttachmentsEditorComponent, PostAttachmentViewerComponent, PostMarkdownEditorComponent, PostStatusEditorComponent, PostTitleEditorComponent } from './editor';
 
 @NgModule({
   imports: [
@@ -32,7 +23,6 @@ import { MyPostsComponent } from './my-posts';
     AdminComponent,
     EditorComponent,
     HeightAsScrollDirective,
-    MyPostsComponent,
     PostAttachmentsEditorComponent,
     PostAttachmentViewerComponent,
     PostMarkdownEditorComponent,
