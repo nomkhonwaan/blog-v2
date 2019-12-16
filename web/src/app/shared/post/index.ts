@@ -9,3 +9,4 @@ export * from './post.module';
 export * from './share-to';
 export * from './tags';
 export * from './title';
+export * from './updated-at';

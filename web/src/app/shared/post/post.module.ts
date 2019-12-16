@@ -15,6 +15,7 @@ import * as postReducer from './post.reducer';
 import { PostShareToComponent } from './share-to';
 import { PostTagsComponent } from './tags';
 import { PostTitleComponent } from './title';
+import { PostUpdatedAtComponent } from './updated-at';
 
 @NgModule({
   imports: [
@@ -35,6 +36,7 @@ import { PostTitleComponent } from './title';
     PostShareToComponent,
     PostTagsComponent,
     PostTitleComponent,
+    PostUpdatedAtComponent,
   ],
   exports: [
     PostAuthorComponent,
@@ -46,6 +48,7 @@ import { PostTitleComponent } from './title';
     PostShareToComponent,
     PostTagsComponent,
     PostTitleComponent,
+    PostUpdatedAtComponent,
   ],
 })
 export class PostModule { }

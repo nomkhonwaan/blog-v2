@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, HostBinding, Input, OnInit } from '@angular/core';
 import { faFacebookF, faTwitter, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
 import { environment } from '../../../../environments/environment';
-import { AbstractPostComponent } from '../post.component';
+import { AbstractPostComponent } from '../abstract-post.component';
 
 @Component({
   selector: 'app-post-share-to',
