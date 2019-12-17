@@ -33,12 +33,9 @@ export class MyPostsComponent implements OnInit {
   constructor(
     private apollo: Apollo,
     private changeDetectorRef: ChangeDetectorRef,
-  ) {
-    console.info('constructor')
-  }
+  ) { }
 
   ngOnInit(): void {
-    console.info('ngOnInit')
     this.renderMyPosts(0, 11);
   }
 
