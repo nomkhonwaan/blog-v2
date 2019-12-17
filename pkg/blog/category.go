@@ -6,6 +6,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Category is a group of posts regarded as having particular shared characteristics
@@ -55,7 +56,8 @@ type MongoCategoryRepository struct {
 }
 
 func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, error) {
-	cur, err := repo.col.Find(ctx, bson.D{})
+	opts := options.Find().SetSort(bson.D{{"name", 1}})
+	cur, err := repo.col.Find(ctx, bson.D{}, opts)
 	if err != nil {
 		return nil, err
 	}
@@ -68,11 +70,9 @@ func (repo MongoCategoryRepository) FindAll(ctx context.Context) ([]Category, er
 }
 
 func (repo MongoCategoryRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]Category, error) {
-	cur, err := repo.col.Find(ctx, bson.M{
-		"_id": bson.M{
-			"$in": ids.([]primitive.ObjectID),
-		},
-	})
+	filter := bson.M{"_id": bson.M{"$in": ids.([]primitive.ObjectID)}}
+	opts := options.Find().SetSort(bson.D{{"name", 1}})
+	cur, err := repo.col.Find(ctx, filter, opts)
 	if err != nil {
 		return nil, err
 	}

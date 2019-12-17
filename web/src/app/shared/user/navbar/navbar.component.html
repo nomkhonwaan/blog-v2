@@ -2,10 +2,10 @@
 
 <ul [@slideUpDown]="showMenu ? true : false" class="menu _list-unstyled">
   <li class="menu-item" (click)="toggleMenu()">
-    <a [routerLink]="['/admin', 'new-post']">Draft a new post</a>
+    <a [routerLink]="['/new-post']">Draft a new post</a>
   </li>
   <li class="menu-item" (click)="toggleMenu()">
-    <a [routerLink]="['/admin', 'posts']">My posts</a>
+    <a [routerLink]="['/my-posts']">My posts</a>
   </li>
   <li class="menu-item --horizontal-separator"></li>
   <li class="menu-item" (click)="toggleMenu()">

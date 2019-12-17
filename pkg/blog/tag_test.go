@@ -10,6 +10,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"testing"
 )
 
@@ -42,8 +43,9 @@ func TestMongoTagRepository_FindAll(t *testing.T) {
 	t.Run("With successful finding all tags", func(t *testing.T) {
 		// Given
 		ctx := context.Background()
+		opts := options.Find().SetSort(bson.D{{"name", 1}})
 
-		col.EXPECT().Find(ctx, bson.D{}).Return(cur, nil)
+		col.EXPECT().Find(ctx, bson.D{}, opts).Return(cur, nil)
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
 
@@ -58,14 +60,12 @@ func TestMongoTagRepository_FindAll(t *testing.T) {
 
 	t.Run("When an error has occurred while finding all tags", func(t *testing.T) {
 		// Given
-		ctx := context.Background()
-
-		col.EXPECT().Find(ctx, bson.D{}).Return(nil, errors.New("test find all tags error"))
+		col.EXPECT().Find(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("test find all tags error"))
 
 		repo := NewTagRepository(col)
 
 		// When
-		_, err := repo.FindAll(ctx)
+		_, err := repo.FindAll(context.Background())
 
 		// Then
 		assert.EqualError(t, err, "test find all tags error")
@@ -81,16 +81,14 @@ func TestMongoTagRepository_FindAllByIDs(t *testing.T) {
 		col = mock_mongo.NewMockCollection(ctrl)
 	)
 
-	t.Run("With successful finding all tags by list of IDs", func(t *testing.T) {
+	t.Run("With successful finding all tags by IDs", func(t *testing.T) {
 		// Given
 		ctx := context.Background()
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
+		filter := bson.M{"_id": bson.M{"$in": ids}}
+		opts := options.Find().SetSort(bson.D{{"name", 1}})
 
-		col.EXPECT().Find(ctx, bson.M{
-			"_id": bson.M{
-				"$in": ids,
-			},
-		}).Return(cur, nil)
+		col.EXPECT().Find(ctx, filter, opts).Return(cur, nil)
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
 
@@ -103,17 +101,16 @@ func TestMongoTagRepository_FindAllByIDs(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
-	t.Run("When unable to find all tags by list of IDs", func(t *testing.T) {
+	t.Run("When an error has occurred while finding all tags by IDs", func(t *testing.T) {
 		// Given
-		ctx := context.Background()
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
-		col.EXPECT().Find(gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all tags by list of IDs"))
+		col.EXPECT().Find(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all tags by list of IDs"))
 
 		repo := NewTagRepository(col)
 
 		// When
-		_, err := repo.FindAllByIDs(ctx, ids)
+		_, err := repo.FindAllByIDs(context.Background(), ids)
 
 		// Then
 		assert.EqualError(t, err, "test unable to find all tags by list of IDs")
@@ -138,7 +135,7 @@ func TestMongoTagRepository_FindByID(t *testing.T) {
 		"With existing tag ID": {
 			id: primitive.NewObjectID(),
 		},
-		"When an error has occurred while finding the result": {
+		"When an error has occurred while finding by ID": {
 			id:  primitive.NewObjectID(),
 			err: errors.New("test find by ID error"),
 		},

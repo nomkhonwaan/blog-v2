@@ -97,7 +97,7 @@ func (s *Server) Schema() *graphql.Schema {
 
 // getAuthorizedUserID returns an authorized user ID (which generated from the authentication server),
 // an error unauthorized will be returned if the context is nil
-func (s *Server) getAuthorizedIDOrFailed(ctx context.Context) (interface{}, error) {
+func (s *Server) getAuthorizedID(ctx context.Context) (interface{}, error) {
 	authorizedID := auth.GetAuthorizedUserID(ctx)
 	if authorizedID == nil {
 		return nil, errors.New(http.StatusText(http.StatusUnauthorized))
@@ -108,7 +108,7 @@ func (s *Server) getAuthorizedIDOrFailed(ctx context.Context) (interface{}, erro
 
 // validateAuthority performs validation against the authorized ID and post's author ID
 func (s *Server) validateAuthority(ctx context.Context, id interface{}) error {
-	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
+	authorizedID, err := s.getAuthorizedID(ctx)
 	if err != nil {
 		return err
 	}

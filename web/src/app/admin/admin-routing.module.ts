@@ -2,7 +2,6 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { AdminComponent } from './admin.component';
 import { EditorComponent } from './editor';
-import { MyPostsComponent } from './my-posts';
 
 const routes: Routes = [
   {
@@ -11,7 +10,6 @@ const routes: Routes = [
     children: [
       { path: '', component: EditorComponent },
       { path: 'new-post', pathMatch: 'full', component: EditorComponent },
-      { path: 'my-posts', pathMatch: 'full', component: MyPostsComponent },
     ],
   },
 ];

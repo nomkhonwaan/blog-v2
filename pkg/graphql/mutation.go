@@ -32,7 +32,7 @@ func (s *Server) RegisterMutation(schema *schemabuilder.Schema) {
 //	}
 // }
 func (s *Server) createPostMutation(ctx context.Context) (blog.Post, error) {
-	authorizedID, err := s.getAuthorizedIDOrFailed(ctx)
+	authorizedID, err := s.getAuthorizedID(ctx)
 	if err != nil {
 		return blog.Post{}, err
 	}

@@ -32,7 +32,7 @@ interface Post {
   /**
    * Date-time that the post was published
    */
-  publishedAt: Date;
+  publishedAt: string;
 
   /**
    * Identifier of the author
@@ -67,10 +67,10 @@ interface Post {
   /**
    * Date-time that the post was created
    */
-  createdAt: Date;
+  createdAt: string;
 
   /**
    * Date-time that the post was updated
    */
-  updatedAt: Date;
+  updatedAt: string;
 }

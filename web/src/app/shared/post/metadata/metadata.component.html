@@ -1,6 +1,5 @@
 <app-post-author class="post-author" [post]="post"></app-post-author>
 
-<div class="published-at">{{post.publishedAt | dateFormat}}&nbsp;<span
-    *ngIf="post.categories.length > 0">on</span>&nbsp;<app-post-categories class="post-categories" [post]="post">
+<div class="published-at">{{post.publishedAt | dateFormat}}&nbsp;<span *ngIf="post.categories.length > 0">on</span>&nbsp;<app-post-categories class="post-categories" [post]="post">
   </app-post-categories>
 </div>

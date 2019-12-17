@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { AbstractPostComponent } from '../post.component';
+import { AbstractPostComponent } from '../abstract-post.component';
 
 @Component({
   selector: 'app-post-categories',

@@ -35,17 +35,19 @@
   transform: rotate(45deg);
 }
 
-.menu-item {
+.menu-item a {
+  color: #333;
+  display: block;
+  font: normal 400 1.6rem Lato, sans-serif;
   padding: 1.6rem 3.2rem;
 
-  &.--horizontal-separator {
-    border-bottom: 0.1rem solid #ececec;
-    margin-bottom: 1.6rem;
-    padding: 1.6rem 0 0 0;
-  }
 }
 
-.menu-item > a {
-  color: #333;
-  font: normal 400 1.6rem Lato, sans-serif;
+.menu-item.menu-item.--horizontal-separator {
+  border-bottom: 0.1rem solid #ececec;
+  margin: 1.6rem 0;
+}
+
+.menu-item.--horizontal-separator a {
+  padding: 1.6rem 0 0 0;
 }

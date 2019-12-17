@@ -16,7 +16,8 @@ const routes: Routes = [
     component: LogoutComponent,
   },
   {
-    path: 'admin',
+    path: 'new-post',
+    pathMatch: 'full',
     canActivate: [AuthGuard],
     loadChildren: () => import('./admin').then((m) => m.AdminModule),
   },

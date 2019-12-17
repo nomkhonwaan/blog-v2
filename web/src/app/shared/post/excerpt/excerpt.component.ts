@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
-import { AbstractPostComponent } from '../post.component';
+import { AbstractPostComponent } from '../abstract-post.component';
 
 @Component({
   selector: 'app-post-excerpt',
@@ -15,9 +15,11 @@ export class PostExcerptComponent extends AbstractPostComponent implements OnIni
   content: string;
 
   ngOnInit(): void {
-    const paragraphs: string[] = this.post.html.split('</p>');
+    if (this.post.html) {
+      const paragraphs: string[] = this.post.html.split('</p>');
 
-    this.content = paragraphs[0] + '</p>';
+      this.content = paragraphs[0] + '</p>';
+    }
   }
 
 }

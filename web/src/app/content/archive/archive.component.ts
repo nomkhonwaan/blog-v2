@@ -66,7 +66,7 @@ export class ArchiveComponent implements OnInit {
     ).subscribe(({ page, slug }: { page: number, slug: string }): void => {
       const offset: number = (page - 1) * this.itemsPerPage;
 
-      this.renderLatestPublishedPosts(page, slug, offset, 6);
+      this.renderLatestPublishedPosts(page, slug, offset, this.itemsPerPage + 1);
     });
   }
 

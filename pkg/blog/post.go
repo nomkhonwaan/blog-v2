@@ -122,16 +122,24 @@ func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Po
 
 func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, error) {
 	filter := bson.M{}
-	opts := &options.FindOptions{}
+	opts := options.Find()
 
-	if q.Status() != "" {
+	if q.Status() == "" {
+		opts.SetSort(bson.D{
+			{"status", 1},
+			{"createdAt", -1},
+		})
+	} else {
 		filter["status"] = q.Status()
 
 		if q.Status() == Published {
-			opts.Sort = map[string]interface{}{
-				"publishedAt": -1,
-			}
+			opts.SetSort(bson.D{{"publishedAt", -1}})
+		} else if q.Status() == Draft {
+			opts.SetSort(bson.D{{"createdAt", -1}})
 		}
+	}
+	if authorID := q.AuthorID(); authorID != "" {
+		filter["authorId"] = authorID
 	}
 	if cat := q.Category(); !cat.ID.IsZero() {
 		filter["categories.$id"] = cat.ID
@@ -283,6 +291,12 @@ func (qb *PostQueryBuilder) WithPublishedAt(publishedAt time.Time) *PostQueryBui
 	return qb
 }
 
+// WithAuthorID allows to set an author ID to the post query object
+func (qb *PostQueryBuilder) WithAuthorID(authorID string) *PostQueryBuilder {
+	qb.postQuery.authorID = authorID
+	return qb
+}
+
 // WithCategory allows to set category to the post query object
 func (qb *PostQueryBuilder) WithCategory(category Category) *PostQueryBuilder {
 	qb.postQuery.category = category
@@ -344,6 +358,7 @@ type PostQuery struct {
 	markdown      string
 	html          string
 	publishedAt   time.Time
+	authorID      string
 	category      Category
 	categories    []Category
 	tag           Tag
@@ -383,6 +398,11 @@ func (q PostQuery) HTML() string {
 // PublishedAt returns date-time value
 func (q PostQuery) PublishedAt() time.Time {
 	return q.publishedAt
+}
+
+// AuthorID returns author ID
+func (q PostQuery) AuthorID() string {
+	return q.authorID
 }
 
 // Category returns category object
