@@ -11,7 +11,16 @@
           <h2>{{post.title || 'Untitled'}}</h2>
         </app-post-title>
 
-        <app-post-updated-at class="post-updated-at" [post]="post"></app-post-updated-at>
+        <app-post-excerpt class="post-excerpt" [post]="post"></app-post-excerpt>
+
+        <div class="metadata">
+          Last edited at <app-post-updated-at class="post-updated-at" [post]="post"></app-post-updated-at>
+          <span *ngIf="post.status === 'PUBLISHED'">
+            · Published at {{post.publishedAt | dateFormat}}
+          </span>
+          on
+          <app-post-categories class="post-categories" [post]="post"></app-post-categories>
+        </div>
       </li>
     </ul>
   </app-more>

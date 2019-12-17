@@ -48,7 +48,9 @@ export class MyPostsComponent implements OnInit {
           myPosts(offset: $offset, limit: $limit) {
             title slug
             status
+            html
             publishedAt
+            categories { name slug }
             createdAt updatedAt
           }
         }

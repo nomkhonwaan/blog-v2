@@ -3,7 +3,7 @@ import { AfterViewInit, Directive, ElementRef, HostListener } from '@angular/cor
 @Directive({ selector: '[appHeightAsScroll]' })
 export class HeightAsScrollDirective implements AfterViewInit {
 
-  constructor(private elementRef: ElementRef) { }
+  constructor(private host: ElementRef) { }
 
   ngAfterViewInit(): void {
     setTimeout(() => this.resize());
@@ -20,7 +20,7 @@ export class HeightAsScrollDirective implements AfterViewInit {
   }
 
   private resize(): void {
-    const elem: HTMLElement = this.elementRef.nativeElement as HTMLElement;
+    const elem: HTMLElement = this.host.nativeElement as HTMLElement;
 
     elem.style.height = elem.scrollHeight.toString() + 'px';
   }

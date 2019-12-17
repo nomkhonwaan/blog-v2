@@ -7,12 +7,12 @@ export class LottieDirective implements OnInit {
   @Input()
   data: any;
 
-  constructor(private elementRef: ElementRef, private ngZone: NgZone) { }
+  constructor(private host: ElementRef, private ngZone: NgZone) { }
 
   ngOnInit(): void {
     this.ngZone.runOutsideAngular((): void => {
       Lottie.loadAnimation({
-        container: this.elementRef.nativeElement,
+        container: this.host.nativeElement,
         renderer: 'svg',
         loop: true,
         autoplay: true,

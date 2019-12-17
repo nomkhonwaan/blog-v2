@@ -3,16 +3,14 @@ import { Pipe, PipeTransform } from '@angular/core';
 @Pipe({ name: 'dateFormat' })
 export class DateFormatPipe implements PipeTransform {
 
-  transform(value?: string | Date): string {
+  transform(value?: string): string {
     let d: Date;
 
-    if (!(value instanceof Date)) {
-      try {
-        d = value ? new Date(value) : new Date();
-      } catch (err) {
-        console.error(`an error has occurred while parsing date string ${value}: ${err}`);
-        d = new Date();
-      }
+    try {
+      d = value ? new Date(value) : new Date();
+    } catch (err) {
+      console.error(`an error has occurred while parsing date string ${value}: ${err}`);
+      d = new Date();
     }
 
     return `${this.getFullMonth(d.getMonth())} ${d.getDate()}, ${d.getFullYear()}`;

@@ -17,7 +17,7 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
   /**
    * An HTML content of the post
    */
-  content: string;
+  html: string;
 
   /**
    * Use to indicate whether Lightbox has open or not
@@ -28,7 +28,7 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
    * For escaping XSS protection while rendering HTML with Angular
    */
   @ViewChild('content', { static: false })
-  private elementRef: ElementRef;
+  private content: ElementRef;
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -48,13 +48,13 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
   }
 
   ngAfterViewInit(): void {
-    console.log(this.content);
-    this.elementRef.nativeElement.appendChild(
+    console.log(this.html);
+    this.content.nativeElement.appendChild(
       this.document.createRange().createContextualFragment(this.post.html),
     );
 
-    const imgs: NodeList = this.elementRef.nativeElement.querySelectorAll('img');
-    const scripts: NodeList = this.elementRef.nativeElement.querySelectorAll('script');
+    const imgs: NodeList = this.content.nativeElement.querySelectorAll('img');
+    const scripts: NodeList = this.content.nativeElement.querySelectorAll('script');
 
     this.addExtraClassNamesToAllImages(imgs);
     this.addExtraQueryToImageSrc(imgs);
