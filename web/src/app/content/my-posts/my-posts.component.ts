@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
@@ -7,6 +7,7 @@ import { finalize, map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-my-posts',
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './my-posts.component.html',
   styleUrls: ['./my-posts.component.scss'],
 })
@@ -29,9 +30,15 @@ export class MyPostsComponent implements OnInit {
     faSpinnerThird,
   };
 
-  constructor(private apollo: Apollo) { }
+  constructor(
+    private apollo: Apollo,
+    private changeDetectorRef: ChangeDetectorRef,
+  ) {
+    console.info('constructor')
+  }
 
   ngOnInit(): void {
+    console.info('ngOnInit')
     this.renderMyPosts(0, 11);
   }
 
@@ -53,9 +60,13 @@ export class MyPostsComponent implements OnInit {
         offset,
         limit,
       },
+      fetchPolicy: 'network-only',
     }).pipe(
       map((result: ApolloQueryResult<{ myPosts: Array<Post> }>): Array<Post> => result.data.myPosts),
-      finalize((): void => { this.isFetching = false; }),
+      finalize((): void => {
+        this.changeDetectorRef.markForCheck();
+        this.isFetching = true;
+      }),
     ).subscribe((posts: Array<Post>): void => {
       this.posts = posts;
     });
