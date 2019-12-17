@@ -4,9 +4,9 @@
     {{'My posts' | uppercase}}
   </div>
 
-  <app-more>
+  <app-more (scrolled)="onScroll()">
     <ul class="latest-published-posts _list-unstyled">
-      <li *ngFor="let post of posts | slice:0:10" class="post-item">
+      <li *ngFor="let post of posts" class="post-item">
         <app-post-title class="post-title" [goToEditor]="true" [post]="post">
           <h2>{{post.title || 'Untitled'}}</h2>
         </app-post-title>
@@ -18,8 +18,7 @@
           <span *ngIf="post.status === 'PUBLISHED'">
             · Published at {{post.publishedAt | dateFormat}}
           </span>
-          on
-          <app-post-categories class="post-categories" [post]="post"></app-post-categories>
+          <span *ngIf="post.categories && post.categories.length > 0">on</span>&nbsp;<app-post-categories class="post-categories" [post]="post"></app-post-categories>
         </div>
       </li>
     </ul>

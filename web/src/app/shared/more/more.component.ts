@@ -1,17 +1,17 @@
-import { Component, EventEmitter, HostListener, Output, ElementRef, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, OnInit, Output, ViewChild, OnDestroy } from '@angular/core';
 
 @Component({
   selector: 'app-more',
   templateUrl: './more.component.html',
   styleUrls: ['./more.component.scss'],
 })
-export class MoreComponent {
+export class MoreComponent implements OnInit, OnDestroy {
 
   /**
    * For emitting on scrolling event
    */
   @Output()
-  scrolled: EventEmitter<number> = new EventEmitter();
+  scrolled: EventEmitter<null> = new EventEmitter(null);
 
   /**
    * An anchor element for detecting when scroll to the end
@@ -26,12 +26,16 @@ export class MoreComponent {
 
   constructor(private host: ElementRef) { }
 
-  @HostListener('window:scroll', ['$event'])
-  onWindowScroll(event: Event): void {
-    const scrollTop: number = event.target['scrollingElement'].scrollTop;
+  ngOnInit(): void {
+    this.intersectionObserver = new IntersectionObserver(([entry]: Array<IntersectionObserverEntry>): void => {
+      entry.isIntersecting && this.scrolled.emit();
+    }, { root: null });
 
-    this.scrolled.emit(scrollTop);
+    this.intersectionObserver.observe(this.anchor.nativeElement);
   }
 
+  ngOnDestroy(): void {
+    this.intersectionObserver.disconnect();
+  }
 
 }

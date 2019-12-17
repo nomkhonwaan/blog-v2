@@ -5,7 +5,7 @@
   </div>
 
   <ul class="latest-published-posts _list-unstyled">
-    <li *ngFor="let post of posts | slice:0:5" class="post-item">
+    <li *ngFor="let post of posts | slice:0:itemsPerPage" class="post-item">
       <app-post-title class="post-title" [post]="post">
         <h2>{{post.title}}</h2>
       </app-post-title>

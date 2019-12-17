@@ -16,12 +16,12 @@ export class MyPostsComponent implements OnInit {
   /**
    * List of posts
    */
-  posts: Array<Post>;
+  posts: Array<Post> = [];
 
   /**
-   * Use to indicate loading status
+   * An original list of posts
    */
-  isFetching = false;
+  actualPosts: Array<Post> = [];
 
   /**
    * List of FontAwesome icons
@@ -30,18 +30,26 @@ export class MyPostsComponent implements OnInit {
     faSpinnerThird,
   };
 
+  /**
+   * A current offset number
+   */
+  offset: number = 0;
+
+  /**
+   * A maximum items per page
+   */
+  itemsPerPage = 10;
+
   constructor(
     private apollo: Apollo,
     private changeDetectorRef: ChangeDetectorRef,
   ) { }
 
   ngOnInit(): void {
-    this.renderMyPosts(0, 11);
+    this.renderMyPosts(this.offset, this.itemsPerPage + 1);
   }
 
   renderMyPosts(offset: number, limit: number): void {
-    this.isFetching = true;
-
     this.apollo.query({
       query: gql`
         {
@@ -62,13 +70,18 @@ export class MyPostsComponent implements OnInit {
       fetchPolicy: 'network-only',
     }).pipe(
       map((result: ApolloQueryResult<{ myPosts: Array<Post> }>): Array<Post> => result.data.myPosts),
-      finalize((): void => {
-        this.changeDetectorRef.markForCheck();
-        this.isFetching = true;
-      }),
+      finalize((): void => this.changeDetectorRef.markForCheck()),
     ).subscribe((posts: Array<Post>): void => {
-      this.posts = posts;
+      this.actualPosts = posts;
+      this.posts = this.posts.concat(posts.slice(0, this.itemsPerPage));
     });
+  }
+
+  onScroll(): void {
+    if (this.actualPosts.length > this.itemsPerPage) {
+      this.offset += this.itemsPerPage;
+      this.renderMyPosts(this.offset, this.itemsPerPage + 1);
+    }
   }
 
 }
