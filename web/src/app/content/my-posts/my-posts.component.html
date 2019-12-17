@@ -7,7 +7,7 @@
   <app-more (scrolled)="onScroll()">
     <ul class="latest-published-posts _list-unstyled">
       <li *ngFor="let post of posts" class="post-item">
-        <app-post-title class="post-title" [goToEditor]="true" [post]="post">
+        <app-post-title class="post-title" [ngClass]="{'-draft': post.status === 'DRAFT'}" [goToEditor]="true" [post]="post">
           <h2>{{post.title || 'Untitled'}}</h2>
         </app-post-title>
 
