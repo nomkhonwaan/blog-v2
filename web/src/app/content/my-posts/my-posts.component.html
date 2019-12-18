@@ -15,7 +15,7 @@
 
         <div class="metadata">
           Last edited at <app-post-updated-at class="post-updated-at" [post]="post"></app-post-updated-at>
-          <span *ngIf="post.status === 'PUBLISHED'">
+          <span *ngIf="post.status === 'PUBLISHED'" class="published-at">
             · Published at {{post.publishedAt | dateFormat}}
           </span>
           <span *ngIf="post.categories && post.categories.length > 0">on</span>&nbsp;<app-post-categories class="post-categories" [post]="post"></app-post-categories>

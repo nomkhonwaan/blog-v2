@@ -1,3 +1,5 @@
+@import "../../../styles.scss";
+
 .post-item {
   border-bottom: 0.1rem solid #ececec;
   margin: 3.2rem 0;
@@ -9,6 +11,14 @@
   font: normal 400 1.6rem Lato, sans-serif;
 }
 
+.published-at {
+  display: none;
+
+  @include md {
+    display: inline-block;
+  }
+}
+
 .post-categories {
   display: inline-block;
 }
@@ -16,3 +26,4 @@
 .post-title.-draft h2 {
   font-style: italic;
 }
+
