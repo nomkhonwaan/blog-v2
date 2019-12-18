@@ -77,6 +77,7 @@ export class ArchiveComponent implements OnInit {
 
         fragment PublishedPost on Post {
           title slug
+          status
           html
           publishedAt
           categories { name slug }
