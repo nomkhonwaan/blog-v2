@@ -11,14 +11,6 @@
   font: normal 400 1.6rem Lato, sans-serif;
 }
 
-.published-at {
-  display: none;
-
-  @include md {
-    display: inline-block;
-  }
-}
-
 .post-categories {
   display: inline-block;
 }

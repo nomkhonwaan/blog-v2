@@ -14,11 +14,12 @@
         <app-post-excerpt class="post-excerpt" [post]="post"></app-post-excerpt>
 
         <div class="metadata">
-          Last edited at <app-post-updated-at class="post-updated-at" [post]="post"></app-post-updated-at>
-          <span *ngIf="post.status === 'PUBLISHED'" class="published-at">
-            · Published at {{post.publishedAt | dateFormat}}
-          </span>
-          <span *ngIf="post.categories && post.categories.length > 0">on</span>&nbsp;<app-post-categories class="post-categories" [post]="post"></app-post-categories>
+          <ng-container *ngIf="post.status === 'DRAFT';else published">
+            Last edited at <app-post-updated-at class="post-updated-at" [post]="post"></app-post-updated-at>
+          </ng-container>
+          <ng-template #published>
+            Published at {{post.publishedAt | dateFormat}}&nbsp;<span *ngIf="post.categories && post.categories.length > 0">on</span>&nbsp;<app-post-categories class="post-categories" [post]="post"></app-post-categories>
+          </ng-template>
         </div>
       </li>
     </ul>
