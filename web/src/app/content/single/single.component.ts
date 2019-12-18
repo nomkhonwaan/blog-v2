@@ -53,6 +53,7 @@ export class SingleComponent implements OnInit {
         {
           post(slug: $slug) {
             title slug
+            status
             html
             publishedAt
             categories { name slug }

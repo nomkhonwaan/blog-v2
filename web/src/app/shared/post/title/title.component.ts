@@ -30,12 +30,9 @@ export class PostTitleComponent extends AbstractPostComponent implements OnInit 
     let date: Date;
 
     if (this.post.status === 'PUBLISHED') {
-      date = new Date(
-        new Date(this.post.publishedAt)
-          .toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }),
-      );
+      date = this.toLocaleDate(this.post.publishedAt);
     } else {
-      date = new Date(this.post.createdAt);
+      date = this.toLocaleDate(this.post.createdAt);
     }
 
     if (this.link) {
@@ -52,6 +49,10 @@ export class PostTitleComponent extends AbstractPostComponent implements OnInit 
 
   isDisabledLink(): boolean {
     return !!!this.link;
+  }
+
+  toLocaleDate(date: string): Date {
+    return new Date(new Date(date).toLocaleString('en-US', { timeZone: 'Asia/Bangkok' }));
   }
 
 }
