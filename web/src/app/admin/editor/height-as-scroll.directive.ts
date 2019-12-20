@@ -3,6 +3,11 @@ import { AfterViewInit, Directive, ElementRef, HostListener } from '@angular/cor
 @Directive({ selector: '[appHeightAsScroll]' })
 export class HeightAsScrollDirective implements AfterViewInit {
 
+  /**
+   * Store a previous scroll height for comparing when keypress but still in the same line
+   */
+  private previousScrollHeight: number;
+
   constructor(private host: ElementRef) { }
 
   ngAfterViewInit(): void {
@@ -22,7 +27,11 @@ export class HeightAsScrollDirective implements AfterViewInit {
   private resize(): void {
     const elem: HTMLElement = this.host.nativeElement as HTMLElement;
 
-    elem.style.height = elem.scrollHeight.toString() + 'px';
+    if (elem.scrollHeight !== this.previousScrollHeight) {
+      elem.style.height = elem.scrollHeight.toString() + 'px';
+    }
+
+    this.previousScrollHeight = elem.scrollHeight;
   }
 
 }
