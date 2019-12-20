@@ -23,6 +23,7 @@ import (
 	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
 	"net/http"
@@ -56,7 +57,10 @@ var (
 func init() {
 	workingDirectory, _ := os.Getwd()
 
+	cobra.OnInitialize(initConfig)
+
 	flags := cmd.Flags()
+
 	flags.Bool("allow-cors", false, "")
 	flags.String("listen-address", "0.0.0.0:8080", "")
 	flags.String("cache-files-path", path.Join(workingDirectory, ".cache"), "")
@@ -68,6 +72,19 @@ func init() {
 	flags.String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
 	flags.String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
 	flags.String("facebook-app-access-token", "", "")
+
+	_ = viper.BindPFlag("allow-cors", flags.Lookup("allow-cors"))
+	_ = viper.BindPFlag("listen-address", flags.Lookup("listen-address"))
+	_ = viper.BindPFlag("cache-files-path", flags.Lookup("cache-files-path"))
+	_ = viper.BindPFlag("static-files-path", flags.Lookup("static-files-path"))
+	_ = viper.BindPFlag("mongodb-uri", flags.Lookup("mongodb-uri"))
+	_ = viper.BindPFlag("amazon-s3-access-key", flags.Lookup("amazon-s3-access-key"))
+	_ = viper.BindPFlag("amazon-s3-secret-key", flags.Lookup("amazon-s3-secret-key"))
+	_ = viper.BindPFlag("auth0-audience", flags.Lookup("auth0-audience"))
+	_ = viper.BindPFlag("auth0-issuer", flags.Lookup("auth0-issuer"))
+	_ = viper.BindPFlag("auth0-jwks-uri", flags.Lookup("auth0-jwks-uri"))
+	_ = viper.BindPFlag("facebook-app-access-token", flags.Lookup("facebook-app-access-token"))
+
 }
 
 // Execute proxies to the Cobra command execution function
@@ -75,78 +92,69 @@ func Execute() error {
 	return cmd.Execute()
 }
 
-func action(cmd *cobra.Command, args []string) error {
-	flags := cmd.Flags()
+func initConfig() {
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+}
 
-	// Create a connection to MongoDB server without time limitation
-	uri, _ := flags.GetString("mongodb-uri")
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+func action(_ *cobra.Command, _ []string) error {
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("mongodb-uri")))
 	if err != nil {
 		return err
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	// Create all MongoDB repositories
 	file := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
 	category := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
 	post := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")), log.NewDefaultTimer())
 	tag := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
 
-	// Create all services; as well as repositories
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
-	cacheFilesPath, _ := flags.GetString("cache-files-path")
-	logrus.Infof("use cache files path: %s", cacheFilesPath)
-	cacheService, err := storage.NewDiskCache(cacheFilesPath)
+
+	cacheService, err := storage.NewDiskCache(viper.GetString("cache-files-path"))
 	if err != nil {
 		return err
 	}
 
 	var (
-		uploader     storage.Uploader
-		downloader   storage.Downloader
-		accessKey, _ = flags.GetString("amazon-s3-access-key")
-		secretKey, _ = flags.GetString("amazon-s3-secret-key")
+		uploader   storage.Uploader
+		downloader storage.Downloader
 	)
-	if accessKey != "" && secretKey != "" {
-		logrus.Info("storage service: Amazon S3")
-		// Create new Amazon S3 client which provides uploader and downloader functions
-		accessKey, _ := flags.GetString("amazon-s3-access-key")
-		secretKey, _ := flags.GetString("amazon-s3-secret-key")
-		s3, err := storage.NewCustomizedAmazonS3Client(accessKey, secretKey)
+	if viper.IsSet("amazon-s3-access-key") && viper.IsSet("amazon-s3-secret-key") {
+		s3, err := storage.NewCustomizedAmazonS3Client(
+			viper.GetString("amazon-s3-access-key"),
+			viper.GetString("amazon-s3-secret-key"),
+		)
 		if err != nil {
 			return err
 		}
 		uploader, downloader = s3, s3
 	} else {
-		logrus.Info("storage service: cache")
 		uploader, downloader = storage.DiskStorage(cacheService), storage.DiskStorage(cacheService)
 	}
 
-	// Create new Facebook client which provides crawler bot handling and Graph API client
-	appAccessToken, _ := flags.GetString("facebook-app-access-token")
 	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	fbClient, err := facebook.NewClient(baseURL, appAccessToken, string(ogTemplate), blogService, file, http.DefaultTransport)
+	fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, file, http.DefaultTransport)
 	if err != nil {
 		return err
 	}
 
-	// Create Auth0 JWT middleware for checking an authorization header
-	audience, _ := flags.GetString("auth0-audience")
-	issuer, _ := flags.GetString("auth0-issuer")
-	jwksURI, _ := flags.GetString("auth0-jwks-uri")
-	authMiddleware := auth.NewJWTMiddleware(audience, issuer, jwksURI, http.DefaultTransport)
+	authMiddleware := auth.NewJWTMiddleware(
+		viper.GetString("auth0-audience"),
+		viper.GetString("auth0-issuer"),
+		viper.GetString("auth0-jwks-uri"),
+		http.DefaultTransport,
+	)
 
-	// Create all HTTP handlers
-	ghHandler := github.NewHandler(cacheService, http.DefaultTransport)
+	gitHubHandler := github.NewHandler(cacheService, http.DefaultTransport)
 	storageHandler := storage.NewHandler(cacheService, file, downloader, uploader, image.NewLanczosResizer())
 	sitemapHandler := sitemap.NewHandler(baseURL, cacheService, blogService)
 	schema := graphql.NewServer(blogService, fbClient, file).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
-	// Register all routes with Gorilla
 	r := mux.NewRouter()
 
-	if yes, _ := flags.GetBool("allow-cors"); yes {
+	if viper.GetBool("allow-cors") {
 		r.Use(allowCORS)
 	}
 	r.Use(logRequest)
@@ -154,19 +162,15 @@ func action(cmd *cobra.Command, args []string) error {
 
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
-
-	ghHandler.Register(r.PathPrefix("/api/v2.1/github").Subrouter())
+	gitHubHandler.Register(r.PathPrefix("/api/v2.1/github").Subrouter())
 	storageHandler.Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 	sitemapHandler.Register(r.PathPrefix("/sitemap.xml").Subrouter())
-
-	staticFilesPath, _ := flags.GetString("static-files-path")
-	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(staticFilesPath)))
+	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("static-files-path"))))
 
 	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}
 	stopCh := handleSignals()
 
-	listenAddress, _ := flags.GetString("listen-address")
-	err = s.ListenAndServe(listenAddress, stopCh)
+	err = s.ListenAndServe(viper.GetString("listen-address"), stopCh)
 	if err != nil {
 		return err
 	}
