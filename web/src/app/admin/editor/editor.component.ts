@@ -83,7 +83,15 @@ export class EditorComponent implements OnInit {
   }
 
   onChangingSuccess(post: Post): void {
-    this.post = post;
+    this.post.slug = post.slug;
+    this.post.status = post.status;
+    this.post.html = post.html;
+    this.post.publishedAt = post.publishedAt;
+    this.post.categories = post.categories;
+    this.post.tags = post.tags;
+    this.post.featuredImage = post.featuredImage;
+    this.post.attachments = post.attachments;
+    this.post.updatedAt = post.updatedAt;
 
     this.title.setTitle(`Edit · ${post.title} - ${environment.title}`);
   }
