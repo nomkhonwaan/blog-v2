@@ -21,7 +21,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/samsarahq/thunder/graphql/introspection"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -157,7 +156,6 @@ func action(_ *cobra.Command, _ []string) error {
 	if viper.GetBool("allow-cors") {
 		r.Use(allowCORS)
 	}
-	r.Use(logRequest)
 	r.Use(authMiddleware.Handler)
 
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
@@ -192,10 +190,6 @@ func allowCORS(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
-}
-
-func logRequest(h http.Handler) http.Handler {
-	return log.NewLoggingInterceptor(log.NewDefaultTimer(), logrus.New()).Handler(h)
 }
 
 func handleSignals() <-chan struct{} {
