@@ -71,7 +71,7 @@ func init() {
 	flags.String("storage", "local-disk", "")
 	flags.String("amazon-s3-access-key", "", "")
 	flags.String("amazon-s3-secret-key", "", "")
-	flags.String("gcloud-credentials-file-path", "", "")
+	flags.String("gcloud-credentials-file-path", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "")
 	flags.String("auth0-audience", baseURL, "")
 	flags.String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
 	flags.String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
