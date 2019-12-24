@@ -1,8 +1,7 @@
-package storage_test
+package storage
 
 import (
 	"bytes"
-	. "github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"os"
@@ -10,11 +9,12 @@ import (
 	"testing"
 )
 
-func TestDiskCache_Exist(t *testing.T) {
-	cacheFilesPath := filepath.Join(os.TempDir(), "myblog")
-	cache, _ := NewDiskCache(cacheFilesPath)
+func TestLocalDiskCache_Exist(t *testing.T) {
+	filePath := filepath.Join(os.TempDir(), "myblog")
+	cache, _ := NewLocalDiskCache(filePath)
+
 	defer func() {
-		_ = os.Remove(cacheFilesPath)
+		_ = os.Remove(filePath)
 	}()
 
 	t.Run("With existing cache file", func(t *testing.T) {
@@ -22,7 +22,7 @@ func TestDiskCache_Exist(t *testing.T) {
 		path := "test.txt"
 		_ = cache.Store(bytes.NewBufferString("test"), path)
 		defer func() {
-			_ = os.Remove(filepath.Join(cacheFilesPath, path))
+			_ = os.Remove(filepath.Join(filePath, path))
 		}()
 
 		// When
@@ -36,7 +36,7 @@ func TestDiskCache_Exist(t *testing.T) {
 		// Given
 		path := "test2.txt"
 		if cache.Exist(path) {
-			_ = os.Remove(filepath.Join(cacheFilesPath, path))
+			_ = os.Remove(filepath.Join(filePath, path))
 		}
 
 		// When
@@ -47,11 +47,11 @@ func TestDiskCache_Exist(t *testing.T) {
 	})
 }
 
-func TestDiskCache_Retrieve(t *testing.T) {
-	cacheFilesPath := filepath.Join(os.TempDir(), "myblog")
-	cache, _ := NewDiskCache(cacheFilesPath)
+func TestLocalDiskCache_Retrieve(t *testing.T) {
+	filePath := filepath.Join(os.TempDir(), "myblog")
+	cache, _ := NewLocalDiskCache(filePath)
 	defer func() {
-		_ = os.Remove(cacheFilesPath)
+		_ = os.Remove(filePath)
 	}()
 
 	t.Run("With successful retrieving cache file", func(t *testing.T) {
@@ -59,7 +59,7 @@ func TestDiskCache_Retrieve(t *testing.T) {
 		path := "test1.txt"
 		_ = cache.Store(bytes.NewBufferString("test"), path)
 		defer func() {
-			_ = os.Remove(filepath.Join(cacheFilesPath, path))
+			_ = os.Remove(filepath.Join(filePath, path))
 		}()
 
 		// When
@@ -83,11 +83,11 @@ func TestDiskCache_Retrieve(t *testing.T) {
 	})
 }
 
-func TestDiskCache_Store(t *testing.T) {
-	cacheFilesPath := filepath.Join(os.TempDir(), "myblog")
-	cache, _ := NewDiskCache(cacheFilesPath)
+func TestLocalDiskCache_Store(t *testing.T) {
+	filePath := filepath.Join(os.TempDir(), "myblog")
+	cache, _ := NewLocalDiskCache(filePath)
 	defer func() {
-		_ = os.Remove(cacheFilesPath)
+		_ = os.Remove(filePath)
 	}()
 
 	t.Run("With successful storing cache file", func(t *testing.T) {
@@ -95,7 +95,7 @@ func TestDiskCache_Store(t *testing.T) {
 		body := bytes.NewBufferString("test")
 		path := "test3.txt"
 		defer func() {
-			_ = os.Remove(filepath.Join(cacheFilesPath, path))
+			_ = os.Remove(filepath.Join(filePath, path))
 		}()
 
 		// When
@@ -103,7 +103,7 @@ func TestDiskCache_Store(t *testing.T) {
 
 		// Then
 		assert.Nil(t, err)
-		val, _ := ioutil.ReadFile(filepath.Join(cacheFilesPath, path))
+		val, _ := ioutil.ReadFile(filepath.Join(filePath, path))
 		assert.Equal(t, "test", string(val))
 	})
 
@@ -111,9 +111,9 @@ func TestDiskCache_Store(t *testing.T) {
 		// Given
 		path := "ro/rw/test4.txt"
 		body := bytes.NewBufferString("test")
-		_ = os.Mkdir(filepath.Join(cacheFilesPath, "ro"), 0400)
+		_ = os.Mkdir(filepath.Join(filePath, "ro"), 0400)
 		defer func() {
-			_ = os.Remove(filepath.Join(cacheFilesPath, "ro"))
+			_ = os.Remove(filepath.Join(filePath, "ro"))
 		}()
 
 		// When
@@ -127,10 +127,10 @@ func TestDiskCache_Store(t *testing.T) {
 		// Given
 		path := "test5.txt"
 		body := bytes.NewBufferString("test")
-		_, _ = os.Create(filepath.Join(cacheFilesPath, path))
-		_ = os.Chmod(filepath.Join(cacheFilesPath, path), 0400)
+		_, _ = os.Create(filepath.Join(filePath, path))
+		_ = os.Chmod(filepath.Join(filePath, path), 0400)
 		defer func() {
-			_ = os.Remove(filepath.Join(cacheFilesPath, path))
+			_ = os.Remove(filepath.Join(filePath, path))
 		}()
 
 		// When

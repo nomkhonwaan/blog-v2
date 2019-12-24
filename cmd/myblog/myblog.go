@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
+	"github.com/nomkhonwaan/myblog/pkg/aws"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/facebook"
+	"github.com/nomkhonwaan/myblog/pkg/gcloud"
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
@@ -21,7 +23,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/samsarahq/thunder/graphql/introspection"
-	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -36,7 +37,8 @@ import (
 )
 
 const (
-	baseURL = "https://www.nomkhonwaan.com"
+	baseURL       = "https://www.nomkhonwaan.com"
+	storageBucket = "www-nomkhonwaan-com"
 )
 
 var (
@@ -63,11 +65,13 @@ func init() {
 
 	flags.Bool("allow-cors", false, "")
 	flags.String("listen-address", "0.0.0.0:8080", "")
-	flags.String("cache-files-path", path.Join(workingDirectory, ".cache"), "")
-	flags.String("static-files-path", path.Join(workingDirectory, "dist", "web"), "")
+	flags.String("cache-file-path", path.Join(workingDirectory, ".cache"), "")
+	flags.String("web-file-path", path.Join(workingDirectory, "dist", "web"), "")
 	flags.String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
+	flags.String("storage", "local-disk", "")
 	flags.String("amazon-s3-access-key", "", "")
 	flags.String("amazon-s3-secret-key", "", "")
+	flags.String("gcloud-credentials-file-path", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "")
 	flags.String("auth0-audience", baseURL, "")
 	flags.String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
 	flags.String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
@@ -75,11 +79,13 @@ func init() {
 
 	_ = viper.BindPFlag("allow-cors", flags.Lookup("allow-cors"))
 	_ = viper.BindPFlag("listen-address", flags.Lookup("listen-address"))
-	_ = viper.BindPFlag("cache-files-path", flags.Lookup("cache-files-path"))
-	_ = viper.BindPFlag("static-files-path", flags.Lookup("static-files-path"))
+	_ = viper.BindPFlag("cache-file-path", flags.Lookup("cache-file-path"))
+	_ = viper.BindPFlag("web-file-path", flags.Lookup("web-file-path"))
 	_ = viper.BindPFlag("mongodb-uri", flags.Lookup("mongodb-uri"))
+	_ = viper.BindPFlag("storage", flags.Lookup("storage"))
 	_ = viper.BindPFlag("amazon-s3-access-key", flags.Lookup("amazon-s3-access-key"))
 	_ = viper.BindPFlag("amazon-s3-secret-key", flags.Lookup("amazon-s3-secret-key"))
+	_ = viper.BindPFlag("gcloud-credentials-file-path", flags.Lookup("gcloud-credentials-file-path"))
 	_ = viper.BindPFlag("auth0-audience", flags.Lookup("auth0-audience"))
 	_ = viper.BindPFlag("auth0-issuer", flags.Lookup("auth0-issuer"))
 	_ = viper.BindPFlag("auth0-jwks-uri", flags.Lookup("auth0-jwks-uri"))
@@ -111,7 +117,10 @@ func action(_ *cobra.Command, _ []string) error {
 
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
 
-	cacheService, err := storage.NewDiskCache(viper.GetString("cache-files-path"))
+	var (
+		cacheService storage.Cache
+	)
+	cacheService, err = storage.NewLocalDiskCache(viper.GetString("cache-file-path"))
 	if err != nil {
 		return err
 	}
@@ -120,17 +129,26 @@ func action(_ *cobra.Command, _ []string) error {
 		uploader   storage.Uploader
 		downloader storage.Downloader
 	)
-	if viper.IsSet("amazon-s3-access-key") && viper.IsSet("amazon-s3-secret-key") {
-		s3, err := storage.NewCustomizedAmazonS3Client(
+	switch viper.GetString("storage") {
+	case "gcloud":
+		cloudStorage, err := gcloud.NewCloudStorage(viper.GetString("gcloud-credentials-file-path"), storageBucket)
+		if err != nil {
+			return err
+		}
+		uploader, downloader = cloudStorage, cloudStorage
+	case "s3":
+		s3, err := aws.NewS3(
 			viper.GetString("amazon-s3-access-key"),
 			viper.GetString("amazon-s3-secret-key"),
+			storageBucket,
 		)
 		if err != nil {
 			return err
 		}
 		uploader, downloader = s3, s3
-	} else {
-		uploader, downloader = storage.DiskStorage(cacheService), storage.DiskStorage(cacheService)
+	case "local-disk":
+	default:
+		uploader, downloader = storage.LocalDiskStorage(cacheService.(storage.LocalDiskCache)), storage.LocalDiskStorage(cacheService.(storage.LocalDiskCache))
 	}
 
 	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
@@ -157,7 +175,6 @@ func action(_ *cobra.Command, _ []string) error {
 	if viper.GetBool("allow-cors") {
 		r.Use(allowCORS)
 	}
-	r.Use(logRequest)
 	r.Use(authMiddleware.Handler)
 
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
@@ -165,7 +182,7 @@ func action(_ *cobra.Command, _ []string) error {
 	gitHubHandler.Register(r.PathPrefix("/api/v2.1/github").Subrouter())
 	storageHandler.Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 	sitemapHandler.Register(r.PathPrefix("/sitemap.xml").Subrouter())
-	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("static-files-path"))))
+	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-file-path"))))
 
 	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}
 	stopCh := handleSignals()
@@ -192,10 +209,6 @@ func allowCORS(h http.Handler) http.Handler {
 
 		h.ServeHTTP(w, r)
 	})
-}
-
-func logRequest(h http.Handler) http.Handler {
-	return log.NewLoggingInterceptor(log.NewDefaultTimer(), logrus.New()).Handler(h)
 }
 
 func handleSignals() <-chan struct{} {
