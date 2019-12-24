@@ -131,7 +131,10 @@ func action(_ *cobra.Command, _ []string) error {
 	)
 	switch viper.GetString("storage") {
 	case "gcloud":
-		cloudStorage := gcloud.NewCloudStorage(viper.GetString("gcloud-credentials-file-path"), storageBucket)
+		cloudStorage, err := gcloud.NewCloudStorage(viper.GetString("gcloud-credentials-file-path"), storageBucket)
+		if err != nil {
+			return err
+		}
 		uploader, downloader = cloudStorage, cloudStorage
 	case "s3":
 		s3, err := aws.NewS3(
