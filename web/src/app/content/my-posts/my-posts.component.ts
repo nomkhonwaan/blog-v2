@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { finalize, map } from 'rxjs/operators';
+import { environment } from 'src/environments/environment';
 
 @Component({
   selector: 'app-my-posts',
@@ -33,7 +35,7 @@ export class MyPostsComponent implements OnInit {
   /**
    * A current offset number
    */
-  offset: number = 0;
+  offset = 0;
 
   /**
    * A maximum items per page
@@ -43,9 +45,12 @@ export class MyPostsComponent implements OnInit {
   constructor(
     private apollo: Apollo,
     private changeDetectorRef: ChangeDetectorRef,
+    private title: Title,
   ) { }
 
   ngOnInit(): void {
+    this.title.setTitle(`My posts - ${environment.title}`);
+
     this.renderMyPosts(this.offset, this.itemsPerPage + 1);
   }
 
