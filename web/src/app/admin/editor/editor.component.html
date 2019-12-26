@@ -19,6 +19,10 @@
   <div class="navbar">
     <app-button class="open-sidebar" ariaLabel="Open sidebar" [icon]="icons.faBars" (click)="toggleSidebar()"></app-button>
 
+    <app-post-title class="preview" [post]="post">
+      <app-button>{{'Preview' | uppercase}}</app-button>
+    </app-post-title>
+
     <app-user-navbar [userInfo]="userInfo" [style.margin]="'0 3.2rem 0 auto'"></app-user-navbar>
   </div>
 

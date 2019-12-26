@@ -47,6 +47,12 @@
   }
 }
 
+.preview {
+  @include md {
+    margin-left: 3.2rem;
+  }
+}
+
 .navbar {
   align-items: center;
   border-bottom: 0.1rem solid #ececec;
