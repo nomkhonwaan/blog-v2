@@ -1,10 +1,9 @@
-package myblog
+package serve
 
 import (
 	"bytes"
 	"compress/gzip"
 	"context"
-	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/aws"
@@ -42,17 +41,10 @@ const (
 )
 
 var (
-	// Version refers to the latest Git tag
-	Version string
-
-	// Revision refers to the latest Git commit hash
-	Revision string
-
-	cmd = &cobra.Command{
-		Use:     "myblog",
-		Short:   "Personal blog website written in Go with Angular 2+",
-		Version: fmt.Sprintf("%s %s\n", Version, Revision),
-		RunE:    action,
+	Command = &cobra.Command{
+		Use:   "serve",
+		Short: "Listen and serve HTTP server which includes GraphQL and static files servers",
+		RunE:  action,
 	}
 )
 
@@ -61,7 +53,7 @@ func init() {
 
 	cobra.OnInitialize(initConfig)
 
-	flags := cmd.Flags()
+	flags := Command.Flags()
 
 	flags.Bool("allow-cors", false, "")
 	flags.String("listen-address", "0.0.0.0:8080", "")
@@ -91,11 +83,6 @@ func init() {
 	_ = viper.BindPFlag("auth0-jwks-uri", flags.Lookup("auth0-jwks-uri"))
 	_ = viper.BindPFlag("facebook-app-access-token", flags.Lookup("facebook-app-access-token"))
 
-}
-
-// Execute proxies to the Cobra command execution function
-func Execute() error {
-	return cmd.Execute()
 }
 
 func initConfig() {
