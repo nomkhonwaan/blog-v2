@@ -14,12 +14,27 @@ interface AppState {
   };
 
   /**
-   * A sidebar component storage
+   * A sidebar component
    */
   sidebar: {
     /**
-     * A sidebar state indicator
+     * A sidebar showing or hiding state
      */
     collapsed: boolean,
-  },
+  };
+
+  /**
+   * An editor component
+   */
+  editor: {
+    /**
+     * An editor's sidebar component
+     */
+    sidebar: {
+      /**
+       * A sidebar showing or hiding state
+       */
+      collapsed: boolean,
+    },
+  };
 }
