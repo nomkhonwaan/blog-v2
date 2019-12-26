@@ -8,8 +8,15 @@ const routes: Routes = [
     path: '',
     component: AdminComponent,
     children: [
-      { path: '', component: EditorComponent },
-      { path: 'new-post', pathMatch: 'full', component: EditorComponent },
+      {
+        path: '',
+        component: EditorComponent,
+      },
+      {
+        path: 'new-post',
+        pathMatch: 'full',
+        component: EditorComponent,
+      },
     ],
   },
 ];
