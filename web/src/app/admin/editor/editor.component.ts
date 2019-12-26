@@ -1,6 +1,5 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Location } from '@angular/common';
-import { Component, HostBinding, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { faArrowLeft, faBars, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
@@ -11,20 +10,12 @@ import { GraphQLError } from 'graphql';
 import gql from 'graphql-tag';
 import { map, tap } from 'rxjs/operators';
 import { toggleEditorSidebar } from 'src/app/app.actions';
+import { slideInOut } from 'src/app/shared';
 import { environment } from '../../../environments/environment';
 
 @Component({
   animations: [
-    trigger('slideInOut', [
-      state('true', style({ transform: 'translateX(0)' })),
-      state('false', style({ transform: 'translateX(-25.6rem)' })),
-      transition('* => true', [
-        animate('.4s ease-in-out', style({ transform: 'translateX(0)' })),
-      ]),
-      transition('true => false', [
-        animate('.4s ease-in-out', style({ transform: 'translateX(-25.6rem)' })),
-      ]),
-    ]),
+    slideInOut,
   ],
   selector: 'app-editor',
   templateUrl: './editor.component.html',
