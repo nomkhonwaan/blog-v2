@@ -84,7 +84,7 @@ export class ContentComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.pipe(select('app')).subscribe((app: AppState): void => {
-      this.hasSidebarExpanded = !app.sidebar.collapsed;
+      this.hasSidebarExpanded = !app.content.sidebar.collapsed;
       this.userInfo = app.auth.userInfo;
     });
 

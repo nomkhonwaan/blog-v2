@@ -4,12 +4,16 @@ import { isFetching, isNotFetching, setAuthentication, toggleEditorSidebar, togg
 
 const initialState: AppState = {
   isFetching: false,
-  sidebar: {
-    collapsed: true,
-  },
-  editor: {
+  content: {
     sidebar: {
       collapsed: true,
+    },
+  },
+  admin: {
+    editor: {
+      sidebar: {
+        collapsed: true,
+      },
     },
   },
 };
@@ -27,8 +31,8 @@ const appReducer = createReducer(
       },
     },
   })),
-  on(toggleSidebar, (state) => update<AppState>(state, { sidebar: { $toggle: ['collapsed'] } })),
-  on(toggleEditorSidebar, (state) => update<AppState>(state, { editor: { sidebar: { $toggle: ['collapsed'] } } })),
+  on(toggleSidebar, (state) => update<AppState>(state, { content: { sidebar: { $toggle: ['collapsed'] } } })),
+  on(toggleEditorSidebar, (state) => update<AppState>(state, { admin: { editor: { sidebar: { $toggle: ['collapsed'] } } } })),
 );
 
 export function reducer(state: AppState | undefined, action: Action) {

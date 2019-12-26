@@ -82,7 +82,7 @@ export class EditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.pipe(select('app')).subscribe((app: AppState): void => {
-      this.hasSidebarExpanded = !app.editor.sidebar.collapsed;
+      this.hasSidebarExpanded = !app.admin.editor.sidebar.collapsed;
       this.userInfo = app.auth.userInfo;
     });
 
