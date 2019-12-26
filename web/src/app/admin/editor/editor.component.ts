@@ -2,16 +2,21 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faArrowLeft, faBars, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { select, Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import { GraphQLError } from 'graphql';
 import gql from 'graphql-tag';
 import { map, tap } from 'rxjs/operators';
+import { toggleEditorSidebar } from 'src/app/app.actions';
+import { slideInOut } from 'src/app/shared';
 import { environment } from '../../../environments/environment';
 
 @Component({
+  animations: [
+    slideInOut,
+  ],
   selector: 'app-editor',
   templateUrl: './editor.component.html',
   styleUrls: ['./editor.component.scss'],
@@ -27,6 +32,11 @@ export class EditorComponent implements OnInit {
    * Use to display when GraphQL returns errors
    */
   errors: ReadonlyArray<GraphQLError> = null;
+
+  /**
+ * Use to toggle application sidebar
+ */
+  hasSidebarExpanded = false;
 
   /**
    * Use to indicate loading status
@@ -47,7 +57,8 @@ export class EditorComponent implements OnInit {
    * List of FontAwesome icons
    */
   icons: { [name: string]: IconDefinition } = {
-    faTimes,
+    faArrowLeft,
+    faBars,
     faSpinnerThird,
   };
 
@@ -62,6 +73,7 @@ export class EditorComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.pipe(select('app')).subscribe((app: AppState): void => {
+      this.hasSidebarExpanded = !app.admin.editor.sidebar.collapsed;
       this.userInfo = app.auth.userInfo;
     });
 
@@ -76,6 +88,10 @@ export class EditorComponent implements OnInit {
 
   goBack(): void {
     this.location.back();
+  }
+
+  toggleSidebar(): void {
+    this.store.dispatch(toggleEditorSidebar());
   }
 
   onChaging(isFetching: boolean): void {

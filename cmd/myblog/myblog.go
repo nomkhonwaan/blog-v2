@@ -164,9 +164,6 @@ func action(_ *cobra.Command, _ []string) error {
 		http.DefaultTransport,
 	)
 
-	gitHubHandler := github.NewHandler(cacheService, http.DefaultTransport)
-	storageHandler := storage.NewHandler(cacheService, file, downloader, uploader, image.NewLanczosResizer())
-	sitemapHandler := sitemap.NewHandler(baseURL, cacheService, blogService)
 	schema := graphql.NewServer(blogService, fbClient, file).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
@@ -179,9 +176,12 @@ func action(_ *cobra.Command, _ []string) error {
 
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
-	gitHubHandler.Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-	storageHandler.Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
-	sitemapHandler.Register(r.PathPrefix("/sitemap.xml").Subrouter())
+	github.NewHandler(cacheService, http.DefaultTransport).
+		Register(r.PathPrefix("/api/v2.1/github").Subrouter())
+	storage.NewHandler(cacheService, file, downloader, uploader, image.NewLanczosResizer()).
+		Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
+	sitemap.NewHandler(baseURL, cacheService, blogService).
+		Register(r.PathPrefix("/sitemap.xml").Subrouter())
 	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-file-path"))))
 
 	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}

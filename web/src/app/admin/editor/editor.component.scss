@@ -1,7 +1,13 @@
+@import "../../../styles.scss";
+
 :host {
   background: #fff;
   display: block;
-  width: 100vw;
+  width: calc(100% + 25.6rem);
+
+  @include md {
+    width: 100vw;
+  }
 }
 
 .editor {
@@ -9,6 +15,10 @@
   grid-template: 6.4rem auto / 25.6rem auto;
   min-height: 100%;
   width: 100%;
+
+  @include md {
+    transform: translateX(0)!important;
+  }
 }
 
 .sidebar {
@@ -21,12 +31,19 @@
     border-bottom: 0.1rem solid #ececec;
     display: flex;
     height: 6.4rem;
-    justify-content: flex-end;
   }
 
   ::ng-deep ._section-title {
     margin: 3.2rem !important;
     margin-bottom: 2.4rem !important;
+  }
+}
+
+.open-sidebar {
+  display: contents;
+
+  @include md {
+    display: none;
   }
 }
 

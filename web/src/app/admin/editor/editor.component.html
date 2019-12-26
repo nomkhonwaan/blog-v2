@@ -1,11 +1,11 @@
-<div *ngIf="post" class="editor">
+<div *ngIf="post" class="editor" [@slideInOut]="hasSidebarExpanded">
   <aside class="sidebar">
     <header>
-      <app-button [style.margin-right]="'-1.6rem'" (click)="goBack()">
-        {{'close' | uppercase}}
-      </app-button>
+      <app-button ariaLabel="Go back" [icon]="icons.faArrowLeft" [style.margin-right]="'-1.6rem'" (click)="goBack()"></app-button>
 
-      <app-button ariaLabel="Close Sidebar" [icon]="icons.faTimes" (click)="goBack()"></app-button>
+      <app-button [style.margin-right]="'3.2rem'" (click)="goBack()">
+        {{'Back' | uppercase}}
+      </app-button>
     </header>
 
     <app-post-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
@@ -17,6 +17,8 @@
   </aside>
 
   <div class="navbar">
+    <app-button class="open-sidebar" ariaLabel="Open sidebar" [icon]="icons.faBars" (click)="toggleSidebar()"></app-button>
+
     <app-user-navbar [userInfo]="userInfo" [style.margin]="'0 3.2rem 0 auto'"></app-user-navbar>
   </div>
 

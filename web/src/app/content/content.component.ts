@@ -1,4 +1,3 @@
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { Component, HostBinding, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { faHeart, IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid';
@@ -12,19 +11,11 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AuthService } from '../auth';
 import { toggleSidebar } from '../index';
+import { slideInOut } from '../shared';
 
 @Component({
   animations: [
-    trigger('slideInOut', [
-      state('true', style({ transform: 'translateX(0)' })),
-      state('false', style({ transform: 'translateX(-25.6rem)' })),
-      transition('* => true', [
-        animate('.4s ease-in-out', style({ transform: 'translateX(0)' })),
-      ]),
-      transition('true => false', [
-        animate('.4s ease-in-out', style({ transform: 'translateX(-25.6rem)' })),
-      ]),
-    ]),
+    slideInOut,
   ],
   selector: 'app-content',
   templateUrl: './content.component.html',
@@ -84,7 +75,7 @@ export class ContentComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.pipe(select('app')).subscribe((app: AppState): void => {
-      this.hasSidebarExpanded = !app.sidebar.collapsed;
+      this.hasSidebarExpanded = !app.content.sidebar.collapsed;
       this.userInfo = app.auth.userInfo;
     });
 

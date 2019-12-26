@@ -8,3 +8,4 @@ export const setAuthentication = createAction('SET_AUTHENTICATION', props<{
   userInfo: UserInfo | null,
 }>());
 export const toggleSidebar = createAction('TOGGLE_SIDEBAR');
+export const toggleEditorSidebar = createAction('TOGGLE_EDITOR_SIDEBAR');

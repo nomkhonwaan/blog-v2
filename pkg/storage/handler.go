@@ -124,8 +124,8 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 			if err != nil {
 				logrus.Errorf("unable to retrieve file from %s: %s", path, err)
 			} else {
-				// a resized image found on cache storage,
-				// clear the `resizedPath` value for preventing image resize function
+				// resized image already on the cache storage,
+				// clear `resizedPath` for preventing resize function
 				resizedPath = ""
 			}
 		}
@@ -227,10 +227,10 @@ func (h Handler) upload(w http.ResponseWriter, r *http.Request) {
 	}
 
 	file, err := h.service.File().Create(r.Context(), File{
-		ID:             id,
-		Path:           path,
-		FileName:       fileName,
-		Slug:           slug,
+		ID:       id,
+		Path:     path,
+		FileName: fileName,
+		Slug:     slug,
 	})
 	if err != nil {
 		h.responseError(w, err.Error(), http.StatusInternalServerError)
