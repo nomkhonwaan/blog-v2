@@ -35,9 +35,9 @@
 
     <app-post-markdown-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChagningErrors($event)"></app-post-markdown-editor>
-
-    <div *ngIf="isFetching" class="saving-status">
-      <fa-icon class="icon" [icon]="icons.faSpinnerThird" [spin]="true"></fa-icon>Saving...
-    </div>
   </div>
+</div>
+
+<div *ngIf="isFetching" class="saving-status">
+  <fa-icon class="icon" [icon]="icons.faSpinnerThird" [spin]="true"></fa-icon>Saving...
 </div>
