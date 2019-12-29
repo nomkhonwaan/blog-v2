@@ -130,6 +130,28 @@ func TestMongoFileRepository_Create(t *testing.T) {
 	})
 }
 
+func TestMongoFileRepository_Delete(t *testing.T) {
+	// Given
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var (
+		col = mock_mongo.NewMockCollection(ctrl)
+	)
+
+	ctx := context.Background()
+	repo := NewFileRepository(col)
+	id := primitive.NewObjectID()
+
+	col.EXPECT().DeleteOne(ctx, bson.M{"_id": id}).Return(nil, nil)
+
+	// When
+	err := repo.Delete(ctx, id)
+
+	// Then
+	assert.Nil(t, err)
+}
+
 func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -138,6 +160,8 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 		col = mock_mongo.NewMockCollection(ctrl)
 		cur = mock_mongo.NewMockCursor(ctrl)
 	)
+
+	repo := NewFileRepository(col)
 
 	t.Run("With successful finding all files by list of IDs", func(t *testing.T) {
 		// Given
@@ -152,8 +176,6 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
 
-		repo := NewFileRepository(col)
-
 		// When
 		_, err := repo.FindAllByIDs(ctx, ids)
 
@@ -167,8 +189,6 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
 		col.EXPECT().Find(gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all files by list of IDs"))
-
-		repo := NewFileRepository(col)
 
 		// When
 		_, err := repo.FindAllByIDs(ctx, ids)
