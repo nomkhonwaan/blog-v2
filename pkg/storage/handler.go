@@ -171,16 +171,11 @@ func (h Handler) download(w http.ResponseWriter, r *http.Request) {
 			body = &buf
 		}
 
-		rdr, wtr := io.Pipe()
-		body = io.TeeReader(body, wtr)
-
-		go func(wtr io.WriteCloser, rdr io.Reader) {
-			defer wtr.Close()
-
-			if err = h.service.Cache().Store(rdr, resizedPath); err != nil {
-				logrus.Errorf("unable to store file on %s: %s", path, err)
-			}
-		}(wtr, rdr)
+		rdr = io.TeeReader(body, &buf)
+		if err = h.service.Cache().Store(rdr, resizedPath); err != nil {
+			logrus.Errorf("unable to store file on %s: %s", path, err)
+		}
+		body = &buf
 	}
 
 	length, _ := io.Copy(w, body)
@@ -204,16 +199,12 @@ func (h Handler) downloadOriginalFile(ctx context.Context, path string) (body io
 		return nil, err
 	}
 
-	rdr, wtr := io.Pipe()
-	body = io.TeeReader(body, wtr)
-
-	go func(wtr io.WriteCloser, rdr io.Reader) {
-		defer wtr.Close()
-
-		if err = h.service.Cache().Store(rdr, path); err != nil {
-			logrus.Errorf("unable to store file on %s: %s", path, err)
-		}
-	}(wtr, rdr)
+	var buf bytes.Buffer
+	rdr := io.TeeReader(body, &buf)
+	if err = h.service.Cache().Store(rdr, path); err != nil {
+		logrus.Errorf("unable to store file on %s: %s", path, err)
+	}
+	body = &buf
 
 	return body, nil
 }
