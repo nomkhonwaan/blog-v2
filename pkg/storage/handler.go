@@ -86,11 +86,17 @@ func NewHandler(cache Cache, storage Storage, fileRepo FileRepository, resizer i
 // Register does registering storage routes under the prefix "/api/v2.1/storage"
 func (h Handler) Register(r *mux.Router) {
 	r.Path("/{slug}").HandlerFunc(h.download).Methods(http.MethodGet)
-	r.Path("/delete/{slug}").HandlerFunc(h.delete).Methods(http.MethodPost)
+	r.Path("/delete/{slug}").HandlerFunc(h.delete).Methods(http.MethodDelete)
 	r.Path("/upload").HandlerFunc(h.upload).Methods(http.MethodPost)
 }
 
 func (h Handler) delete(w http.ResponseWriter, r *http.Request) {
+	authorizedID := auth.GetAuthorizedUserID(r.Context())
+	if authorizedID == nil {
+		h.responseError(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
+		return
+	}
+
 	var (
 		vars = mux.Vars(r)
 		slug = Slug(vars["slug"])
