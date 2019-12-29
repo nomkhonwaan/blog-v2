@@ -40,25 +40,18 @@ func (s Slug) MustGetID() interface{} {
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
-	// Provide file downloading function
-	Downloader
-
-	// Provide file uploading function
-	Uploader
-
-	// Provide image resizing function
+	// Provide storage functions
+	Storage
+	// Provide image resizing functions
 	image.Resizer
-
 	// A Cache service
 	Cache() Cache
-
 	// A File repository
 	File() FileRepository
 }
 
 type service struct {
-	Downloader
-	Uploader
+	Storage
 	image.Resizer
 
 	cache    Cache
@@ -79,14 +72,13 @@ type Handler struct {
 }
 
 // NewHandler returns a new handler instance
-func NewHandler(cache Cache, fileRepo FileRepository, downloader Downloader, uploader Uploader, resizer image.Resizer) Handler {
+func NewHandler(cache Cache, storage Storage, fileRepo FileRepository, resizer image.Resizer) Handler {
 	return Handler{
 		service: service{
-			Downloader: downloader,
-			Uploader:   uploader,
-			Resizer:    resizer,
-			cache:      cache,
-			fileRepo:   fileRepo,
+			Storage:  storage,
+			Resizer:  resizer,
+			cache:    cache,
+			fileRepo: fileRepo,
 		},
 	}
 }
@@ -94,7 +86,36 @@ func NewHandler(cache Cache, fileRepo FileRepository, downloader Downloader, upl
 // Register does registering storage routes under the prefix "/api/v2.1/storage"
 func (h Handler) Register(r *mux.Router) {
 	r.Path("/{slug}").HandlerFunc(h.download).Methods(http.MethodGet)
+	r.Path("/delete/{slug}").HandlerFunc(h.delete).Methods(http.MethodPost)
 	r.Path("/upload").HandlerFunc(h.upload).Methods(http.MethodPost)
+}
+
+func (h Handler) delete(w http.ResponseWriter, r *http.Request) {
+	var (
+		vars = mux.Vars(r)
+		slug = Slug(vars["slug"])
+	)
+
+	file, err := h.service.File().FindByID(r.Context(), slug.MustGetID())
+	if err != nil {
+		h.responseError(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	logrus.Infof("deleting file %s from the storage server...", file.Path)
+	err = h.service.Delete(r.Context(), file.Path)
+	if err != nil {
+		h.responseError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = h.service.File().Delete(r.Context(), slug.MustGetID())
+	if err != nil {
+		h.responseError(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	return
 }
 
 func (h Handler) download(w http.ResponseWriter, r *http.Request) {

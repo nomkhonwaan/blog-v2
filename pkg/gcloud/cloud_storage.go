@@ -28,6 +28,10 @@ func NewCloudStorage(credentialsFilePath, bucket string) (CloudStorage, error) {
 	return CloudStorage{client.Bucket(bucket)}, nil
 }
 
+func (cs CloudStorage) Delete(ctx context.Context, path string) error {
+	return cs.BucketHandle.Object(path).Delete(ctx)
+}
+
 func (cs CloudStorage) Download(ctx context.Context, path string) (io.Reader, error) {
 	return cs.BucketHandle.Object(path).NewReader(ctx)
 }

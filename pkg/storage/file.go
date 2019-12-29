@@ -1,3 +1,5 @@
+// go:generate mockgen -destination=./mock/file_mock.go github.com/nomkhonwaan/myblog/storage FileRepository
+
 package storage
 
 import (
@@ -53,13 +55,16 @@ func (f File) MarshalJSON() ([]byte, error) {
 
 // FileRepository is a repository interface of file which defines all file entity related functions
 type FileRepository interface {
-	// Create inserts a new file record whether exist or not
+	// Insert a new file record whether exist or not
 	Create(ctx context.Context, file File) (File, error)
 
-	// FindAllByIDs returns list of files from list of IDs
+	// Delete a file record by its ID
+	Delete(ctx context.Context, id interface{}) error
+
+	// Return list of files from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error)
 
-	// FindByID returns a single file from its ID
+	// Return a single file from its ID
 	FindByID(ctx context.Context, id interface{}) (File, error)
 }
 
@@ -86,6 +91,11 @@ func (repo MongoFileRepository) Create(ctx context.Context, file File) (File, er
 	}
 
 	return file, nil
+}
+
+func (repo MongoFileRepository) Delete(ctx context.Context, id interface{}) error {
+	_, err := repo.col.DeleteOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
+	return err
 }
 
 func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error) {

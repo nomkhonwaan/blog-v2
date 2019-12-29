@@ -36,6 +36,23 @@ func NewS3(accessKey, secretKey, bucket string) (S3, error) {
 	}, nil
 }
 
+func (s S3) Delete(ctx context.Context, path string) error {
+	svc := s3.New(s.Session)
+
+	_, err := svc.DeleteObject(&s3.DeleteObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(path),
+	})
+	if err != nil {
+		return err
+	}
+
+	return svc.WaitUntilObjectNotExists(&s3.HeadObjectInput{
+		Bucket: aws.String(s.bucket),
+		Key:    aws.String(path),
+	})
+}
+
 func (s S3) Download(ctx context.Context, path string) (io.Reader, error) {
 	downloader := s3manager.NewDownloader(s.Session)
 	buf := aws.NewWriteAtBuffer([]byte{})

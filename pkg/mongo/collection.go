@@ -8,16 +8,15 @@ import (
 
 // Collection is a wrapped interface to the `mongo.Collection` for testing purpose
 type Collection interface {
-	// Perform finding the documents matching a model
+	// Execute a delete command to delete at most one document from the collection
+	DeleteOne(ctx context.Context, filter interface{}, opts ...*options.DeleteOptions) (*mongo.DeleteResult, error)
+	// Execute a find command and returns a Cursor over the matching documents in the collection
 	Find(ctx context.Context, filter interface{}, opts ...*options.FindOptions) (Cursor, error)
-
-	// Perform finding up to one document that matches the model
+	// Execute a find command and returns a SingleResult for one document in the collection
 	FindOne(ctx context.Context, filter interface{}, opts ...*options.FindOneOptions) SingleResult
-
-	// Insert a single document into the collection
+	// Execute an insert command to insert a single document into the collection
 	InsertOne(ctx context.Context, document interface{}, opts ...*options.InsertOneOptions) (*mongo.InsertOneResult, error)
-
-	// Update a single document int the collection
+	// Execute an update command to update at most one document in the collection
 	UpdateOne(ctx context.Context, filter interface{}, update interface{}, opts ...*options.UpdateOptions) (*mongo.UpdateResult, error)
 }
 

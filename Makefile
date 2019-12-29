@@ -43,6 +43,10 @@ clean:
 	@rm -rf $(WEBDIR)/.firebase && \
 	@rm -rf $(WEBDIR)/node_modules
 
+.PHONY: generate
+generate:
+	$(GO) generate ./...
+
 .PHONY: mockgen
 mockgen:
 	$(MOCKGEN) -destination ./pkg/blog/mock/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
