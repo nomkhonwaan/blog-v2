@@ -13,6 +13,8 @@
   justify-content: center;
   height: 4.2rem;
   margin-bottom: 0.8rem;
+  overflow: hidden;
+  transition: border-radius 0.4s ease-in-out;
   width: 4.2rem;
 }
 
@@ -23,6 +25,10 @@
 
 .attachment-item.-disabled {
   cursor: default;
+}
+
+.attachment-item.-selected {
+  border-radius: 50%;
 }
 
 .attachment-item > img {

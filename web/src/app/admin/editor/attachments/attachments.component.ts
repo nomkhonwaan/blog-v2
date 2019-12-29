@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Output, Input } from '@angular/core';
 import { faImage, faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
@@ -12,18 +12,24 @@ import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
 export class PostAttachmentsEditorComponent extends AbstractPostEditorComponent {
 
   /**
-   * List of FontAwesome icons
+   * A selected attachment
    */
-  icons: { [name: string]: IconDefinition } = {
-    faImage,
-    faSpinnerThird,
-  };
+  @Input()
+  selectedAttachment: Attachment;
 
   /**
    * An attachment that has been selected from the list of attachments
    */
   @Output()
   selectAttachment: EventEmitter<Attachment> = new EventEmitter(null);
+
+  /**
+   * List of FontAwesome icons
+   */
+  icons: { [name: string]: IconDefinition } = {
+    faImage,
+    faSpinnerThird,
+  };
 
   /**
    * Use to display spinner while uploading attachments to the storage server
@@ -46,6 +52,10 @@ export class PostAttachmentsEditorComponent extends AbstractPostEditorComponent 
 
   onClickAttachment(attachment: Attachment): void {
     this.selectAttachment.emit(attachment);
+  }
+
+  wasSelected(attachment: Attachment): boolean {
+    return this.selectedAttachment && this.selectedAttachment.slug === attachment.slug;
   }
 
   private updatePostAttachments(attachments: Attachment[]): void {

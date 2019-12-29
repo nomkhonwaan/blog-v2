@@ -1,7 +1,8 @@
 <div *ngIf="post" class="editor" [@slideInOut]="hasSidebarExpanded">
   <aside class="sidebar">
     <header>
-      <app-button ariaLabel="Go back" [icon]="icons.faArrowLeft" [style.margin-right]="'-1.6rem'" (click)="goBack()"></app-button>
+      <app-button ariaLabel="Go back" [icon]="icons.faArrowLeft" [style.margin-right]="'-1.6rem'" (click)="goBack()">
+      </app-button>
 
       <app-button [style.margin-right]="'3.2rem'" (click)="goBack()">
         {{'Back' | uppercase}}
@@ -11,13 +12,15 @@
     <app-post-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChagningErrors($event)"></app-post-status-editor>
 
-    <app-post-attachments-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
-      (changeErrors)="onChagningErrors($event)" (selectAttachment)="onSelectingAttachment($event)">
+    <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="onChaging($event)"
+      (changeSuccess)="onChangingSuccess($event)" (changeErrors)="onChagningErrors($event)"
+      (selectAttachment)="onSelectingAttachment($event)">
     </app-post-attachments-editor>
   </aside>
 
   <div class="navbar">
-    <app-button class="open-sidebar" ariaLabel="Open sidebar" [icon]="icons.faBars" (click)="toggleSidebar()"></app-button>
+    <app-button class="open-sidebar" ariaLabel="Open sidebar" [icon]="icons.faBars" (click)="toggleSidebar()">
+    </app-button>
 
     <app-post-title class="preview" [post]="post">
       <app-button>{{'Preview' | uppercase}}</app-button>
@@ -27,7 +30,7 @@
   </div>
 
   <div class="article">
-    <app-post-attachment-viewer [attachment]="selectedAttachment" (closed)="selectedAttachment = null">
+    <app-post-attachment-viewer [post]="post" [attachment]="selectedAttachment" (closed)="selectedAttachment = null">
     </app-post-attachment-viewer>
 
     <app-post-title-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"

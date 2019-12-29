@@ -12,6 +12,20 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
+  /**
+   * Call to the RESTful API for deleting uploaded file
+   *
+   * @param slug string
+   */
+  deleteFile(slug: string): Observable<any> {
+    return this.http.delete<any>(`${environment.url}/api/v2.1/storage/delete/${slug}`);
+  }
+
+  /**
+   * Call to the RESTful API for uploading file
+   *
+   * @param file File
+   */
   uploadFile(file: File): Observable<Attachment> {
     const formData = new FormData();
     formData.set('file', file, file.name);

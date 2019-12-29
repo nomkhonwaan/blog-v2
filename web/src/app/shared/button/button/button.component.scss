@@ -11,7 +11,14 @@
   border: none;
   color: #808080;
   font: normal 400 1.3rem Lato, sans-serif;
+  height: 100%;
   padding: 0;
+}
+
+.button.-danger {
+  background: #d50000;
+  border-radius: 50vh;
+  color: #fff;
 }
 
 .icon {
