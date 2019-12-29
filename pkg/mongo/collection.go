@@ -1,4 +1,4 @@
-// go:generate mockgen -destination=./mock/collection_mock.go github.com/nomkhonwaan/myblog/mongo Collection
+//go:generate mockgen -destination=./mock/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
 
 package mongo
 

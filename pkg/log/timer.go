@@ -1,4 +1,4 @@
-// go:generate mockgen -destination=./mock/timer_mock.go github.com/nomkhonwaan/myblog/log Timer
+//go:generate mockgen -destination=./mock/timer_mock.go github.com/nomkhonwaan/myblog/pkg/log Timer
 
 package log
 

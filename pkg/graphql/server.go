@@ -1,4 +1,4 @@
-// go:generate mockgen -destination=./mock/server_mock.go github.com/nomkhonwaan/myblog/graphql Service
+//go:generate mockgen -destination=./mock/server_mock.go github.com/nomkhonwaan/myblog/pkg/graphql Service
 
 package graphql
 

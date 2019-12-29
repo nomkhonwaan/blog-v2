@@ -1,4 +1,4 @@
-// go:generate mockgen -destination=./mock/single_result_mock.go github.com/nomkhonwaan/myblog/mongo SingleResult
+//go:generate mockgen -destination=./mock/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult
 
 package mongo
 

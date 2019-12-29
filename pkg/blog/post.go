@@ -1,4 +1,4 @@
-// go:generate mockgen -destination=./mock/post_mock.go github.com/nomkhonwaan/myblog/blog PostRepository
+//go:generate mockgen -destination=./mock/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
 
 package blog
 
