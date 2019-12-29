@@ -66,16 +66,15 @@ func TestHandler(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		downloader   = mock_storage.NewMockDownloader(ctrl)
-		uploader     = mock_storage.NewMockUploader(ctrl)
-		resizer      = mock_image.NewMockResizer(ctrl)
-		cacheService = mock_storage.NewMockCache(ctrl)
-		file         = mock_storage.NewMockFileRepository(ctrl)
+		resizer        = mock_image.NewMockResizer(ctrl)
+		cacheService   = mock_storage.NewMockCache(ctrl)
+		storageService = mock_storage.NewMockStorage(ctrl)
+		file           = mock_storage.NewMockFileRepository(ctrl)
 
 		router = mux.NewRouter()
 	)
 
-	NewHandler(cacheService, file, downloader, uploader, resizer).Register(router.PathPrefix("/v1/storage").Subrouter())
+	NewHandler(cacheService, storageService, file, resizer).Register(router.PathPrefix("/v1/storage").Subrouter())
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}
@@ -107,7 +106,7 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		uploader.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, _ io.Reader, path string) error {
+		storageService.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, _ io.Reader, path string) error {
 			id, err := Slug(path).GetID()
 
 			assert.Nil(t, err)
@@ -172,7 +171,7 @@ func TestHandler(t *testing.T) {
 		w := httptest.NewRecorder()
 		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
-		uploader.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("test upload file error"))
+		storageService.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("test upload file error"))
 
 		// When
 		router.ServeHTTP(w, r)

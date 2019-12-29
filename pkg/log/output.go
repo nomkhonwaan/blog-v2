@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=./mock/outputer_mock.go github.com/nomkhonwaan/myblog/pkg/log Outputer
+//go:generate mockgen -destination=./mock/output_mock.go github.com/nomkhonwaan/myblog/pkg/log Outputer
 
 package log
 
