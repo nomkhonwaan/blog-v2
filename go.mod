@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.50.0 // indirect
 	cloud.google.com/go/storage v1.4.0
 	github.com/DataDog/zstd v1.4.4 // indirect
+	github.com/algolia/algoliasearch-client-go/v3 v3.5.0
 	github.com/auth0/go-jwt-middleware v0.0.0-20190805220309-36081240882b
 	github.com/aws/aws-sdk-go v1.26.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
