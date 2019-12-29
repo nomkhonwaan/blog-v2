@@ -194,12 +194,12 @@ func (h Handler) downloadOriginalFile(ctx context.Context, path string) (body io
 		body, err = h.service.Cache().Retrieve(path)
 		if err != nil {
 			logrus.Errorf("unable to retrieve file from %s: %s", path, err)
+		} else {
+			return body, nil
 		}
 	}
 
-	if body == nil {
-		body, err = h.service.Download(ctx, path)
-	}
+	body, err = h.service.Download(ctx, path)
 	if err != nil {
 		return nil, err
 	}

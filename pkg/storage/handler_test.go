@@ -14,6 +14,8 @@ import (
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"image"
+	"image/png"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -70,11 +72,14 @@ func TestHandler(t *testing.T) {
 		cacheService   = mock_storage.NewMockCache(ctrl)
 		storageService = mock_storage.NewMockStorage(ctrl)
 		file           = mock_storage.NewMockFileRepository(ctrl)
-
-		router = mux.NewRouter()
 	)
 
-	NewHandler(cacheService, storageService, file, resizer).Register(router.PathPrefix("/v1/storage").Subrouter())
+	r := mux.NewRouter()
+	NewHandler(cacheService, storageService, file, resizer).Register(r.PathPrefix("/v1/storage").Subrouter())
+
+	newFileDownloadRequest := func(slug string) *http.Request {
+		return httptest.NewRequest(http.MethodGet, "/v1/storage/"+slug, nil)
+	}
 
 	newFileUploadRequest := func(fileName string, body io.Reader) *http.Request {
 		buf := &bytes.Buffer{}
@@ -98,13 +103,227 @@ func TestHandler(t *testing.T) {
 		}))
 	}
 
+	t.Run("With successful downloading file", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".txt"
+		body := bytes.NewBufferString("test")
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(false)
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/"+slug).Return(nil)
+		storageService.EXPECT().Download(gomock.Any(), "authorizedID/"+slug).Return(body, nil)
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileDownloadRequest(slug)))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("With successful downloading file from cache storage", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".txt"
+		body := bytes.NewBufferString("test")
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/"+slug).Return(body, nil)
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileDownloadRequest(slug)))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("With successful retrieving and resizing image file", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".png"
+		var body bytes.Buffer
+		_ = png.Encode(&body, image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 100, Y: 100}}))
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/"+slug).Return(&body, nil)
+		cacheService.EXPECT().Exist("authorizedID/test-" + id.Hex() + "-50-0.png").Return(false)
+		resizer.EXPECT().Resize(gomock.Any(), 50, 0).Return(nil, nil)
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/test-"+id.Hex()+"-50-0.png").Return(nil)
+
+		// When
+		r.ServeHTTP(w, newFileDownloadRequest(slug+"?width=50"))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("With successful retrieving resized image file from cache storage", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".png"
+		var body bytes.Buffer
+		_ = png.Encode(&body, image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 50, Y: 50}}))
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/test-" + id.Hex() + "-50-0.png").Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/test-"+id.Hex()+"-50-0.png").Return(&body, nil)
+
+		// When
+		r.ServeHTTP(w, newFileDownloadRequest(slug+"?width=50"))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("When unable to find file on database", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".txt"
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{}, errors.New("test unable to find file on database"))
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileDownloadRequest(slug)))
+
+		// Then
+		assert.Equal(t, "404 Not Found", w.Result().Status)
+	})
+
+	t.Run("When unable to retrieve file from cache storage even file exist", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".txt"
+		body := bytes.NewBufferString("test")
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/"+slug).Return(nil, errors.New("test unable to retrieve file from cache storage"))
+		storageService.EXPECT().Download(gomock.Any(), "authorizedID/"+slug).Return(body, nil)
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/"+slug).Return(nil)
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileDownloadRequest(slug)))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("When unable to retrieve resized image file from cache storage even file exist", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".png"
+		var body bytes.Buffer
+		_ = png.Encode(&body, image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 100, Y: 100}}))
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/test-" + id.Hex() + "-50-0.png").Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/test-"+id.Hex()+"-50-0.png").Return(nil, errors.New("test unable to retrieve file from cache storage"))
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/"+slug).Return(&body, nil)
+		resizer.EXPECT().Resize(gomock.Any(), 50, 0).Return(nil, nil)
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/test-"+id.Hex()+"-50-0.png").Return(nil)
+
+		// When
+		r.ServeHTTP(w, newFileDownloadRequest(slug+"?width=50"))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("When unable to resize image file", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".png"
+		var body bytes.Buffer
+		_ = png.Encode(&body, image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 100, Y: 100}}))
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/"+slug).Return(&body, nil)
+		cacheService.EXPECT().Exist("authorizedID/test-" + id.Hex() + "-50-0.png").Return(false)
+		resizer.EXPECT().Resize(gomock.Any(), 50, 0).Return(nil, errors.New("test unable to resize image file"))
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/test-"+id.Hex()+"-50-0.png").Return(nil)
+
+		// When
+		r.ServeHTTP(w, newFileDownloadRequest(slug+"?width=50"))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("When an error has occurred while downloading file", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".txt"
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(false)
+		storageService.EXPECT().Download(gomock.Any(), "authorizedID/"+slug).Return(nil, errors.New("test unable to downloading file"))
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileDownloadRequest(slug)))
+
+		// Then
+		assert.Equal(t, "404 Not Found", w.Result().Status)
+	})
+
+	t.Run("When an error has occurred while saving file to cache storage", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".txt"
+		body := bytes.NewBufferString("test")
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(false)
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/"+slug).Return(errors.New("test unable to save file to cache storage"))
+		storageService.EXPECT().Download(gomock.Any(), "authorizedID/"+slug).Return(body, nil)
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileDownloadRequest(slug)))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
+	t.Run("When an error has occurred while saving resized image file to cache storage", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		id := primitive.NewObjectID()
+		slug := "test-" + id.Hex() + ".png"
+		var body bytes.Buffer
+		_ = png.Encode(&body, image.NewRGBA(image.Rectangle{Min: image.Point{X: 0, Y: 0}, Max: image.Point{X: 100, Y: 100}}))
+
+		file.EXPECT().FindByID(gomock.Any(), id).Return(File{Path: "authorizedID/" + slug}, nil)
+		cacheService.EXPECT().Exist("authorizedID/" + slug).Return(true)
+		cacheService.EXPECT().Retrieve("authorizedID/"+slug).Return(&body, nil)
+		cacheService.EXPECT().Exist("authorizedID/test-" + id.Hex() + "-50-0.png").Return(false)
+		resizer.EXPECT().Resize(gomock.Any(), 50, 0).Return(nil, nil)
+		cacheService.EXPECT().Store(gomock.Any(), "authorizedID/test-"+id.Hex()+"-50-0.png").Return(errors.New("test unable to save file to cache storage"))
+
+		// When
+		r.ServeHTTP(w, newFileDownloadRequest(slug+"?width=50"))
+
+		// Then
+		assert.Equal(t, "200 OK", w.Result().Status)
+	})
+
 	t.Run("With successful uploading file", func(t *testing.T) {
 		// Given
+		w := httptest.NewRecorder()
 		body := bytes.NewBufferString("test")
 		fileName := "test.txt"
-
-		w := httptest.NewRecorder()
-		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
 		storageService.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, _ io.Reader, path string) error {
 			id, err := Slug(path).GetID()
@@ -123,7 +342,7 @@ func TestHandler(t *testing.T) {
 		})
 
 		// When
-		router.ServeHTTP(w, r)
+		r.ServeHTTP(w, withAuthorizedID(newFileUploadRequest(fileName, body)))
 
 		// Then
 		assert.Equal(t, "200 OK", w.Result().Status)
@@ -131,14 +350,12 @@ func TestHandler(t *testing.T) {
 
 	t.Run("When unable to retrieve authorized ID from", func(t *testing.T) {
 		// Given
+		w := httptest.NewRecorder()
 		body := bytes.NewBufferString("test")
 		fileName := "test.txt"
 
-		w := httptest.NewRecorder()
-		r := newFileUploadRequest(fileName, body)
-
 		// When
-		router.ServeHTTP(w, r)
+		r.ServeHTTP(w, newFileUploadRequest(fileName, body))
 
 		// Then
 		var result map[string]interface{}
@@ -151,13 +368,11 @@ func TestHandler(t *testing.T) {
 
 	t.Run("When unable to read form file", func(t *testing.T) {
 		// Given
+		w := httptest.NewRecorder()
 		body := bytes.NewBufferString("")
 
-		w := httptest.NewRecorder()
-		r := withAuthorizedID(newFileUploadRequest("", body))
-
 		// When
-		router.ServeHTTP(w, r)
+		r.ServeHTTP(w, withAuthorizedID(newFileUploadRequest("", body)))
 
 		// Then
 		assert.Equal(t, "500 Internal Server Error", w.Result().Status)
@@ -165,16 +380,30 @@ func TestHandler(t *testing.T) {
 
 	t.Run("When unable to upload file to the storage server", func(t *testing.T) {
 		// Given
+		w := httptest.NewRecorder()
 		body := bytes.NewBufferString("test")
 		fileName := "test.txt"
-
-		w := httptest.NewRecorder()
-		r := withAuthorizedID(newFileUploadRequest(fileName, body))
 
 		storageService.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(errors.New("test upload file error"))
 
 		// When
-		router.ServeHTTP(w, r)
+		r.ServeHTTP(w, withAuthorizedID(newFileUploadRequest(fileName, body)))
+
+		// Then
+		assert.Equal(t, "500 Internal Server Error", w.Result().Status)
+	})
+
+	t.Run("When unable to create a new record on database", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		body := bytes.NewBufferString("test")
+		fileName := "test.txt"
+
+		storageService.EXPECT().Upload(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil)
+		file.EXPECT().Create(gomock.Any(), gomock.Any()).Return(File{}, errors.New("test unable to create a new record on database"))
+
+		// When
+		r.ServeHTTP(w, withAuthorizedID(newFileUploadRequest(fileName, body)))
 
 		// Then
 		assert.Equal(t, "500 Internal Server Error", w.Result().Status)
