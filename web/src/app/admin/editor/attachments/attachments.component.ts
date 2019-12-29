@@ -1,5 +1,5 @@
-import { Component, EventEmitter, Output, Input } from '@angular/core';
-import { faImage, faSpinnerThird, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { faImage, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
@@ -71,7 +71,7 @@ export class PostAttachmentsEditorComponent extends AbstractPostEditorComponent 
         slug: this.post.slug,
         attachmentSlugs: attachments.map((attachment: Attachment): string => attachment.slug),
       }
-    );
+    ).subscribe((post: Post): void => this.changeSuccess.emit(post));
   }
 
 }

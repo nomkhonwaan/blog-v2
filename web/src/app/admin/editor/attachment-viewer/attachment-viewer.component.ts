@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { faSpinnerThird, faTrash, IconDefinition } from '@fortawesome/pro-light-svg-icons';
-import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
 import update from 'immutability-helper';
-import { merge } from 'rxjs';
+import { finalize } from 'rxjs/operators';
+import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
 
 @Component({
   selector: 'app-post-attachment-viewer',
@@ -61,10 +61,12 @@ export class PostAttachmentViewerComponent extends AbstractPostEditorComponent {
             attachmentSlugs: update(this.post, { attachments: { $splice: [[i, 1]] } }).attachments
               .map((attachment: Attachment) => attachment.slug),
           },
-        );
-
-        this.isDeleting = false;
-        this.close();
+        ).pipe(
+          finalize((): void => {
+            this.isDeleting = false;
+            this.close();
+          }),
+        ).subscribe((post: Post): void => this.changeSuccess.emit(post));
       });
     }
   }

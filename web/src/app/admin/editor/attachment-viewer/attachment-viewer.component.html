@@ -1,11 +1,11 @@
 <app-dialog class="dialog" *ngIf="attachment" state="show">
   <div class="_flex _flex-horizontal-align-right _flex-vertical-align-middle" [style.margin-top]="'3.2rem'">
-    <app-button class="close" [style.margin-right]="'3.2rem'" (click)="isDeleteing ? false : close()">
+    <app-button class="close" [style.margin-right]="'3.2rem'" (click)="isDeleting ? false : close()">
       {{'close' | uppercase}}
     </app-button>
   </div>
 
-  <div class="viewer">
+  <div class="viewer _text-center">
     <img src="/api/v2.1/storage/{{attachment.slug}}?width=420" alt="{{attachment.fileName}}" />
 
     <div class="_flex _flex-vertical-align-middle" [style.height]="'3.2rem'" [style.margin-top]="'2.4rem'">

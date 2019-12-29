@@ -42,9 +42,11 @@ export class PostStatusEditorComponent extends AbstractPostEditorComponent imple
         slug: this.post.slug,
         status: selectedItem.value.toString(),
       },
-    );
+    ).subscribe((post: Post): void => {
+      this.changeSuccess.emit(post);
 
-    this.currentStatus = update(selectedItem, { label: { $set: selectedItem.label.toUpperCase() } });
+      this.currentStatus = update(selectedItem, { label: { $set: selectedItem.label.toUpperCase() } });
+    });
   }
 
 }
