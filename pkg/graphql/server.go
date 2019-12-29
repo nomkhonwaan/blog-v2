@@ -1,3 +1,5 @@
+// go:generate mockgen -destination=./mock/server_mock.go github.com/nomkhonwaan/myblog/graphql Service
+
 package graphql
 
 import (
@@ -35,16 +37,12 @@ func (s Slug) MustGetID() interface{} {
 type Service interface {
 	// The Facebook client
 	FBClient() facebook.Client
-
 	// A file repository
 	File() storage.FileRepository
-
 	// A category repository
 	Category() blog.CategoryRepository
-
 	// A post repository
 	Post() blog.PostRepository
-
 	// A tag repository
 	Tag() blog.TagRepository
 }

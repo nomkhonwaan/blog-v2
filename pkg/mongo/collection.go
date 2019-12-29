@@ -1,3 +1,5 @@
+// go:generate mockgen -destination=./mock/collection_mock.go github.com/nomkhonwaan/myblog/mongo Collection
+
 package mongo
 
 import (

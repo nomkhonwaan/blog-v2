@@ -1,3 +1,5 @@
+// go:generate mockgen -destination=./mock/tag_mock.go github.com/nomkhonwaan/myblog/blog TagRepository
+
 package blog
 
 import (
