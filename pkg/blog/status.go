@@ -7,6 +7,16 @@ func (s Status) String() string {
 	return string(s)
 }
 
+// IsPublished returns "true" if status is Published
+func (s Status) IsPublished() bool {
+	return s == Published
+}
+
+// IsDraft returns "true" if status is Draft
+func (s Status) IsDraft() bool {
+	return s == Draft
+}
+
 // Published indicates that post is public, accessible to everyone
 const Published Status = "PUBLISHED"
 
