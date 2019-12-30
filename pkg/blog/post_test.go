@@ -108,6 +108,9 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 
 	ctx := context.Background()
 	repo := NewPostRepository(col, nil)
+	authorizedID := "authorizedID"
+	published := Published
+	draft := Draft
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
 
@@ -140,24 +143,24 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 				SetLimit(5),
 		},
 		"With status draft": {
-			q:      NewPostQueryBuilder().WithStatus(Draft).Build(),
-			filter: bson.M{"status": Draft},
+			q:      NewPostQueryBuilder().WithStatus(draft).Build(),
+			filter: bson.M{"status": &draft},
 			options: options.Find().
 				SetSort(bson.D{{"createdAt", -1}}).
 				SetSkip(0).
 				SetLimit(5),
 		},
 		"With status published": {
-			q:      NewPostQueryBuilder().WithStatus(Published).Build(),
-			filter: bson.M{"status": Published},
+			q:      NewPostQueryBuilder().WithStatus(published).Build(),
+			filter: bson.M{"status": &published},
 			options: options.Find().
 				SetSort(bson.D{{"publishedAt", -1}}).
 				SetSkip(0).
 				SetLimit(5),
 		},
 		"With specific authorID": {
-			q:      NewPostQueryBuilder().WithAuthorID("authorizedID").Build(),
-			filter: bson.M{"authorId": "authorizedID"},
+			q:      NewPostQueryBuilder().WithAuthorID(authorizedID).Build(),
+			filter: bson.M{"authorId": &authorizedID},
 			options: options.Find().
 				SetSort(bson.D{
 					{"status", 1},
@@ -205,7 +208,12 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			col.EXPECT().Find(ctx, test.filter, test.options).Return(cur, test.err)
+			col.EXPECT().Find(ctx, gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, filter interface{}, opts *options.FindOptions) (mongo.Cursor, error) {
+				assert.EqualValues(t, test.filter, filter)
+				assert.EqualValues(t, test.options, opts)
+
+				return cur, test.err
+			})
 
 			if test.err == nil {
 				cur.EXPECT().Close(ctx).Return(nil)
@@ -279,6 +287,11 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	now := time.Now()
 	publishedAt := time.Now()
 	repo := NewPostRepository(col, timer)
+	slug := "test-update-post-slug"
+	published := Published
+	title := "Test update post title"
+	markdown := "Test update post content"
+	html := "<p>Test update post content</p>"
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
 	featuredImageID := primitive.NewObjectID()
@@ -296,29 +309,29 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			update: bson.M{"$set": bson.M{"updatedAt": now}},
 		},
 		"When updating post's title": {
-			q:      NewPostQueryBuilder().WithTitle("Test update post title").Build(),
+			q:      NewPostQueryBuilder().WithTitle(title).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"title": "Test update post title", "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"title": &title, "updatedAt": now}},
 		},
 		"When updating post's slug": {
-			q:      NewPostQueryBuilder().WithSlug("test-update-post-slug").Build(),
+			q:      NewPostQueryBuilder().WithSlug(slug).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"slug": "test-update-post-slug", "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"slug": &slug, "updatedAt": now}},
 		},
 		"When updating post's status": {
-			q:      NewPostQueryBuilder().WithStatus(Published).Build(),
+			q:      NewPostQueryBuilder().WithStatus(published).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"status": Published, "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"status": &published, "updatedAt": now}},
 		},
 		"When updating post's content": {
-			q:      NewPostQueryBuilder().WithMarkdown("Test update post content").WithHTML("<p>Test update post content</p>").Build(),
+			q:      NewPostQueryBuilder().WithMarkdown(markdown).WithHTML(html).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"markdown": "Test update post content", "html": "<p>Test update post content</p>", "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"markdown": &markdown, "html": &html, "updatedAt": now}},
 		},
 		"When updating post's published date-time": {
 			q:      NewPostQueryBuilder().WithPublishedAt(publishedAt).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"publishedAt": publishedAt, "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"publishedAt": &publishedAt, "updatedAt": now}},
 		},
 		"When updating post's categories": {
 			q:      NewPostQueryBuilder().WithCategories([]Category{{ID: catID, Name: "Web Development", Slug: "web-development-" + catID.Hex()}}).Build(),

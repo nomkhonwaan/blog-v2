@@ -81,13 +81,10 @@ func (p Post) MarshalJSON() ([]byte, error) {
 type PostRepository interface {
 	// Create inserts a new empty post which belongs to the author with "Draft" status
 	Create(ctx context.Context, authorID string) (Post, error)
-
 	// FindAll returns list of posts filtered by post query
 	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
-
 	// FindByID returns a single post from its ID
 	FindByID(ctx context.Context, id interface{}) (Post, error)
-
 	// Save does updating a single post
 	Save(ctx context.Context, id interface{}, q PostQuery) (Post, error)
 }
