@@ -81,13 +81,10 @@ func (p Post) MarshalJSON() ([]byte, error) {
 type PostRepository interface {
 	// Create inserts a new empty post which belongs to the author with "Draft" status
 	Create(ctx context.Context, authorID string) (Post, error)
-
 	// FindAll returns list of posts filtered by post query
 	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
-
 	// FindByID returns a single post from its ID
 	FindByID(ctx context.Context, id interface{}) (Post, error)
-
 	// Save does updating a single post
 	Save(ctx context.Context, id interface{}, q PostQuery) (Post, error)
 }
@@ -126,27 +123,24 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 	filter := bson.M{}
 	opts := options.Find()
 
-	if q.Status() == "" {
-		opts.SetSort(bson.D{
-			{"status", 1},
-			{"createdAt", -1},
-		})
-	} else {
-		filter["status"] = q.Status()
+	if status := q.Status(); status != nil {
+		filter["status"] = status
 
-		if q.Status() == Published {
+		if q.Status().IsPublished() {
 			opts.SetSort(bson.D{{"publishedAt", -1}})
-		} else if q.Status() == Draft {
+		} else if q.Status().IsDraft() {
 			opts.SetSort(bson.D{{"createdAt", -1}})
 		}
+	} else {
+		opts.SetSort(bson.D{{"status", 1}, {"createdAt", -1}})
 	}
-	if authorID := q.AuthorID(); authorID != "" {
+	if authorID := q.AuthorID(); authorID != nil {
 		filter["authorId"] = authorID
 	}
-	if cat := q.Category(); !cat.ID.IsZero() {
+	if cat := q.Category(); cat != nil {
 		filter["categories.$id"] = cat.ID
 	}
-	if tag := q.Tag(); !tag.ID.IsZero() {
+	if tag := q.Tag(); tag != nil {
 		filter["tags.$id"] = tag.ID
 	}
 
@@ -178,63 +172,55 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 		"updatedAt": repo.timer.Now(),
 	}}
 
-	if title := q.Title(); title != "" {
+	if title := q.Title(); title != nil {
 		update["$set"].(bson.M)["title"] = title
 	}
-	if slug := q.Slug(); slug != "" {
+	if slug := q.Slug(); slug != nil {
 		update["$set"].(bson.M)["slug"] = slug
 	}
-	if status := q.Status(); status != "" {
+	if status := q.Status(); status != nil {
 		update["$set"].(bson.M)["status"] = status
 	}
-	if markdown := q.Markdown(); markdown != "" {
+	if markdown := q.Markdown(); markdown != nil {
 		update["$set"].(bson.M)["markdown"] = markdown
 	}
-	if html := q.HTML(); html != "" {
+	if html := q.HTML(); html != nil {
 		update["$set"].(bson.M)["html"] = html
 	}
-	if publishedAt := q.PublishedAt(); !publishedAt.IsZero() {
+	if publishedAt := q.PublishedAt(); publishedAt != nil {
 		update["$set"].(bson.M)["publishedAt"] = publishedAt
 	}
 	if categories := q.Categories(); categories != nil {
 		update["$set"].(bson.M)["categories"] = make(primitive.A, 0)
-		for _, cat := range categories {
+		for _, cat := range *categories {
 			update["$set"].(bson.M)["categories"] = append(
 				update["$set"].(bson.M)["categories"].(primitive.A),
-				mongo.DBRef{
-					Ref: "categories",
-					ID:  cat.ID,
-				},
+				mongo.DBRef{Ref: "categories", ID: cat.ID},
 			)
 		}
 	}
 	if tags := q.Tags(); tags != nil {
 		update["$set"].(bson.M)["tags"] = make(primitive.A, 0)
-		for _, tag := range tags {
+		for _, tag := range *tags {
 			update["$set"].(bson.M)["tags"] = append(
 				update["$set"].(bson.M)["tags"].(primitive.A),
-				mongo.DBRef{
-					Ref: "tags",
-					ID:  tag.ID,
-				},
+				mongo.DBRef{Ref: "tags", ID: tag.ID},
 			)
 		}
 	}
-	if featuredImage := q.FeaturedImage(); !featuredImage.ID.IsZero() {
-		update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{
-			Ref: "files",
-			ID:  featuredImage.ID,
+	if featuredImage := q.FeaturedImage(); featuredImage != nil {
+		if featuredImage.ID.IsZero() {
+			update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{}
+		} else {
+			update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{Ref: "files", ID: featuredImage.ID}
 		}
 	}
 	if attachments := q.Attachments(); attachments != nil {
 		update["$set"].(bson.M)["attachments"] = make(primitive.A, 0)
-		for _, atm := range attachments {
+		for _, atm := range *attachments {
 			update["$set"].(bson.M)["attachments"] = append(
 				update["$set"].(bson.M)["attachments"].(primitive.A),
-				mongo.DBRef{
-					Ref: "files",
-					ID:  atm.ID,
-				},
+				mongo.DBRef{Ref: "files", ID: atm.ID},
 			)
 		}
 	}
@@ -259,79 +245,79 @@ type PostQueryBuilder struct {
 
 // WithTitle allows to set title to the post query object
 func (qb *PostQueryBuilder) WithTitle(title string) *PostQueryBuilder {
-	qb.postQuery.title = title
+	qb.postQuery.title = &title
 	return qb
 }
 
 // WithSlug allows to set slug to the post query object
 func (qb *PostQueryBuilder) WithSlug(slug string) *PostQueryBuilder {
-	qb.postQuery.slug = slug
+	qb.postQuery.slug = &slug
 	return qb
 }
 
 // WithStatus allows to set status to the post query object
 func (qb *PostQueryBuilder) WithStatus(status Status) *PostQueryBuilder {
-	qb.postQuery.status = status
+	qb.postQuery.status = &status
 	return qb
 }
 
 // WithMarkdown allows to set markdown to the post query object
 func (qb *PostQueryBuilder) WithMarkdown(markdown string) *PostQueryBuilder {
-	qb.postQuery.markdown = markdown
+	qb.postQuery.markdown = &markdown
 	return qb
 }
 
 // WithHTML allows to set HTML to the post query object
 func (qb *PostQueryBuilder) WithHTML(html string) *PostQueryBuilder {
-	qb.postQuery.html = html
+	qb.postQuery.html = &html
 	return qb
 }
 
 // WithPublishedAt allows to set a date-time which the post was published
 func (qb *PostQueryBuilder) WithPublishedAt(publishedAt time.Time) *PostQueryBuilder {
-	qb.postQuery.publishedAt = publishedAt
+	qb.postQuery.publishedAt = &publishedAt
 	return qb
 }
 
 // WithAuthorID allows to set an author ID to the post query object
 func (qb *PostQueryBuilder) WithAuthorID(authorID string) *PostQueryBuilder {
-	qb.postQuery.authorID = authorID
+	qb.postQuery.authorID = &authorID
 	return qb
 }
 
 // WithCategory allows to set category to the post query object
 func (qb *PostQueryBuilder) WithCategory(category Category) *PostQueryBuilder {
-	qb.postQuery.category = category
+	qb.postQuery.category = &category
 	return qb
 }
 
 // WithCategories allows to set list of categories to the post query object
 func (qb *PostQueryBuilder) WithCategories(categories []Category) *PostQueryBuilder {
-	qb.postQuery.categories = categories
+	qb.postQuery.categories = &categories
 	return qb
 }
 
 // WithTag allows to set tag to the post query object
 func (qb *PostQueryBuilder) WithTag(tag Tag) *PostQueryBuilder {
-	qb.postQuery.tag = tag
+	qb.postQuery.tag = &tag
 	return qb
 }
 
 // WithTags allows to set list of tags to the post query object
 func (qb *PostQueryBuilder) WithTags(tags []Tag) *PostQueryBuilder {
-	qb.postQuery.tags = tags
+	qb.postQuery.tags = &tags
 	return qb
 }
 
 // WithFeaturedImage allows to set featured image to the post query object
 func (qb *PostQueryBuilder) WithFeaturedImage(featuredImage storage.File) *PostQueryBuilder {
-	qb.postQuery.featuredImage = featuredImage
+	qb.postQuery.featuredImage = &featuredImage
 	return qb
 }
 
 // WithAttachments allows to set list of attachments to the post query object
 func (qb *PostQueryBuilder) WithAttachments(attachments []storage.File) *PostQueryBuilder {
-	qb.postQuery.attachments = attachments
+	qb.postQuery.attachments = &attachments
 	return qb
 }
 
@@ -354,86 +340,86 @@ func (qb *PostQueryBuilder) Build() PostQuery {
 
 // PostQuery uses as medium for communicating between repository and data-access object (DAO)
 type PostQuery struct {
-	title         string
-	slug          string
-	status        Status
-	markdown      string
-	html          string
-	publishedAt   time.Time
-	authorID      string
-	category      Category
-	categories    []Category
-	tag           Tag
-	tags          []Tag
-	featuredImage storage.File
-	attachments   []storage.File
+	title         *string
+	slug          *string
+	status        *Status
+	markdown      *string
+	html          *string
+	publishedAt   *time.Time
+	authorID      *string
+	category      *Category
+	categories    *[]Category
+	tag           *Tag
+	tags          *[]Tag
+	featuredImage *storage.File
+	attachments   *[]storage.File
 
 	offset int64
 	limit  int64
 }
 
 // Title returns title value
-func (q PostQuery) Title() string {
+func (q PostQuery) Title() *string {
 	return q.title
 }
 
 // Slug returns slug value
-func (q PostQuery) Slug() string {
+func (q PostQuery) Slug() *string {
 	return q.slug
 }
 
 // Status return status value
-func (q PostQuery) Status() Status {
+func (q PostQuery) Status() *Status {
 	return q.status
 }
 
 // Markdown returns markdown value
-func (q PostQuery) Markdown() string {
+func (q PostQuery) Markdown() *string {
 	return q.markdown
 }
 
 // HTML returns HTML value
-func (q PostQuery) HTML() string {
+func (q PostQuery) HTML() *string {
 	return q.html
 }
 
 // PublishedAt returns date-time value
-func (q PostQuery) PublishedAt() time.Time {
+func (q PostQuery) PublishedAt() *time.Time {
 	return q.publishedAt
 }
 
 // AuthorID returns author ID
-func (q PostQuery) AuthorID() string {
+func (q PostQuery) AuthorID() *string {
 	return q.authorID
 }
 
 // Category returns category object
-func (q PostQuery) Category() Category {
+func (q PostQuery) Category() *Category {
 	return q.category
 }
 
 // Categories returns list of categories
-func (q PostQuery) Categories() []Category {
+func (q PostQuery) Categories() *[]Category {
 	return q.categories
 }
 
 // Tag returns tag object
-func (q PostQuery) Tag() Tag {
+func (q PostQuery) Tag() *Tag {
 	return q.tag
 }
 
 // Tags return list of tags
-func (q PostQuery) Tags() []Tag {
+func (q PostQuery) Tags() *[]Tag {
 	return q.tags
 }
 
 // FeaturedImage returns file object
-func (q PostQuery) FeaturedImage() storage.File {
+func (q PostQuery) FeaturedImage() *storage.File {
 	return q.featuredImage
 }
 
 // Attachments returns list of files object
-func (q PostQuery) Attachments() []storage.File {
+func (q PostQuery) Attachments() *[]storage.File {
 	return q.attachments
 }
 

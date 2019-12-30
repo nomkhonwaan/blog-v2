@@ -183,6 +183,18 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
+	t.Run("With empty list of IDs", func(t *testing.T) {
+		// Given
+		ctx := context.Background()
+		var ids []primitive.ObjectID
+
+		// When
+		_, err := repo.FindAllByIDs(ctx, ids)
+
+		// Then
+		assert.Nil(t, err)
+	})
+
 	t.Run("When unable to find all files by list of IDs", func(t *testing.T) {
 		// Given
 		ctx := context.Background()

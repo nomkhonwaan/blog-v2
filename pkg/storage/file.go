@@ -99,6 +99,10 @@ func (repo MongoFileRepository) Delete(ctx context.Context, id interface{}) erro
 }
 
 func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error) {
+	if len(ids.([]primitive.ObjectID)) == 0 {
+		return nil, nil
+	}
+
 	cur, err := repo.col.Find(ctx, bson.M{
 		"_id": bson.M{
 			"$in": ids.([]primitive.ObjectID),
