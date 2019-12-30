@@ -1,6 +1,6 @@
-<button class="button" [attr.aria-label]="ariaLabel" [ngClass]="{'-icon': hasIcon()}">
+<button class="button" [attr.aria-label]="ariaLabel" [ngClass]="{'-icon': hasIcon(), '-danger': isDanger()}">
 
-  <fa-icon class="icon" *ngIf="icon" [icon]="icon"></fa-icon>
+  <fa-icon class="icon" *ngIf="icon" [icon]="icon" [spin]="spin"></fa-icon>
 
   <ng-content></ng-content>
 

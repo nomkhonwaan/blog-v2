@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=./mock/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
+
 package blog
 
 import (
@@ -14,10 +16,8 @@ import (
 type Tag struct {
 	// Identifier of the tag
 	ID primitive.ObjectID `bson:"_id" json:"id" graphql:"-"`
-
 	// Name of the tag
 	Name string `bson:"name" json:"name" graphql:"name"`
-
 	// Valid URL string composes with name and ID
 	Slug string `bson:"slug" json:"slug" graphql:"slug"`
 }

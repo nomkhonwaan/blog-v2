@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=./mock/output_mock.go github.com/nomkhonwaan/myblog/pkg/log Outputer
+
 package log
 
 import (

@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=./mock/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
+
 package mongo
 
 import (

@@ -10,7 +10,7 @@
   </li>
 
   <li *ngFor="let attachment of post.attachments;let i = index" class="attachment-item"
-    (click)="onClickAttachment(attachment)">
+    [ngClass]="{'-selected': wasSelected(attachment)}" (click)="onClickAttachment(attachment)">
     <img src="/api/v2.1/storage/{{attachment.slug}}?width=64" alt="{{attachment.fileName}}" />
   </li>
 </ul>

@@ -44,6 +44,6 @@ export class PostMarkdownEditorComponent extends AbstractPostEditorComponent imp
         slug,
         markdown,
       }
-    );
+    ).subscribe((post: Post): void => this.changeSuccess.emit(post));
   }
 }

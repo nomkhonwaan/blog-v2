@@ -12,19 +12,35 @@ import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
 export class ButtonComponent {
 
   /**
+   * An HTML aria-label property
+   */
+  @Input()
+  ariaLabel: string;
+
+  /**
    * A FontAwesome icon to-be displayed with the button
    */
   @Input()
   icon: IconDefinition | SolidIconDefinition | BrandIconDefinition;
 
   /**
-   * An HTML aria-label property
+   * Use to tell FontAwesome component to spin the icon or not
    */
   @Input()
-  ariaLabel: string;
+  spin: boolean;
+
+  /**
+   * Use to display button color in "danger" mode
+   */
+  @Input()
+  danger: boolean;
 
   hasIcon(): boolean {
     return !!this.icon;
+  }
+
+  isDanger(): boolean {
+    return !!this.danger;
   }
 
 }

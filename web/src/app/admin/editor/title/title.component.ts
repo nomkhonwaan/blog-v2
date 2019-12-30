@@ -22,7 +22,7 @@ export class PostTitleEditorComponent extends AbstractPostEditorComponent {
         slug: this.post.slug,
         title: this.post.title,
       },
-    );
+    ).subscribe((post: Post): void => this.changeSuccess.emit(post));
   }
 
 }

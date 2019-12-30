@@ -113,8 +113,7 @@ func action(_ *cobra.Command, _ []string) error {
 	}
 
 	var (
-		uploader   storage.Uploader
-		downloader storage.Downloader
+		storageService storage.Storage
 	)
 	switch viper.GetString("storage") {
 	case "gcloud":
@@ -122,7 +121,7 @@ func action(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		uploader, downloader = cloudStorage, cloudStorage
+		storageService = cloudStorage
 	case "s3":
 		s3, err := aws.NewS3(
 			viper.GetString("amazon-s3-access-key"),
@@ -132,10 +131,11 @@ func action(_ *cobra.Command, _ []string) error {
 		if err != nil {
 			return err
 		}
-		uploader, downloader = s3, s3
+		storageService = s3
 	case "local-disk":
+		fallthrough
 	default:
-		uploader, downloader = storage.LocalDiskStorage(cacheService.(storage.LocalDiskCache)), storage.LocalDiskStorage(cacheService.(storage.LocalDiskCache))
+		storageService = storage.LocalDiskStorage(cacheService.(storage.LocalDiskCache))
 	}
 
 	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
@@ -165,7 +165,7 @@ func action(_ *cobra.Command, _ []string) error {
 	r.Handle("/graphql", graphql.Handler(schema))
 	github.NewHandler(cacheService, http.DefaultTransport).
 		Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-	storage.NewHandler(cacheService, file, downloader, uploader, image.NewLanczosResizer()).
+	storage.NewHandler(cacheService, storageService, file, image.NewLanczosResizer()).
 		Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 	sitemap.NewHandler(baseURL, cacheService, blogService).
 		Register(r.PathPrefix("/sitemap.xml").Subrouter())

@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=./mock/resize_mock.go github.com/nomkhonwaan/myblog/pkg/image Resizer
+
 package image
 
 import (

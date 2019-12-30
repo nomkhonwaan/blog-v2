@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=./mock/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
+
 package blog
 
 import (

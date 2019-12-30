@@ -1,3 +1,5 @@
+//go:generate mockgen -destination=./mock/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
+
 package blog
 
 import (

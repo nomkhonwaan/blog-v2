@@ -34,8 +34,8 @@ export class EditorComponent implements OnInit {
   errors: ReadonlyArray<GraphQLError> = null;
 
   /**
- * Use to toggle application sidebar
- */
+   * Use to toggle application sidebar
+   */
   hasSidebarExpanded = false;
 
   /**
@@ -49,7 +49,7 @@ export class EditorComponent implements OnInit {
   userInfo: UserInfo | null;
 
   /**
-   * To-be updated attachment
+   * A selected attachment
    */
   selectedAttachment: Attachment;
 

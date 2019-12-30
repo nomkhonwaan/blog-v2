@@ -25,8 +25,11 @@ func (c LocalDiskCache) Exist(path string) bool {
 	return true
 }
 
+func (c LocalDiskCache) Delete(path string) error {
+	return os.Remove(filepath.Join(c.filePath, path))
+}
 func (c LocalDiskCache) Retrieve(path string) (io.Reader, error) {
-	f, err := os.Open(c.filePath + string(filepath.Separator) + path)
+	f, err := os.Open(filepath.Join(c.filePath, path))
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +53,10 @@ func (c LocalDiskCache) Store(body io.Reader, path string) error {
 
 // LocalDiskStorage implements Uploader and Downloader with LocalDiskCache
 type LocalDiskStorage LocalDiskCache
+
+func (s LocalDiskStorage) Delete(_ context.Context, path string) error {
+	return LocalDiskCache(s).Delete(path)
+}
 
 func (s LocalDiskStorage) Download(_ context.Context, path string) (io.Reader, error) {
 	return LocalDiskCache(s).Retrieve(path)

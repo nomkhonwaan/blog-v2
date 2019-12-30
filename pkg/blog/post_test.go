@@ -54,7 +54,7 @@ func TestMongoPostRepository_Create(t *testing.T) {
 	col := mock_mongo.NewMockCollection(ctrl)
 	timer := mock_log.NewMockTimer(ctrl)
 
-	t.Run("When insert into the collection successfully", func(t *testing.T) {
+	t.Run("With successful creating a new record", func(t *testing.T) {
 		// Given
 		ctx := context.Background()
 		now := time.Now()
@@ -76,14 +76,14 @@ func TestMongoPostRepository_Create(t *testing.T) {
 		assert.Equal(t, authorID, result.AuthorID)
 	})
 
-	t.Run("When insert into the collection un-successfully", func(t *testing.T) {
+	t.Run("When unable to create a new record on database", func(t *testing.T) {
 		// Given
 		ctx := context.Background()
 		now := time.Now()
 		authorID := "github|303589"
 
 		timer.EXPECT().Now().Return(now)
-		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("something went wrong"))
+		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("test unable to create a new record on database"))
 
 		postRepo := NewPostRepository(col, timer)
 
@@ -93,7 +93,7 @@ func TestMongoPostRepository_Create(t *testing.T) {
 		result, err := postRepo.Create(ctx, authorID)
 
 		// Then
-		assert.EqualError(t, err, "something went wrong")
+		assert.EqualError(t, err, "test unable to create a new record on database")
 		assert.Equal(t, expected, result)
 	})
 }
