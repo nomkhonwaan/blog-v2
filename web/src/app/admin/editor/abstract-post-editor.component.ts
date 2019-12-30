@@ -63,34 +63,4 @@ export abstract class AbstractPostEditorComponent {
     );
   }
 
-  // protected mutate(query: string, variables: { [key: string]: any }): void {
-  //   this.changing.emit(true);
-
-  //   this.apollo.mutate({
-  //     mutation: gql`
-  //       ${query}
-
-  //       fragment EditablePost on Post {
-  //         title slug
-  //         status
-  //         markdown html
-  //         publishedAt
-  //         authorId
-  //         categories { name slug }
-  //         tags { name slug }
-  //         featuredImage { slug }
-  //         attachments { fileName slug }
-  //         createdAt updatedAt
-  //       }
-  //     `,
-  //     variables,
-  //   }).pipe(
-  //     tap((result: ApolloQueryResult<any>): void => { this.changeErrors.emit(result.errors); }),
-  //     map((result: ApolloQueryResult<{ [key: string]: Post }>): Post => result.data[Object.keys(result.data)[0]]),
-  //     finalize((): void => { this.changing.emit(false); }),
-  //   ).subscribe((post: Post): void => {
-  //     this.changeSuccess.emit(post);
-  //   });
-  // }
-
 }
