@@ -201,10 +201,7 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 		for _, cat := range categories {
 			update["$set"].(bson.M)["categories"] = append(
 				update["$set"].(bson.M)["categories"].(primitive.A),
-				mongo.DBRef{
-					Ref: "categories",
-					ID:  cat.ID,
-				},
+				mongo.DBRef{Ref: "categories", ID: cat.ID},
 			)
 		}
 	}
@@ -213,28 +210,21 @@ func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q Post
 		for _, tag := range tags {
 			update["$set"].(bson.M)["tags"] = append(
 				update["$set"].(bson.M)["tags"].(primitive.A),
-				mongo.DBRef{
-					Ref: "tags",
-					ID:  tag.ID,
-				},
+				mongo.DBRef{Ref: "tags", ID: tag.ID},
 			)
 		}
 	}
 	if featuredImage := q.FeaturedImage(); !featuredImage.ID.IsZero() {
-		update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{
-			Ref: "files",
-			ID:  featuredImage.ID,
-		}
+		update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{Ref: "files", ID: featuredImage.ID}
+	} else {
+		update["$set"].(bson.M)["featuredImage"] = mongo.DBRef{Ref: ""}
 	}
 	if attachments := q.Attachments(); attachments != nil {
 		update["$set"].(bson.M)["attachments"] = make(primitive.A, 0)
 		for _, atm := range attachments {
 			update["$set"].(bson.M)["attachments"] = append(
 				update["$set"].(bson.M)["attachments"].(primitive.A),
-				mongo.DBRef{
-					Ref: "files",
-					ID:  atm.ID,
-				},
+				mongo.DBRef{Ref: "files", ID: atm.ID},
 			)
 		}
 	}

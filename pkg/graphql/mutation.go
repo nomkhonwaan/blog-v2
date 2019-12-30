@@ -173,13 +173,17 @@ func (s *Server) updatePostTagsMutation(ctx context.Context, args struct {
 // }
 func (s *Server) updatePostFeaturedImageMutation(ctx context.Context, args struct {
 	Slug              Slug
-	FeaturedImageSlug storage.Slug
+	FeaturedImageSlug storage.Slug `graphql:",optional"`
 }) (blog.Post, error) {
 	id := args.Slug.MustGetID()
 
 	err := s.validateAuthority(ctx, id)
 	if err != nil {
 		return blog.Post{}, err
+	}
+
+	if args.FeaturedImageSlug == "" {
+		return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithFeaturedImage(storage.File{}).Build())
 	}
 
 	file, err := s.service.File().FindByID(ctx, args.FeaturedImageSlug.MustGetID())

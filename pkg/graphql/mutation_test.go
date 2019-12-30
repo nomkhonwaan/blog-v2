@@ -501,6 +501,29 @@ func TestServer_RegisterMutation(t *testing.T) {
 			assert.Equal(t, "200 OK", w.Result().Status)
 		})
 
+		t.Run("With successful removing post featured image", func(t *testing.T) {
+			// Given
+			id := primitive.NewObjectID()
+			q := query{
+				Query: `mutation { updatePostFeaturedImage(slug: $slug, featuredImageSlug: $featuredImageSlug) { featuredImage { slug } } }`,
+				Variables: map[string]interface{}{
+					"slug":              "test-post-" + id.Hex(),
+					"featuredImageSlug": "",
+				},
+			}
+			w := httptest.NewRecorder()
+
+			post.EXPECT().FindByID(gomock.Any(), id).Return(blog.Post{AuthorID: "authorizedID"}, nil)
+			file.EXPECT().FindByID(gomock.Any(), gomock.Any()).Return(storage.File{}, nil)
+			post.EXPECT().Save(gomock.Any(), id, blog.NewPostQueryBuilder().WithFeaturedImage(storage.File{}).Build()).Return(blog.Post{FeaturedImage: mongo.DBRef{}}, nil)
+
+			// When
+			h.ServeHTTP(w, withAuthorizedID(newGraphQLRequest(q)))
+
+			// Then
+			assert.Equal(t, "200 OK", w.Result().Status)
+		})
+
 		t.Run("When unable to retrieve featured image by ID", func(t *testing.T) {
 			// Given
 			id := primitive.NewObjectID()
