@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -24,16 +25,12 @@ const (
 type Service interface {
 	// Create a new sitemap and return byte array of the XML data
 	Generate() ([]byte, error)
-
 	// A Cache service
 	Cache() storage.Cache
-
 	// A category repository
 	Category() blog.CategoryRepository
-
 	// A post repository
 	Post() blog.PostRepository
-
 	// A tag repository
 	Tag() blog.TagRepository
 }
@@ -73,8 +70,9 @@ func (s service) Generate() ([]byte, error) {
 			lastModify = p.UpdatedAt
 		}
 
+		location, _ := url.Parse(s.baseURL + "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug)
 		urlSet.URLs = append(urlSet.URLs, URL{
-			Location:   s.baseURL + "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug,
+			Location:   location.String(),
 			LastModify: lastModify.Format(time.RFC3339),
 			Priority:   "0.8",
 		})
