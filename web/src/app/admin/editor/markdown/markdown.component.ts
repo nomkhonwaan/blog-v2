@@ -13,7 +13,7 @@ export class PostMarkdownEditorComponent extends AbstractPostEditorComponent imp
   /**
    * Use for debouncing keypress event on markdown value
    */
-  markdown$: BehaviorSubject<string> = new BehaviorSubject('');
+  markdown$: BehaviorSubject<string> = new BehaviorSubject(null);
 
   ngOnInit(): void {
     this.markdown$.next(this.post.markdown);

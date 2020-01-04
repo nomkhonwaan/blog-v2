@@ -9,11 +9,14 @@
       </app-button>
     </header>
 
-    <app-post-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
-      (changeErrors)="onChagningErrors($event)"></app-post-status-editor>
+    <app-post-status-editor [post]="post" (changing)="($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChangingErrors($event)"></app-post-status-editor>
 
-    <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="onChaging($event)"
-      (changeSuccess)="onChangingSuccess($event)" (changeErrors)="onChagningErrors($event)"
+    <app-post-archives-editor class="_flex _flex-direction-column" type="categories" [post]="post"
+      [style.margin-top]="'-3.2rem'" (changing)="onChanging($event)"></app-post-archives-editor>
+
+    <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="($event)"
+      (changeSuccess)="onChangingSuccess($event)" (changeErrors)="onChangingErrors($event)"
       (selectAttachment)="onSelectingAttachment($event)">
     </app-post-attachments-editor>
   </aside>
@@ -30,15 +33,15 @@
   </div>
 
   <div class="article">
-    <app-post-attachment-viewer [post]="post" [attachment]="selectedAttachment" (changing)="onChaging($event)"
+    <app-post-attachment-viewer [post]="post" [attachment]="selectedAttachment" (changing)="($event)"
       (changeSuccess)="onChangingSuccess($event)" (closed)="selectedAttachment = null">
     </app-post-attachment-viewer>
 
-    <app-post-title-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
-      (changeErrors)="onChagningErrors($event)"></app-post-title-editor>
+    <app-post-title-editor [post]="post" (changing)="($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChangingErrors($event)"></app-post-title-editor>
 
-    <app-post-markdown-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
-      (changeErrors)="onChagningErrors($event)"></app-post-markdown-editor>
+    <app-post-markdown-editor [post]="post" (changing)="($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChangingErrors($event)"></app-post-markdown-editor>
   </div>
 </div>
 

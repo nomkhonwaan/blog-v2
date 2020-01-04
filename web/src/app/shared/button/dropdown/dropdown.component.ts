@@ -51,15 +51,16 @@ export class DropdownButtonComponent extends ButtonComponent {
   selectedItem: DropdownItem;
 
   /**
+   * Use to indicate whether dropdown menu should show or not
+   */
+  @Input()
+  showMenu = false;
+
+  /**
    * For emitting a selected item
    */
   @Output()
   selectItem: EventEmitter<DropdownItem> = new EventEmitter(null);
-
-  /**
-   * Use to indicate whether dropdown menu should show or not
-   */
-  showMenu = false;
 
   /**
    * A FontAwesome icon to-be displayed with the button

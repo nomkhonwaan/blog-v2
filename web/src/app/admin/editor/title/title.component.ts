@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-
 import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
 
 @Component({

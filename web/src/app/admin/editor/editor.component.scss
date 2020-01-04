@@ -39,6 +39,10 @@
   }
 }
 
+.sidebar ::ng-deep ._section-title {
+  font-size: 1.8rem;
+}
+
 .open-sidebar {
   display: contents;
 

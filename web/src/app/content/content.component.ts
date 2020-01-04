@@ -35,18 +35,6 @@ export class ContentComponent implements OnInit {
   isFetching: boolean;
 
   /**
-   * List of FontAwesome icons
-   */
-  icons: { [name: string]: IconDefinition | SolidIconDefinition | BrandIconDefinition } = {
-    faBars,
-    faHeart,
-    faSearch,
-    faTimes,
-    faGithubSquare,
-    faMedium,
-  };
-
-  /**
    * List of categories to-be rendered as sidebar menu-item(s)
    */
   categories: Array<Category>;
@@ -65,6 +53,18 @@ export class ContentComponent implements OnInit {
    * A revision number which will collect from Git commit ID
    */
   revision: string = environment.revision;
+
+  /**
+   * List of FontAwesome icons
+   */
+  icons: { [name: string]: IconDefinition | SolidIconDefinition | BrandIconDefinition } = {
+    faBars,
+    faHeart,
+    faSearch,
+    faTimes,
+    faGithubSquare,
+    faMedium,
+  };
 
   constructor(
     private apollo: Apollo,

@@ -8,6 +8,7 @@ import { SharedModule } from '../shared/share.module';
 import { AdminRoutingModule } from './admin-routing.module';
 import { AdminComponent } from './admin.component';
 import { EditorComponent, HeightAsScrollDirective, PostAttachmentsEditorComponent, PostAttachmentViewerComponent, PostMarkdownEditorComponent, PostStatusEditorComponent, PostTitleEditorComponent } from './editor';
+import { PostArchivesEditorComponent } from './editor/archives';
 
 @NgModule({
   imports: [
@@ -23,6 +24,7 @@ import { EditorComponent, HeightAsScrollDirective, PostAttachmentsEditorComponen
     AdminComponent,
     EditorComponent,
     HeightAsScrollDirective,
+    PostArchivesEditorComponent,
     PostAttachmentsEditorComponent,
     PostAttachmentViewerComponent,
     PostMarkdownEditorComponent,

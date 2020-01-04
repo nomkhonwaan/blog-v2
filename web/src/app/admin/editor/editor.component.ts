@@ -94,7 +94,7 @@ export class EditorComponent implements OnInit {
     this.store.dispatch(toggleEditorSidebar());
   }
 
-  onChaging(isFetching: boolean): void {
+  onChanging(isFetching: boolean): void {
     this.isFetching = isFetching;
   }
 
@@ -112,7 +112,7 @@ export class EditorComponent implements OnInit {
     this.title.setTitle(`Edit · ${post.title} - ${environment.title}`);
   }
 
-  onChagningErrors(errors: ReadonlyArray<GraphQLError>): void {
+  onChangingErrors(errors: ReadonlyArray<GraphQLError>): void {
     this.errors = errors;
   }
 

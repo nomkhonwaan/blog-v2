@@ -29,7 +29,7 @@ export class PostStatusEditorComponent extends AbstractPostEditorComponent imple
       filter((item: DropdownItem): DropdownItem => item)[0];
   }
 
-  onChange(selectedItem: { label: string, value?: any }): void {
+  onChange(selectedItem: DropdownItem): void {
     this.mutate(
       `
           mutation {

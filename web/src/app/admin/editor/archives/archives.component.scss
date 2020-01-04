@@ -1,0 +1,28 @@
+:host {
+  font: normal 1.6rem Lato, sans-serif;
+}
+.input {
+  border: 0.1rem solid #ececec;
+  border-radius: 50vh;
+  color: #808080;
+  margin: 0 3.2rem;
+}
+
+.input > input {
+  border: none;
+  height: 3.2rem;
+  margin: 0 1.6rem;
+  width: 100%;
+}
+
+.dropdown-archive ::ng-deep .dropdown-menu {
+  top: 1.6rem;
+}
+
+.selected-archives {
+  margin: 1.6rem 3.2rem 0 3.2rem!important;
+}
+
+.selected-archive-item label {
+  margin-bottom: 0;
+}
