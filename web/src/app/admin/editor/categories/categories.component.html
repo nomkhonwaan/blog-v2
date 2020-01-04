@@ -2,3 +2,7 @@
   {{'Categories' | uppercase}}
 </div>
 
+<div class="input _flex _flex-vertical-align-middle">
+  <input (change)="onChange()" (keypress)="onKeyPress()" [(ngModel)]="keyword" />
+  <fa-icon [icon]="icons.faSearch" [style.margin-right]="'1.6rem'"></fa-icon>
+</div>
