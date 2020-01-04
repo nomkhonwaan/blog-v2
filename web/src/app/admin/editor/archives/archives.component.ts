@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 import { faSearch, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
@@ -8,11 +8,17 @@ import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
 type Archive = Category | Tag;
 
 @Component({
-  selector: 'app-post-categories-editor',
-  templateUrl: './categories.component.html',
-  styleUrls: ['./categories.component.scss'],
+  selector: 'app-post-archives-editor',
+  templateUrl: './archives.component.html',
+  styleUrls: ['./archives.component.scss'],
 })
-export class PostCategoriesEditorComponent extends AbstractPostEditorComponent implements OnInit {
+export class PostArchivesEditorComponent extends AbstractPostEditorComponent implements OnInit {
+
+  /**
+   * Type of archive whether category or tag
+   */
+  @Input()
+  type: string;
 
   /**
    * List of categories or tags to-be rendered as sidebar menu-item(s)
@@ -42,30 +48,26 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
   };
 
   ngOnInit(): void {
-    this.getAll('categories');
+    this.getAllArchives();
+
+    this.selectedArchives = this.type === 'categories'
+      ? this.post.categories
+      : this.post.tags;
   }
 
   onChange(selectedItem: DropdownItem): void {
+    const i: number = this.selectedArchives
+      .findIndex(({ slug }: Archive): boolean => selectedItem.value === slug);
+
+    if (i > -1) {
+      return;
+    }
+
     this.selectedArchives = this.selectedArchives
       .concat(this.archives.find(({ slug }: Archive): boolean => selectedItem.value === slug))
       .filter((val, i, self) => self.indexOf(val) === i);
-    // this.mutate(
-    //   `
-    //       mutation {
-    //         updatePostStatus(slug: $slug, status: $status) {
-    //           ...EditablePost
-    //         }
-    //       }
-    //     `,
-    //   {
-    //     slug: this.post.slug,
-    //     status: selectedItem.value.toString(),
-    //   },
-    // ).subscribe((post: Post): void => {
-    //   this.changeSuccess.emit(post);
 
-    //   this.currentStatus = update(selectedItem, { label: { $set: selectedItem.label.toUpperCase() } });
-    // });
+    this.updatePostArchives(this.post.slug, this.selectedArchives.map(({ slug }: Archive): string => slug));
   }
 
   onBlur(): void {
@@ -73,14 +75,23 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
   }
 
   onKeyPress(keyword: string): void {
-    this.findAllArchives(keyword);
+    this.searchAllArchives(keyword);
   }
 
-  protected getAll(type: string): void {
+  toggleSelectedArchive(archive: Archive): void {
+    const i: number = this.selectedArchives
+      .findIndex(({ slug }: Archive): boolean => archive.slug === slug);
+
+    this.selectedArchives.splice(i, 1);
+
+    this.updatePostArchives(this.post.slug, this.selectedArchives.map(({ slug }: Archive): string => slug));
+  }
+
+  private getAllArchives(): void {
     this.apollo.query({
       query: gql`
         {
-          archives: ${type} { name slug }
+          archives: ${this.type} { name slug }
         }
       `,
     }).pipe(
@@ -90,7 +101,7 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
     });
   }
 
-  private findAllArchives(keyword: string): void {
+  private searchAllArchives(keyword: string): void {
     if (this.archives.length === 0) {
       return;
     }
@@ -108,5 +119,25 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
 
     this.dropdownItems =
       this.matchedSearchArchives.map(({ name, slug }: Archive): DropdownItem => ({ label: name, value: slug }));
+  }
+
+  private updatePostArchives(slug: string, archiveSlugs: Array<string>): void {
+    const name: string = this.type === 'categories'
+      ? 'updatePostCategories(slug: $slug, categorySlugs: $archiveSlugs)'
+      : 'updatePostTags(slug: $slug, tagSlugs: $archiveSlugs)';
+
+    this.mutate(
+      `
+        mutation {
+          updatePostArchives: ${name} {
+            ...EditablePost
+          }
+        }
+      `,
+      {
+        slug,
+        archiveSlugs,
+      }
+    ).subscribe((post: Post): void => this.changeSuccess.emit(post));
   }
 }

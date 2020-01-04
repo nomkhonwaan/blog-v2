@@ -1,5 +1,5 @@
 <div class="_section-title">
-  {{'Categories' | uppercase}}
+  {{type | uppercase}}
 </div>
 
 <div class="input _flex _flex-vertical-align-middle">
@@ -12,8 +12,10 @@
     (selectItem)="onChange($event)"></app-dropdown-button>
 </div>
 
-<ul class="_list-unstyled">
-  <li *ngFor="let archive of selectedArchives">
-    {{archive.name}}
+<ul class="selected-archives _list-unstyled">
+  <li *ngFor="let archive of selectedArchives" class="selected-archive-item">
+    <label class="_flex _flex-vertical-align-middle">
+      <input type="checkbox" [checked]="true" (click)="toggleSelectedArchive(archive)" />&nbsp;&nbsp;{{archive.name}}
+    </label>
   </li>
 </ul>
