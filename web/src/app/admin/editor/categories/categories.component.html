@@ -3,6 +3,17 @@
 </div>
 
 <div class="input _flex _flex-vertical-align-middle">
-  <input (change)="onChange()" (keypress)="onKeyPress()" [(ngModel)]="keyword" />
+  <input (blur)="onBlur()" (keyup)="onKeyPress($event.target.value)" />
   <fa-icon [icon]="icons.faSearch" [style.margin-right]="'1.6rem'"></fa-icon>
 </div>
+
+<div [style.margin]="'0 3.2rem'">
+  <app-dropdown-button class="dropdown-archive" [items]="dropdownItems" [showMenu]="dropdownItems.length > 0"
+    (selectItem)="onChange($event)"></app-dropdown-button>
+</div>
+
+<ul class="_list-unstyled">
+  <li *ngFor="let archive of selectedArchives">
+    {{archive.name}}
+  </li>
+</ul>

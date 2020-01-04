@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { faSearch, IconDefinition } from '@fortawesome/pro-light-svg-icons';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
-import { BehaviorSubject } from 'rxjs';
-import { debounceTime, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
+
+type Archive = Category | Tag;
 
 @Component({
   selector: 'app-post-categories-editor',
@@ -16,17 +17,22 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
   /**
    * List of categories or tags to-be rendered as sidebar menu-item(s)
    */
-  archives: Array<Category | Tag>;
+  archives: Array<Archive>;
 
   /**
-   * A keyword for searching on the name of the archive
+   * List of categories or tags are matched with the search keyword
    */
-  keyword: string;
+  matchedSearchArchives: Array<Archive> = [];
 
   /**
-   * Use to deboucing keypress event on search value
+   * List of categories or tags are shown in the dropdown menu
    */
-  keyword$: BehaviorSubject<String> = new BehaviorSubject('');
+  dropdownItems: Array<DropdownItem> = [];
+
+  /**
+   * List of categories or tags are selected from the dropdown menu
+   */
+  selectedArchives: Array<Archive> = [];
 
   /**
    * List of FontAwesome icons
@@ -37,18 +43,37 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
 
   ngOnInit(): void {
     this.getAll('categories');
-
-    this.keyword$.pipe(debounceTime(1600)).subscribe((search: string): void => {
-      this.findAllArchives(search);
-    });
   }
 
-  onChange(): void {
-    this.keyword$.next(this.keyword);
+  onChange(selectedItem: DropdownItem): void {
+    this.selectedArchives = this.selectedArchives
+      .concat(this.archives.find(({ slug }: Archive): boolean => selectedItem.value === slug))
+      .filter((val, i, self) => self.indexOf(val) === i);
+    // this.mutate(
+    //   `
+    //       mutation {
+    //         updatePostStatus(slug: $slug, status: $status) {
+    //           ...EditablePost
+    //         }
+    //       }
+    //     `,
+    //   {
+    //     slug: this.post.slug,
+    //     status: selectedItem.value.toString(),
+    //   },
+    // ).subscribe((post: Post): void => {
+    //   this.changeSuccess.emit(post);
+
+    //   this.currentStatus = update(selectedItem, { label: { $set: selectedItem.label.toUpperCase() } });
+    // });
   }
 
-  onKeyPress(): void {
-    this.keyword$.next(this.keyword);
+  onBlur(): void {
+    setTimeout(() => { this.dropdownItems = []; }, 800);
+  }
+
+  onKeyPress(keyword: string): void {
+    this.findAllArchives(keyword);
   }
 
   protected getAll(type: string): void {
@@ -59,13 +84,29 @@ export class PostCategoriesEditorComponent extends AbstractPostEditorComponent i
         }
       `,
     }).pipe(
-      map((result: ApolloQueryResult<{ archives: Array<Category | Tag> }>): Array<Category> => result.data.archives),
-    ).subscribe((archives: Array<Category | Tag>): void => {
+      map((result: ApolloQueryResult<{ archives: Array<Archive> }>): Array<Archive> => result.data.archives),
+    ).subscribe((archives: Array<Archive>): void => {
       this.archives = archives;
     });
   }
 
   private findAllArchives(keyword: string): void {
+    if (this.archives.length === 0) {
+      return;
+    }
 
+    const re: RegExp = new RegExp(keyword, 'i');
+
+    this.matchedSearchArchives =
+      this.archives.reduce((result: Array<Archive>, archive: Archive): Array<Archive> => {
+        if (re.test(archive.name)) {
+          return result.concat(archive);
+        }
+
+        return result;
+      }, []);
+
+    this.dropdownItems =
+      this.matchedSearchArchives.map(({ name, slug }: Archive): DropdownItem => ({ label: name, value: slug }));
   }
 }

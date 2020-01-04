@@ -1,4 +1,4 @@
-<button class="button" [attr.aria-label]="ariaLabel" (click)="toggleMenu()">
+<button *ngIf="selectedItem" class="button" [attr.aria-label]="ariaLabel" (click)="toggleMenu()">
   <span [style.margin-left]="'auto'"></span>
   <span>{{selectedItem.label}}</span>
   <fa-icon class="icon" [icon]="faChevronDown"></fa-icon>

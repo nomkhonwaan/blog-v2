@@ -12,3 +12,7 @@
   margin: 0 1.6rem;
   width: 100%;
 }
+
+.dropdown-archive ::ng-deep .dropdown-menu {
+  top: 1.6rem;
+}
