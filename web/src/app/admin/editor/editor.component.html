@@ -12,6 +12,8 @@
     <app-post-status-editor [post]="post" (changing)="onChaging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChagningErrors($event)"></app-post-status-editor>
 
+    <app-post-categories-editor class="_flex" [post]="post" [style.margin-top]="'-3.2rem'" (changing)="onChanging($event)"></app-post-categories-editor>
+
     <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="onChaging($event)"
       (changeSuccess)="onChangingSuccess($event)" (changeErrors)="onChagningErrors($event)"
       (selectAttachment)="onSelectingAttachment($event)">
