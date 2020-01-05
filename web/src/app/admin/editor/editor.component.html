@@ -9,13 +9,13 @@
       </app-button>
     </header>
 
-    <app-post-status-editor [post]="post" (changing)="($event)" (changeSuccess)="onChangingSuccess($event)"
+    <app-post-status-editor [post]="post" (changing)="onChanging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChangingErrors($event)"></app-post-status-editor>
 
     <app-post-archives-editor class="_flex _flex-direction-column" type="categories" [post]="post"
       [style.margin-top]="'-3.2rem'" (changing)="onChanging($event)"></app-post-archives-editor>
 
-    <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="($event)"
+    <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="onChanging($event)"
       (changeSuccess)="onChangingSuccess($event)" (changeErrors)="onChangingErrors($event)"
       (selectAttachment)="onSelectingAttachment($event)">
     </app-post-attachments-editor>
@@ -33,14 +33,14 @@
   </div>
 
   <div class="article">
-    <app-post-attachment-viewer [post]="post" [attachment]="selectedAttachment" (changing)="($event)"
+    <app-post-attachment-viewer [post]="post" [attachment]="selectedAttachment" (changing)="onChanging($event)"
       (changeSuccess)="onChangingSuccess($event)" (closed)="selectedAttachment = null">
     </app-post-attachment-viewer>
 
-    <app-post-title-editor [post]="post" (changing)="($event)" (changeSuccess)="onChangingSuccess($event)"
+    <app-post-title-editor [post]="post" (changing)="onChanging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChangingErrors($event)"></app-post-title-editor>
 
-    <app-post-markdown-editor [post]="post" (changing)="($event)" (changeSuccess)="onChangingSuccess($event)"
+    <app-post-markdown-editor [post]="post" (changing)="onChanging($event)" (changeSuccess)="onChangingSuccess($event)"
       (changeErrors)="onChangingErrors($event)"></app-post-markdown-editor>
   </div>
 </div>
