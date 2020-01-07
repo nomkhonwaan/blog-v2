@@ -27,8 +27,8 @@ export class PostMarkdownEditorComponent extends AbstractPostEditorComponent imp
     this.updatePostContent(this.post.slug, this.post.markdown);
   }
 
-  onKeyPress(): void {
-    this.markdown$.next(this.post.markdown);
+  onKeyPress(markdown: string): void {
+    this.markdown$.next(markdown);
   }
 
   private updatePostContent(slug: string, markdown: string): void {
