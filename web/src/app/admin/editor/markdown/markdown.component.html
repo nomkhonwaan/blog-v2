@@ -1,2 +1,2 @@
 <textarea appHeightAsScroll class="input -textarea" placeholder="Markdown" (change)="onChange()"
-  (keypress)="onKeyPress()" [(ngModel)]="post.markdown"></textarea>
+  (keyup)="onKeyPress($event.target.value)" [(ngModel)]="post.markdown"></textarea>
