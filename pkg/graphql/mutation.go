@@ -103,7 +103,9 @@ func (s *Server) updatePostContentMutation(ctx context.Context, args struct {
 	if err != nil {
 		return blog.Post{}, err
 	}
-	html := blackfriday.Run([]byte(args.Markdown))
+	html := blackfriday.Run([]byte(args.Markdown),
+		blackfriday.WithExtensions(blackfriday.CommonExtensions+blackfriday.Footnotes),
+	)
 
 	return s.service.Post().Save(ctx, id, blog.NewPostQueryBuilder().WithMarkdown(args.Markdown).WithHTML(string(html)).Build())
 }
