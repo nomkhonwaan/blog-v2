@@ -1,10 +1,11 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, Inject, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { Router } from '@angular/router';
 import { select, Store } from '@ngrx/store';
 import 'fslightbox';
-import { isLightboxClosed, isLightboxOpened } from '../post.actions';
 import { AbstractPostComponent } from '../abstract-post.component';
+import { isLightboxClosed, isLightboxOpened } from '../post.actions';
 
 @Component({
   selector: 'app-post-content',
@@ -34,6 +35,7 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
     @Inject(DOCUMENT) private document: Document,
     private http: HttpClient,
     private renderer: Renderer2,
+    private router: Router,
     private store: Store<{ post: PostState }>,
   ) {
     super();
@@ -48,17 +50,18 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
   }
 
   ngAfterViewInit(): void {
-    console.log(this.html);
     this.content.nativeElement.appendChild(
       this.document.createRange().createContextualFragment(this.post.html),
     );
 
+    const anchors: NodeList = this.content.nativeElement.querySelectorAll('a');
     const imgs: NodeList = this.content.nativeElement.querySelectorAll('img');
     const scripts: NodeList = this.content.nativeElement.querySelectorAll('script');
 
+    this.fixHashLinks(anchors);
     this.addExtraClassNamesToAllImages(imgs);
     this.addExtraQueryToImageSrc(imgs);
-    this.renderGitHubGist(scripts);
+    this.renderGitHubGists(scripts);
 
     if (imgs.length > 0) {
       window.refreshFsLightbox();
@@ -71,6 +74,16 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
         this.store.dispatch(isLightboxClosed());
       };
     }
+  }
+
+  private fixHashLinks(anchors: NodeList): void {
+    anchors.forEach((node: Element): void => {
+      const href: string = node.getAttribute('href');
+
+      if (/^#/.test(href)) {
+        node.setAttribute('href', this.router.url + href);
+      }
+    });
   }
 
   private addExtraClassNamesToAllImages(imgs: NodeList): void {
@@ -107,7 +120,7 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
     img.insertAdjacentElement('afterend', caption);
   }
 
-  private renderGitHubGist(scripts: NodeList): void {
+  private renderGitHubGists(scripts: NodeList): void {
     scripts.forEach((node: Element): void => {
       const src: string = node.getAttribute('src');
 
