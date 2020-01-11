@@ -104,3 +104,7 @@
 .saving-status .icon {
   margin-right: 0.8rem;
 }
+
+.categories-editor ::ng-deep ._section-title {
+  margin-top: 0!important;
+}
