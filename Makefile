@@ -72,8 +72,8 @@ build-docker:
 
 .PHONY: build-docker-all-in-one
 build-docker-all-in-one:
-	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog-all-in-one:latest .
+	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/all-in-one/Dockerfile --tag nomkhonwaan/myblog-all-in-one:latest .
 
 .PHONY: build-docker-all-in-one-ci
 build-docker-all-in-one-ci:
-	$(DOCKER) build --file build/package/Dockerfile.all-in-one-ci --tag nomkhonwaan/myblog-all-in-one:latest .
+	$(DOCKER) build --file build/package/all-in-one-ci/Dockerfile --tag nomkhonwaan/myblog-all-in-one:latest .
