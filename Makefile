@@ -7,24 +7,23 @@ REVISION := $(shell $(GIT) rev-parse HEAD)$(shell if ! $(GIT) diff --no-ext-diff
 GO       ?= go
 BINDATA  ?= bindata
 MOCKGEN  ?= mockgen
-PKG	 := github.com/nomkhonwaan/myblog
+PKG      := github.com/nomkhonwaan/myblog
 TAGS     :=
 LDFLAGS  :=
 GOFLAGS  :=
 BINDIR   := $(CURDIR)/bin
 
 # Node.js options
-NPM	 ?= npm
-NPX	 ?= npx
-FIREBASE := $(NPX) firebase
-NG	 := $(NPX) ng
+NPM      ?= npm
+NPX      ?= npx
+NG       := $(NPX) ng
 WEBDIR   := $(CURDIR)/web
 
 # Docker options
 DOCKER   := docker
 
 .PHONY: all
-all: clean install build
+all: clean install build install-web build-web
 	
 .PHONY: install
 install:
@@ -36,31 +35,16 @@ install-web:
 
 .PHONY: clean
 clean:
-	@rm -rf $(BINDIR) && \
-	@rm -rf $(CURDIR)/coverage.out && \
-	@rm -rf $(CURDIR)/vendor && \
-	@rm -rf $(WEBDIR)/dist && \
-	@rm -rf $(WEBDIR)/.firebase && \
-	@rm -rf $(WEBDIR)/node_modules
+	rm -rf $(BINDIR)/myblog && \
+	rm -rf $(CURDIR)/coverage.out && \
+	rm -rf $(CURDIR)/vendor && \
+	rm -rf $(WEBDIR)/dist && \
+	rm -rf $(WEBDIR)/node_modules
 
 .PHONY: generate
 generate:
 	$(GO) generate ./...
 
-.PHONY: mockgen
-mockgen:
-	$(MOCKGEN) -destination ./pkg/blog/mock/category_mock.go github.com/nomkhonwaan/myblog/pkg/blog CategoryRepository
-	$(MOCKGEN) -destination ./pkg/blog/mock/post_mock.go github.com/nomkhonwaan/myblog/pkg/blog PostRepository
-	$(MOCKGEN) -destination ./pkg/blog/mock/tag_mock.go github.com/nomkhonwaan/myblog/pkg/blog TagRepository
-	$(MOCKGEN) -destination ./pkg/graphql/mock/service_mock.go github.com/nomkhonwaan/myblog/pkg/graphql Service
-	$(MOCKGEN) -destination ./pkg/http/mock/client_mock.go net/http RoundTripper
-	$(MOCKGEN) -destination ./pkg/image/mock/resize_mock.go github.com/nomkhonwaan/myblog/pkg/image Resizer
-	$(MOCKGEN) -destination ./pkg/log/mock/timer_mock.go github.com/nomkhonwaan/myblog/pkg/log Timer
-	$(MOCKGEN) -destination ./pkg/mongo/mock/collection_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Collection
-	$(MOCKGEN) -destination ./pkg/mongo/mock/cursor_mock.go github.com/nomkhonwaan/myblog/pkg/mongo Cursor
-	$(MOCKGEN) -destination ./pkg/mongo/mock/single_result_mock.go github.com/nomkhonwaan/myblog/pkg/mongo SingleResult
-	$(MOCKGEN) -destination ./pkg/storage/mock/file_mock.go github.com/nomkhonwaan/myblog/pkg/storage FileRepository
-	
 .PHONY: test
 test:
 	$(GO) test -v ./... -race -coverprofile=coverage.out -covermode=atomic
@@ -88,14 +72,8 @@ build-docker:
 
 .PHONY: build-docker-all-in-one
 build-docker-all-in-one:
-	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/Dockerfile.all-in-one --tag nomkhonwaan/myblog-all-in-one:latest .
+	$(DOCKER) build --build-arg NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN} --file build/package/all-in-one/Dockerfile --tag nomkhonwaan/myblog-all-in-one:latest .
 
 .PHONY: build-docker-all-in-one-ci
 build-docker-all-in-one-ci:
-	$(DOCKER) build --file build/package/Dockerfile.all-in-one-ci --tag nomkhonwaan/myblog-all-in-one:latest .
-
-.PHONY: deploy-web-firebase
-deploy-web:
-	cd $(WEBDIR) && \
-	$(FIREBASE) use www-nomkhonwaan-com --token=${FIREBASE_TOKEN} && \
-	$(FIREBASE) deploy --token=${FIREBASE_TOKEN}
+	$(DOCKER) build --file build/package/all-in-one-ci/Dockerfile --tag nomkhonwaan/myblog-all-in-one:latest .
