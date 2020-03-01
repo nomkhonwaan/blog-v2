@@ -91,6 +91,10 @@ func initConfig() {
 }
 
 func action(_ *cobra.Command, _ []string) error {
+	var (
+		cacheService   storage.Cache
+		storageService storage.Storage
+	)
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("mongodb-uri")))
 	if err != nil {
 		return err
@@ -104,17 +108,13 @@ func action(_ *cobra.Command, _ []string) error {
 
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
 
-	var (
-		cacheService storage.Cache
-	)
-	cacheService, err = storage.NewLocalDiskCache(viper.GetString("cache-file-path"))
+	localDiskCache, err := storage.NewLocalDiskCache(viper.GetString("cache-file-path"))
 	if err != nil {
 		return err
 	}
+	defer localDiskCache.Close()
+	cacheService = localDiskCache
 
-	var (
-		storageService storage.Storage
-	)
 	switch viper.GetString("storage") {
 	case "gcloud":
 		cloudStorage, err := gcloud.NewCloudStorage(viper.GetString("gcloud-credentials-file-path"), storageBucket)

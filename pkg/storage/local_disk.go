@@ -2,19 +2,67 @@ package storage
 
 import (
 	"context"
+	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
+	"time"
 )
 
 // LocalDiskCache implements Cache on local disk
 type LocalDiskCache struct {
-	filePath string
+	filePath            string
+	defaultCacheFileTTL time.Duration
+	doneCh              chan struct{}
 }
 
 // NewLocalDiskCache returns new LocalDiskCache instance
 func NewLocalDiskCache(filePath string) (LocalDiskCache, error) {
-	return LocalDiskCache{filePath: filePath}, os.MkdirAll(filePath, 0755)
+	c := LocalDiskCache{
+		filePath:            filePath,
+		defaultCacheFileTTL: time.Hour * 24 * 7,
+	}
+
+	go func() {
+		for {
+			select {
+			case _ = <-c.doneCh:
+				return
+			default:
+				err := filepath.Walk(c.filePath, c.deleteExpiredCacheFiles)
+				if err != nil {
+					logrus.Errorf("unable to delete some cache file: %s", err)
+				}
+
+				time.Sleep(time.Hour)
+			}
+		}
+	}()
+
+	return c, os.MkdirAll(filePath, 0755)
+}
+
+func (c LocalDiskCache) deleteExpiredCacheFiles(path string, info os.FileInfo, err error) error {
+	if err != nil {
+		return err
+	}
+
+	if !info.IsDir() {
+		if time.Since(info.ModTime()) > c.defaultCacheFileTTL {
+			logrus.Infof("deleting too old cache file: %s", path)
+			if err = os.Remove(path); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+// Close closes the interval cache file deletion function
+func (c LocalDiskCache) Close() {
+	c.doneCh <- struct{}{}
+	close(c.doneCh)
 }
 
 func (c LocalDiskCache) Exist(path string) bool {
@@ -28,6 +76,7 @@ func (c LocalDiskCache) Exist(path string) bool {
 func (c LocalDiskCache) Delete(path string) error {
 	return os.Remove(filepath.Join(c.filePath, path))
 }
+
 func (c LocalDiskCache) Retrieve(path string) (io.Reader, error) {
 	f, err := os.Open(filepath.Join(c.filePath, path))
 	if err != nil {
