@@ -34,7 +34,7 @@ func NewLocalDiskCache(filePath string) (LocalDiskCache, error) {
 					logrus.Errorf("unable to delete some cache file: %s", err)
 				}
 
-				time.Sleep(time.Hour)
+				time.Sleep(time.Second * 5)
 			}
 		}
 	}()
