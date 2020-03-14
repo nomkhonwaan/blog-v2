@@ -131,7 +131,7 @@ func (h Handler) Register(r *mux.Router) {
 func (h Handler) serve(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/xml")
 
-	if h.service.Cache().Exist(CacheFilePath) {
+	if h.service.Cache().Exists(CacheFilePath) {
 		body, err := h.service.Cache().Retrieve(CacheFilePath)
 		if err == nil {
 			length, _ := io.Copy(w, body)

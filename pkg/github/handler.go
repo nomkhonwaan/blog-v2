@@ -66,7 +66,7 @@ func (h Handler) serveGist(w http.ResponseWriter, r *http.Request) {
 
 	path := url.QueryEscape(src) + ".json"
 
-	if h.service.Cache().Exist(path) {
+	if h.service.Cache().Exists(path) {
 		body, err := h.service.Cache().Retrieve(path)
 		if err == nil {
 			length, _ := io.Copy(w, body)

@@ -16,7 +16,7 @@ type LocalDiskCache struct {
 	doneCh              chan struct{}
 }
 
-// NewLocalDiskCache returns new LocalDiskCache instance
+// NewLocalDiskCache returns a new LocalDiskCache instance
 func NewLocalDiskCache(filePath string) (LocalDiskCache, error) {
 	c := LocalDiskCache{
 		filePath:            filePath,
@@ -65,7 +65,7 @@ func (c LocalDiskCache) Close() {
 	close(c.doneCh)
 }
 
-func (c LocalDiskCache) Exist(path string) bool {
+func (c LocalDiskCache) Exists(path string) bool {
 	_, err := os.Stat(filepath.Join(c.filePath, path))
 	if os.IsNotExist(err) {
 		return false

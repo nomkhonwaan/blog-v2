@@ -28,49 +28,43 @@ type Handler struct {
 }
 
 // HandlerOption is a function for applying option to the Handler
-type HandlerOption func(*Handler) error
+type HandlerOption func(*Handler)
 
 // WithCache allows to setup Cache to the Handler
 func WithCache(cache Cache) HandlerOption {
-	return func(h *Handler) error {
+	return func(h *Handler) {
 		h.cache = cache
-		return nil
 	}
 }
 
 // WithStorage allows to setup Storage to the Handler
 func WithStorage(storage Storage) HandlerOption {
-	return func(h *Handler) error {
+	return func(h *Handler) {
 		h.storage = storage
-		return nil
 	}
 }
 
 // WithFileRepository allows to setup FileRepository to the Handler
 func WithFileRepository(fileRepository FileRepository) HandlerOption {
-	return func(h *Handler) error {
+	return func(h *Handler) {
 		h.fileRepository = fileRepository
-		return nil
 	}
 }
 
 // WithImageResizer allows to setup image.Resizer to the Handler
 func WithImageResizer(imageResizer image.Resizer) HandlerOption {
-	return func(h *Handler) error {
+	return func(h *Handler) {
 		h.imageResizer = imageResizer
-		return nil
 	}
 }
 
 // NewHandler returns a new Handler instance
-func NewHandler(options ...HandlerOption) (*Handler, error) {
+func NewHandler(options ...HandlerOption) *Handler {
 	h := &Handler{}
-	for _, opt := range options {
-		if err := opt(h); err != nil {
-			return nil, err
-		}
+	for _, apply := range options {
+		apply(h)
 	}
-	return h, nil
+	return h
 }
 
 // Register does registering storage routes under the prefix "/api/v2.1/storage"
@@ -135,7 +129,7 @@ func (h Handler) Download(w http.ResponseWriter, r *http.Request) {
 	if (mimeType == "image/jpeg" || mimeType == "image/png") && (width > 0 || height > 0) {
 		resizedPath = fmt.Sprintf("%s-%d-%d%s", path[0:len(path)-len(filepath.Ext(path))], width, height, filepath.Ext(path))
 
-		if h.cache.Exist(resizedPath) {
+		if h.cache.Exists(resizedPath) {
 			body, err = h.cache.Retrieve(resizedPath)
 			if err != nil {
 				logrus.Errorf("unable to retrieve file from %s: %s", path, err)
@@ -180,7 +174,7 @@ func (h Handler) Download(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h Handler) downloadOriginalFile(ctx context.Context, path string) (body io.Reader, err error) {
-	if h.cache.Exist(path) {
+	if h.cache.Exists(path) {
 		body, err = h.cache.Retrieve(path)
 		if err != nil {
 			logrus.Errorf("unable to retrieve file from %s: %s", path, err)

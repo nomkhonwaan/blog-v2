@@ -33,18 +33,18 @@ func (m *MockCache) EXPECT() *MockCacheMockRecorder {
 	return m.recorder
 }
 
-// Exist mocks base method
-func (m *MockCache) Exist(arg0 string) bool {
+// Exists mocks base method
+func (m *MockCache) Exists(arg0 string) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Exist", arg0)
+	ret := m.ctrl.Call(m, "Exists", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
-// Exist indicates an expected call of Exist
+// Exists indicates an expected call of Exists
 func (mr *MockCacheMockRecorder) Exist(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exist", reflect.TypeOf((*MockCache)(nil).Exist), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockCache)(nil).Exists), arg0)
 }
 
 // Retrieve mocks base method

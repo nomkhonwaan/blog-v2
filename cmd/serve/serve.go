@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"context"
+	"errors"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/aws"
@@ -36,8 +37,7 @@ import (
 )
 
 const (
-	baseURL       = "https://www.nomkhonwaan.com"
-	storageBucket = "www-nomkhonwaan-com"
+	baseURL = "https://www.nomkhonwaan.com"
 )
 
 var (
@@ -92,8 +92,7 @@ func initConfig() {
 
 func runE(_ *cobra.Command, _ []string) error {
 	var (
-		cacheService   storage.Cache
-		storageService storage.Storage
+		cacheService storage.Cache
 	)
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("mongodb-uri")))
 	if err != nil {
@@ -115,27 +114,9 @@ func runE(_ *cobra.Command, _ []string) error {
 	defer localDiskCache.Close()
 	cacheService = localDiskCache
 
-	switch viper.GetString("storage") {
-	case "gcloud":
-		cloudStorage, err := gcloud.NewCloudStorage(viper.GetString("gcloud-credentials-file-path"), storageBucket)
-		if err != nil {
-			return err
-		}
-		storageService = cloudStorage
-	case "s3":
-		s3, err := aws.NewS3(
-			viper.GetString("amazon-s3-access-key"),
-			viper.GetString("amazon-s3-secret-key"),
-			storageBucket,
-		)
-		if err != nil {
-			return err
-		}
-		storageService = s3
-	case "local-disk":
-		fallthrough
-	default:
-		storageService = storage.LocalDiskStorage(cacheService.(storage.LocalDiskCache))
+	stg, err := initStorage()
+	if err != nil {
+		return err
 	}
 
 	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
@@ -165,8 +146,12 @@ func runE(_ *cobra.Command, _ []string) error {
 	r.Handle("/graphql", graphql.Handler(schema))
 	github.NewHandler(cacheService, http.DefaultTransport).
 		Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-	storage.NewHandler(cacheService, storageService, file, image.NewLanczosResizer()).
-		Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
+	storage.NewHandler(
+		storage.WithCache(cacheService),
+		storage.WithStorage(stg),
+		storage.WithFileRepository(file),
+		storage.WithImageResizer(image.NewLanczosResizer()),
+	).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 	sitemap.NewHandler(baseURL, cacheService, blogService).
 		Register(r.PathPrefix("/sitemap.xml").Subrouter())
 	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-file-path"))))
@@ -182,6 +167,34 @@ func runE(_ *cobra.Command, _ []string) error {
 	<-stopCh
 
 	return nil
+}
+
+func initStorage() (storage.Storage, error) {
+	storageBucket := "www-nomkhonwaan-com"
+
+	switch viper.GetString("storage") {
+	case "gcloud":
+		cloudStorage, err := gcloud.NewCloudStorage(
+			viper.GetString("gcloud-credentials-file-path"),
+			storageBucket,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return cloudStorage, nil
+	case "s3":
+		amazonS3, err := aws.NewS3(
+			viper.GetString("amazon-s3-access-key"),
+			viper.GetString("amazon-s3-secret-key"),
+			storageBucket,
+		)
+		if err != nil {
+			return nil, err
+		}
+		return amazonS3, nil
+	default:
+		return nil, errors.New("unsupported storage")
+	}
 }
 
 func allowCORS(h http.Handler) http.Handler {

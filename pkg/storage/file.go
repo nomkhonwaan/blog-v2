@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// File is an uploaded file on the storage server
+// File is an uploaded object on the storage server
 type File struct {
 	// Identifier of the file
 	ID primitive.ObjectID `bson:"_id" json:"id" graphql:"-"`
@@ -53,7 +53,7 @@ func (f File) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// FileRepository is a repository interface of file which defines all file entity related functions
+// A FileRepository interface
 type FileRepository interface {
 	Create(ctx context.Context, file File) (File, error)
 	Delete(ctx context.Context, id interface{}) error
@@ -61,7 +61,7 @@ type FileRepository interface {
 	FindByID(ctx context.Context, id interface{}) (File, error)
 }
 
-// NewFileRepository returns file repository instance
+// NewFileRepository returns a MongoFileRepository instance
 func NewFileRepository(col mongo.Collection) MongoFileRepository {
 	return MongoFileRepository{col}
 }
@@ -116,9 +116,7 @@ func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{
 // FindByID returns a single file from its ID
 func (repo MongoFileRepository) FindByID(ctx context.Context, id interface{}) (File, error) {
 	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
-
 	var file File
 	err := r.Decode(&file)
-
 	return file, err
 }
