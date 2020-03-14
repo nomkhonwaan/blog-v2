@@ -17,26 +17,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
-	"strings"
 )
-
-// Slug is a valid URL string composes with file name and ID
-type Slug string
-
-// GetID returns an ID from the slug string
-func (s Slug) GetID() (interface{}, error) {
-	sl := strings.Split(string(s), "-")
-	fileName := sl[len(sl)-1]
-	return primitive.ObjectIDFromHex(fileName[0 : len(fileName)-len(filepath.Ext(fileName))])
-}
-
-// MustGetID always return ID from the slug string
-func (s Slug) MustGetID() interface{} {
-	if id, err := s.GetID(); err == nil {
-		return id
-	}
-	return primitive.NewObjectID()
-}
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {
@@ -280,4 +261,16 @@ func getWidthAndHeightFromQuery(values url.Values) (int, int) {
 	w, _ := strconv.Atoi(values.Get("width"))
 	h, _ := strconv.Atoi(values.Get("height"))
 	return w, h
+}
+
+func (h Handler) Delete(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (h Handler) Download(w http.ResponseWriter, r *http.Request) {
+
+}
+
+func (h Handler) Upload(w http.ResponseWriter, r *http.Request) {
+
 }

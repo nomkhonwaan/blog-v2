@@ -19,7 +19,7 @@ type Collection interface {
 
 type collection struct{ *mongo.Collection }
 
-// NewCollection returns new collection which embeds `mongo.Collection` inside
+// NewCollection returns new collection instance
 func NewCollection(col *mongo.Collection) Collection {
 	return collection{col}
 }

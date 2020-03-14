@@ -41,24 +41,24 @@ const (
 )
 
 var (
-	Command = &cobra.Command{
+	Cmd = &cobra.Command{
 		Use:   "serve",
-		Short: "Listen and serve HTTP server which includes GraphQL and static files servers",
-		RunE:  action,
+		Short: "Listen and serve HTTP server insecurely",
+		RunE:  runE,
 	}
 )
 
 func init() {
-	workingDirectory, _ := os.Getwd()
+	wd, _ := os.Getwd()
 
 	cobra.OnInitialize(initConfig)
 
-	flags := Command.Flags()
+	flags := Cmd.Flags()
 
 	flags.Bool("allow-cors", false, "")
 	flags.String("listen-address", "0.0.0.0:8080", "")
-	flags.String("cache-file-path", path.Join(workingDirectory, ".cache"), "")
-	flags.String("web-file-path", path.Join(workingDirectory, "dist", "web"), "")
+	flags.String("cache-file-path", path.Join(wd, ".cache"), "")
+	flags.String("web-file-path", path.Join(wd, "dist", "web"), "")
 	flags.String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
 	flags.String("storage", "local-disk", "")
 	flags.String("amazon-s3-access-key", "", "")
@@ -90,7 +90,7 @@ func initConfig() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 }
 
-func action(_ *cobra.Command, _ []string) error {
+func runE(_ *cobra.Command, _ []string) error {
 	var (
 		cacheService   storage.Cache
 		storageService storage.Storage
@@ -101,10 +101,10 @@ func action(_ *cobra.Command, _ []string) error {
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	file := storage.NewFileRepository(mongo.NewCustomCollection(db.Collection("files")))
-	category := blog.NewCategoryRepository(mongo.NewCustomCollection(db.Collection("categories")))
-	post := blog.NewPostRepository(mongo.NewCustomCollection(db.Collection("posts")), log.NewDefaultTimer())
-	tag := blog.NewTagRepository(mongo.NewCustomCollection(db.Collection("tags")))
+	file := storage.NewFileRepository(mongo.NewCollection(db.Collection("files")))
+	category := blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
+	post := blog.NewPostRepository(mongo.NewCollection(db.Collection("posts")), log.NewDefaultTimer())
+	tag := blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
 
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
 

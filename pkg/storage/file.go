@@ -55,29 +55,21 @@ func (f File) MarshalJSON() ([]byte, error) {
 
 // FileRepository is a repository interface of file which defines all file entity related functions
 type FileRepository interface {
-	// Insert a new file record whether exist or not
 	Create(ctx context.Context, file File) (File, error)
-
-	// Delete a file record by its ID
 	Delete(ctx context.Context, id interface{}) error
-
-	// Return list of files from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error)
-
-	// Return a single file from its ID
 	FindByID(ctx context.Context, id interface{}) (File, error)
 }
 
-// NewFileRepository returns file repository which connects to MongoDB
+// NewFileRepository returns file repository instance
 func NewFileRepository(col mongo.Collection) MongoFileRepository {
 	return MongoFileRepository{col}
 }
 
-// MongoFileRepository is a MongoDB specified repository for file
-type MongoFileRepository struct {
-	col mongo.Collection
-}
+// MongoFileRepository implements FileRepository on MongoDB
+type MongoFileRepository struct{ col mongo.Collection }
 
+// Create inserts a new file record whether exist or not
 func (repo MongoFileRepository) Create(ctx context.Context, file File) (File, error) {
 	if file.ID.IsZero() {
 		file.ID = primitive.NewObjectID()
@@ -93,11 +85,13 @@ func (repo MongoFileRepository) Create(ctx context.Context, file File) (File, er
 	return file, nil
 }
 
+// Delete performs deletion a file record by its ID
 func (repo MongoFileRepository) Delete(ctx context.Context, id interface{}) error {
 	_, err := repo.col.DeleteOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
 	return err
 }
 
+// FindAllByIDs returns list of files from list of IDs
 func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]File, error) {
 	if len(ids.([]primitive.ObjectID)) == 0 {
 		return nil, nil
@@ -119,6 +113,7 @@ func (repo MongoFileRepository) FindAllByIDs(ctx context.Context, ids interface{
 	return files, err
 }
 
+// FindByID returns a single file from its ID
 func (repo MongoFileRepository) FindByID(ctx context.Context, id interface{}) (File, error) {
 	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
 
