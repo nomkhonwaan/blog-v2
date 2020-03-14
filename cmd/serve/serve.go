@@ -23,6 +23,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/samsarahq/thunder/graphql/introspection"
+	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -91,9 +92,6 @@ func initConfig() {
 }
 
 func runE(_ *cobra.Command, _ []string) error {
-	var (
-		cacheService storage.Cache
-	)
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("mongodb-uri")))
 	if err != nil {
 		return err
@@ -107,12 +105,11 @@ func runE(_ *cobra.Command, _ []string) error {
 
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
 
-	localDiskCache, err := storage.NewLocalDiskCache(viper.GetString("cache-file-path"))
+	cache, err := storage.NewDiskCache(afero.NewOsFs(), viper.GetString("cache-file-path"))
 	if err != nil {
 		return err
 	}
-	defer localDiskCache.Close()
-	cacheService = localDiskCache
+	defer cache.Close()
 
 	stg, err := initStorage()
 	if err != nil {
@@ -144,15 +141,15 @@ func runE(_ *cobra.Command, _ []string) error {
 
 	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema))
-	github.NewHandler(cacheService, http.DefaultTransport).
+	github.NewHandler(cache, http.DefaultTransport).
 		Register(r.PathPrefix("/api/v2.1/github").Subrouter())
 	storage.NewHandler(
-		storage.WithCache(cacheService),
+		storage.WithCache(cache),
 		storage.WithStorage(stg),
 		storage.WithFileRepository(file),
 		storage.WithImageResizer(image.NewLanczosResizer()),
 	).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
-	sitemap.NewHandler(baseURL, cacheService, blogService).
+	sitemap.NewHandler(baseURL, cache, blogService).
 		Register(r.PathPrefix("/sitemap.xml").Subrouter())
 	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-file-path"))))
 
