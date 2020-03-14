@@ -77,29 +77,26 @@ func (p Post) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// PostRepository is a repository interface of post which defines all post entity related functions
+// A PostRepository interface
 type PostRepository interface {
-	// Create inserts a new empty post which belongs to the author with "Draft" status
 	Create(ctx context.Context, authorID string) (Post, error)
-	// FindAll returns list of posts filtered by post query
 	FindAll(ctx context.Context, q PostQuery) ([]Post, error)
-	// FindByID returns a single post from its ID
 	FindByID(ctx context.Context, id interface{}) (Post, error)
-	// Save does updating a single post
 	Save(ctx context.Context, id interface{}, q PostQuery) (Post, error)
 }
 
-// NewPostRepository returns post repository
+// NewPostRepository returns a MongoPostRepository instance
 func NewPostRepository(col mongo.Collection, timer log.Timer) MongoPostRepository {
 	return MongoPostRepository{col: col, timer: timer}
 }
 
-// MongoPostRepository is a MongoDB specified repository for post
+// MongoPostRepository implements PostRepository interface
 type MongoPostRepository struct {
 	col   mongo.Collection
 	timer log.Timer
 }
 
+// Create inserts a new empty post which belongs to the author with "Draft" status
 func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Post, error) {
 	id := primitive.NewObjectID()
 	post := Post{
@@ -119,6 +116,7 @@ func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Po
 	return post, nil
 }
 
+// FindAll returns list of posts filtered by post query
 func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Post, error) {
 	filter := bson.M{}
 	opts := options.Find()
@@ -158,6 +156,7 @@ func (repo MongoPostRepository) FindAll(ctx context.Context, q PostQuery) ([]Pos
 	return posts, err
 }
 
+// FindByID returns a single post from its ID
 func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (Post, error) {
 	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
 
@@ -167,6 +166,7 @@ func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (P
 	return p, err
 }
 
+// Save does updating a single post
 func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q PostQuery) (Post, error) {
 	update := bson.M{"$set": bson.M{
 		"updatedAt": repo.timer.Now(),

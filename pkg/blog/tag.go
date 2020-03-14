@@ -5,11 +5,10 @@ package blog
 import (
 	"context"
 	"encoding/json"
-	"go.mongodb.org/mongo-driver/mongo/options"
-
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // Tag is a label attached to the post for the purpose of identification
@@ -34,28 +33,22 @@ func (tag Tag) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// TagRepository is a repository interface of category which defines all category entity related functions
+// A TagRepository interface
 type TagRepository interface {
-	// FindAll returns list of tags
 	FindAll(ctx context.Context) ([]Tag, error)
-
-	// FindAllByIDs returns list of tags from list of IDs
 	FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error)
-
-	// FindByID returns a single tag from its ID
 	FindByID(ctx context.Context, id interface{}) (Tag, error)
 }
 
-// NewTagRepository returns tag repository
+// NewTagRepository returns a MongoTagRepository instance
 func NewTagRepository(col mongo.Collection) MongoTagRepository {
 	return MongoTagRepository{col}
 }
 
-// MongoTagRepository is a MongoDB specified repository for tag
-type MongoTagRepository struct {
-	col mongo.Collection
-}
+// MongoTagRepository implements TagRepository interface
+type MongoTagRepository struct{ col mongo.Collection }
 
+// FindAll returns list of tags
 func (repo MongoTagRepository) FindAll(ctx context.Context) ([]Tag, error) {
 	opts := options.Find().SetSort(bson.D{{"name", 1}})
 	cur, err := repo.col.Find(ctx, bson.D{}, opts)
@@ -70,6 +63,7 @@ func (repo MongoTagRepository) FindAll(ctx context.Context) ([]Tag, error) {
 	return tags, err
 }
 
+// FindAllByIDs returns list of tags from list of IDs
 func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids interface{}) ([]Tag, error) {
 	filter := bson.M{"_id": bson.M{"$in": ids.([]primitive.ObjectID)}}
 	opts := options.Find().SetSort(bson.D{{"name", 1}})
@@ -85,11 +79,10 @@ func (repo MongoTagRepository) FindAllByIDs(ctx context.Context, ids interface{}
 	return tags, err
 }
 
+// FindByID returns a single tag from its ID
 func (repo MongoTagRepository) FindByID(ctx context.Context, id interface{}) (Tag, error) {
 	r := repo.col.FindOne(ctx, bson.M{"_id": id.(primitive.ObjectID)})
-
 	var tag Tag
 	err := r.Decode(&tag)
-
 	return tag, err
 }
