@@ -61,8 +61,9 @@ func NewJWTMiddleware(audience, issuer, jwksURI string, transport http.RoundTrip
 }
 
 func getPEMCertificate(token *jwt.Token, jwksURI string, transport http.RoundTripper) (string, error) {
+	c := &http.Client{Transport: transport}
 	req, _ := http.NewRequest(http.MethodGet, jwksURI, nil)
-	res, err := transport.RoundTrip(req)
+	res, err := c.Do(req)
 	if err != nil {
 		return "", err
 	}

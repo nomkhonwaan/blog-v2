@@ -98,7 +98,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	file := storage.NewFileRepository(mongo.NewCollection(db.Collection("files")))
+	fileRepository := storage.NewFileRepository(mongo.NewCollection(db.Collection("files")))
 	category := blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
 	post := blog.NewPostRepository(mongo.NewCollection(db.Collection("posts")), log.NewDefaultTimer())
 	tag := blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
@@ -117,7 +117,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 
 	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, file, http.DefaultTransport)
+	fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, fileRepository, http.DefaultTransport)
 	if err != nil {
 		return err
 	}
@@ -129,7 +129,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		http.DefaultTransport,
 	)
 
-	schema := graphql.NewServer(blogService, fbClient, file).Schema()
+	schema := graphql.NewServer(blogService, fbClient, fileRepository).Schema()
 	introspection.AddIntrospectionToSchema(schema)
 
 	r := mux.NewRouter()
@@ -146,12 +146,12 @@ func runE(_ *cobra.Command, _ []string) error {
 	storage.NewHandler(
 		storage.WithCache(cache),
 		storage.WithStorage(stg),
-		storage.WithFileRepository(file),
+		storage.WithFileRepository(fileRepository),
 		storage.WithImageResizer(image.NewLanczosResizer()),
 	).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
 	sitemap.NewHandler(baseURL, cache, blogService).
 		Register(r.PathPrefix("/sitemap.xml").Subrouter())
-	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-file-path"))))
+	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-`file-path"))))
 
 	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}
 	stopCh := handleSignals()
