@@ -19,7 +19,7 @@ import (
 	"strconv"
 )
 
-// Handler provides storage handlers
+// Handler provides storage HTTP handler functions
 type Handler struct {
 	cache          Cache
 	storage        Storage
