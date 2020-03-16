@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/aws"
@@ -98,9 +99,9 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 	db := client.Database("nomkhonwaan_com")
 
-	fileRepository := storage.NewFileRepository(mongo.NewCollection(db.Collection("files")))
+	fileRepository := storage.NewFileRepository(db)
 	category := blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
-	post := blog.NewPostRepository(mongo.NewCollection(db.Collection("posts")), log.NewDefaultTimer())
+	post := blog.NewPostRepository(db, log.NewDefaultTimer())
 	tag := blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
 
 	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
@@ -155,6 +156,11 @@ func runE(_ *cobra.Command, _ []string) error {
 
 	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}
 	stopCh := handleSignals()
+
+	//fbHandler := ProvideFacebookHandler()
+	//fmt.Println(fb ler)
+	fbHandler := InitFacebookHandler()
+	fmt.Println(fbHandler)
 
 	err = s.ListenAndServe(viper.GetString("listen-address"), stopCh)
 	if err != nil {
@@ -234,4 +240,13 @@ func unzip(compressed []byte) ([]byte, error) {
 
 	uncompressed, _ := ioutil.ReadAll(rdr)
 	return uncompressed, nil
+}
+
+// NewMongoDB returns a new mongo.Database instance
+func NewMongoDB(uri, dbName string) (mongo.Database, error) {
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	if err != nil {
+		return nil, err
+	}
+	return client.Database(dbName), nil
 }

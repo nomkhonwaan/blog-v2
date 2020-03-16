@@ -86,8 +86,8 @@ type PostRepository interface {
 }
 
 // NewPostRepository returns a MongoPostRepository instance
-func NewPostRepository(col mongo.Collection, timer log.Timer) MongoPostRepository {
-	return MongoPostRepository{col: col, timer: timer}
+func NewPostRepository(db mongo.Database, timer log.Timer) MongoPostRepository {
+	return MongoPostRepository{col: mongo.NewCollection(db.Collection("posts")), timer: timer}
 }
 
 // MongoPostRepository implements PostRepository interface

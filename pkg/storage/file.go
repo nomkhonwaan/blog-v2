@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=./mock/file_mock.go github.com/nomkhonwaan/myblog/pkg/storage FileRepository
+//go:generate mockgen -destination=./mock/file_mock.go github.com/nomkhonwaan/myblog/pkg/storage fileRepository
 
 package storage
 
@@ -53,7 +53,7 @@ func (f File) MarshalJSON() ([]byte, error) {
 	})
 }
 
-// A FileRepository interface
+// A fileRepository interface
 type FileRepository interface {
 	Create(ctx context.Context, file File) (File, error)
 	Delete(ctx context.Context, id interface{}) error
@@ -62,11 +62,11 @@ type FileRepository interface {
 }
 
 // NewFileRepository returns a MongoFileRepository instance
-func NewFileRepository(col mongo.Collection) MongoFileRepository {
-	return MongoFileRepository{col}
+func NewFileRepository(db mongo.Database) MongoFileRepository {
+	return MongoFileRepository{col: mongo.NewCollection(db.Collection("files"))}
 }
 
-// MongoFileRepository implements FileRepository on MongoDB
+// MongoFileRepository implements fileRepository on MongoDB
 type MongoFileRepository struct{ col mongo.Collection }
 
 // Create inserts a new file record whether exist or not

@@ -44,7 +44,7 @@ func WithStorage(storage Storage) HandlerOption {
 	}
 }
 
-// WithFileRepository allows to setup FileRepository to the Handler
+// WithFileRepository allows to setup fileRepository to the Handler
 func WithFileRepository(fileRepository FileRepository) HandlerOption {
 	return func(h *Handler) {
 		h.fileRepository = fileRepository

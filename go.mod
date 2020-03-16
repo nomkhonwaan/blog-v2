@@ -9,7 +9,7 @@ require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/disintegration/imaging v1.6.2
 	github.com/golang/mock v1.4.1
-	github.com/google/wire v0.4.0 // indirect
+	github.com/google/wire v0.4.0
 	github.com/gorilla/mux v1.7.4
 	github.com/graphql-go/graphql v0.7.9 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
