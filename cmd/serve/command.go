@@ -93,11 +93,10 @@ func initConfig() {
 }
 
 func runE(_ *cobra.Command, _ []string) error {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(viper.GetString("mongodb-uri")))
+	db, err := newMongoDB(viper.GetString("mongodb-uri"), "nomkhonwaan_com")
 	if err != nil {
 		return err
 	}
-	db := client.Database("nomkhonwaan_com")
 
 	fileRepository := storage.NewFileRepository(db)
 	category := blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
@@ -159,7 +158,7 @@ func runE(_ *cobra.Command, _ []string) error {
 
 	//fbHandler := ProvideFacebookHandler()
 	//fmt.Println(fb ler)
-	fbHandler := InitFacebookHandler()
+	fbHandler := initFacebookHandler(db)
 	fmt.Println(fbHandler)
 
 	err = s.ListenAndServe(viper.GetString("listen-address"), stopCh)
@@ -242,8 +241,7 @@ func unzip(compressed []byte) ([]byte, error) {
 	return uncompressed, nil
 }
 
-// NewMongoDB returns a new mongo.Database instance
-func NewMongoDB(uri, dbName string) (mongo.Database, error) {
+func newMongoDB(uri, dbName string) (mongo.Database, error) {
 	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err

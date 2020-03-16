@@ -28,8 +28,8 @@ func IsFacebookCrawlerRequest(userAgent string) bool {
 	return regexp.MustCompile("facebookexternalhit").MatchString(userAgent)
 }
 
-// IsSingle validates against URL and return its ID if it is a single
-func IsSingle(url string) (string, bool) {
+// IsSinglePage validates against URL and return its ID if it is a single
+func IsSinglePage(url string) (string, bool) {
 	re := regexp.MustCompile(`\d{4}/\d{1,2}/\d{1,2}/.+-(.+)$`)
 	if !re.MatchString(url) {
 		return "", false
@@ -98,7 +98,7 @@ func NewClient(baseURL string, appAccessToken string, ogTemplate string, blogSer
 func (c Client) CrawlerHandler(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if IsFacebookCrawlerRequest(r.UserAgent()) {
-			if id, yes := IsSingle(r.URL.Path); yes {
+			if id, yes := IsSinglePage(r.URL.Path); yes {
 				if postID, err := primitive.ObjectIDFromHex(id); err == nil {
 					c.serveSingle(w, r, postID)
 					return

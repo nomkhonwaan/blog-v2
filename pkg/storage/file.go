@@ -1,4 +1,4 @@
-//go:generate mockgen -destination=./mock/file_mock.go github.com/nomkhonwaan/myblog/pkg/storage fileRepository
+//go:generate mockgen -destination=./mock/file_mock.go github.com/nomkhonwaan/myblog/pkg/storage FileRepository
 
 package storage
 
@@ -62,7 +62,7 @@ type FileRepository interface {
 }
 
 // NewFileRepository returns a MongoFileRepository instance
-func NewFileRepository(db mongo.Database) MongoFileRepository {
+func NewFileRepository(db mongo.Database) FileRepository {
 	return MongoFileRepository{col: mongo.NewCollection(db.Collection("files"))}
 }
 

@@ -73,7 +73,7 @@ func TestIsSingle(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			id, yes := IsSingle(test.url)
+			id, yes := IsSinglePage(test.url)
 
 			assert.Equal(t, test.id, id)
 			assert.Equal(t, test.expected, yes)
