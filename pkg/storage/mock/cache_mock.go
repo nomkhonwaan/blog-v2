@@ -42,7 +42,7 @@ func (m *MockCache) Exists(arg0 string) bool {
 }
 
 // Exists indicates an expected call of Exists
-func (mr *MockCacheMockRecorder) Exist(arg0 interface{}) *gomock.Call {
+func (mr *MockCacheMockRecorder) Exists(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Exists", reflect.TypeOf((*MockCache)(nil).Exists), arg0)
 }

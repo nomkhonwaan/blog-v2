@@ -5,25 +5,14 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
-	"fmt"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/aws"
-	"github.com/nomkhonwaan/myblog/pkg/blog"
-	"github.com/nomkhonwaan/myblog/pkg/data"
-	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/gcloud"
-	"github.com/nomkhonwaan/myblog/pkg/github"
-	"github.com/nomkhonwaan/myblog/pkg/graphql"
-	"github.com/nomkhonwaan/myblog/pkg/graphql/playground"
 	"github.com/nomkhonwaan/myblog/pkg/image"
-	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
-	"github.com/nomkhonwaan/myblog/pkg/sitemap"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
-	"github.com/nomkhonwaan/myblog/pkg/web"
-	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -98,12 +87,12 @@ func runE(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	fileRepository := storage.NewFileRepository(db)
-	category := blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
-	post := blog.NewPostRepository(db, log.NewDefaultTimer())
-	tag := blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
-
-	blogService := blog.Service{CategoryRepository: category, PostRepository: post, TagRepository: tag}
+	var (
+		fileRepository = storage.NewFileRepository(db)
+		//categoryRepository = blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
+		//postRepository     = blog.NewPostRepository(db, log.NewDefaultTimer())
+		//tagRepository      = blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
+	)
 
 	cache, err := storage.NewDiskCache(afero.NewOsFs(), viper.GetString("cache-file-path"))
 	if err != nil {
@@ -116,11 +105,11 @@ func runE(_ *cobra.Command, _ []string) error {
 		return err
 	}
 
-	ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, fileRepository, http.DefaultTransport)
-	if err != nil {
-		return err
-	}
+	//ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
+	//fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, fileRepository, http.DefaultTransport)
+	//if err != nil {
+	//	return err
+	//}
 
 	authMiddleware := auth.NewJWTMiddleware(
 		viper.GetString("auth0-audience"),
@@ -129,37 +118,37 @@ func runE(_ *cobra.Command, _ []string) error {
 		http.DefaultTransport,
 	)
 
-	schema := graphql.NewServer(blogService, fbClient, fileRepository).Schema()
-	introspection.AddIntrospectionToSchema(schema)
+	//schema := graphql.NewServer(blogService, fbClient, fileRepository).Schema()
+	//introspection.AddIntrospectionToSchema(schema)
 
-	r := mux.NewRouter()
+	r := chi.NewRouter()
 
 	if viper.GetBool("allow-cors") {
 		r.Use(allowCORS)
 	}
 	r.Use(authMiddleware.Handler)
 
-	r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", graphql.Handler(schema))
-	github.NewHandler(cache, http.DefaultTransport).
-		Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-	storage.NewHandler(
-		storage.WithCache(cache),
-		storage.WithStorage(stg),
-		storage.WithFileRepository(fileRepository),
-		storage.WithImageResizer(image.NewLanczosResizer()),
-	).Register(r.PathPrefix("/api/v2.1/storage").Subrouter())
-	sitemap.NewHandler(baseURL, cache, blogService).
-		Register(r.PathPrefix("/sitemap.xml").Subrouter())
-	r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-`file-path"))))
+	r.Route("/api/v2.1/storage", func(r chi.Router) {
+		r.Get("/{slug}", storage.DownloadHandlerFunc(stg, cache, image.NewLanczosResizer(), fileRepository))
+		r.Delete("/delete/{slug}", storage.DeleteHandlerFunc(stg, fileRepository))
+		r.Post("/upload", storage.UploadHandlerFunc(stg, fileRepository))
+	})
 
-	s := server.InsecureServer{Handler: r, ShutdownTimeout: time.Minute * 5}
+	//r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
+	//r.Handle("/graphql", graphql.Handler(schema))
+	//github.NewHandler(cache, http.DefaultTransport).
+	//	Register(r.PathPrefix("/api/v2.1/github").Subrouter())
+	//r.PathPrefix("/api/v2.1/storage").Subrouter()
+
+	//sitemap.NewHandler(baseURL, cache, blogService).
+	//	Register(r.PathPrefix("/sitemap.xml").Subrouter())
+	//r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-`file-path"))))
+
+	s := server.InsecureServer{
+		Handler:         r,
+		ShutdownTimeout: time.Minute * 5,
+	}
 	stopCh := handleSignals()
-
-	//fbHandler := ProvideFacebookHandler()
-	//fmt.Println(fb ler)
-	fbHandler := initFacebookHandler(db)
-	fmt.Println(fbHandler)
 
 	err = s.ListenAndServe(viper.GetString("listen-address"), stopCh)
 	if err != nil {
@@ -169,6 +158,14 @@ func runE(_ *cobra.Command, _ []string) error {
 	<-stopCh
 
 	return nil
+}
+
+func newMongoDB(uri, dbName string) (mongo.Database, error) {
+	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
+	if err != nil {
+		return nil, err
+	}
+	return client.Database(dbName), nil
 }
 
 func initStorage() (storage.Storage, error) {
@@ -239,12 +236,4 @@ func unzip(compressed []byte) ([]byte, error) {
 
 	uncompressed, _ := ioutil.ReadAll(rdr)
 	return uncompressed, nil
-}
-
-func newMongoDB(uri, dbName string) (mongo.Database, error) {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
-	if err != nil {
-		return nil, err
-	}
-	return client.Database(dbName), nil
 }
