@@ -1,102 +1,61 @@
 package github
 
 import (
-	"fmt"
-	"github.com/gorilla/mux"
+	"bytes"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/sirupsen/logrus"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 )
 
-// Service helps co-working between data-layer and control-layer
-type Service interface {
-	// A cache service
-	Cache() storage.Cache
+// GetGistHandlerFunc handles GitHub Gist downloading request
+func GetGistHandlerFunc(cache storage.Cache, transport http.RoundTripper) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cacheFileName := url.QueryEscape(r.URL.Query().Get("src")) + ".json"
 
-	// Request to GitHub server for the Gist content
-	Retrieve(src string) (*http.Response, error)
-}
+		if cache.Exists(cacheFileName) {
+			body, err := cache.Retrieve(cacheFileName)
+			if err == nil {
+				length, _ := io.Copy(w, body)
+				w.Header().Set("Content-Length", strconv.Itoa(int(length)))
+				return
+			}
+			logrus.Errorf("unable to retrieve Gist file %q from cache", cacheFileName)
+		}
 
-type service struct {
-	cache     storage.Cache
-	transport http.RoundTripper
-}
+		var (
+			c    = &http.Client{Transport: transport}
+			u, _ = url.Parse(r.URL.Query().Get("src"))
+		)
 
-func (s service) Cache() storage.Cache {
-	return s.cache
-}
+		u.Host = "gist.github.com"
+		u.Path = strings.Replace(u.Path, ".js", ".json", 1)
 
-func (s service) Retrieve(src string) (*http.Response, error) {
-	u, _ := url.Parse(src)
-
-	u.Host = "gist.github.com"
-	u.Path = strings.Replace(u.Path, ".js", ".json", 1)
-
-	req, _ := http.NewRequest(http.MethodGet, u.String(), nil)
-	return s.transport.RoundTrip(req)
-}
-
-type Handler struct {
-	service Service
-}
-
-func NewHandler(cache storage.Cache, transport http.RoundTripper) Handler {
-	return Handler{
-		service: service{
-			cache:     cache,
-			transport: transport,
-		},
-	}
-}
-
-// Register does registering GitHub routes under the prefix "/api/v2.1/github"
-func (h Handler) Register(r *mux.Router) {
-	r.Path("/gist").HandlerFunc(h.serveGist).Methods(http.MethodGet)
-}
-
-func (h Handler) serveGist(w http.ResponseWriter, r *http.Request) {
-	src := r.URL.Query().Get("src")
-	if src == "" {
-		http.Error(w, "`src` is required for downloading Gist content", http.StatusBadRequest)
-		return
-	}
-
-	path := url.QueryEscape(src) + ".json"
-
-	if h.service.Cache().Exists(path) {
-		body, err := h.service.Cache().Retrieve(path)
-		if err == nil {
-			length, _ := io.Copy(w, body)
-			w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
+		req, err := http.NewRequest(http.MethodGet, u.String(), nil)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		logrus.Errorf("unable to retrieve Gist file from %s: %s", path, err)
-	}
-
-	res, err := h.service.Retrieve(src)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer res.Body.Close()
-
-	rdr, wtr := io.Pipe()
-	body := io.TeeReader(res.Body, wtr)
-
-	go func(wtr io.WriteCloser, rdr io.Reader) {
-		defer wtr.Close()
-
-		if err = h.service.Cache().Store(rdr, path); err != nil {
-			logrus.Errorf("unable to store file on %s: %s", path, err)
+		res, err := c.Do(req)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
 		}
-	}(wtr, rdr)
+		defer res.Body.Close()
 
-	length, _ := io.Copy(w, body)
+		data, _ := ioutil.ReadAll(res.Body)
+		err = cache.Store(bytes.NewReader(data), cacheFileName)
+		if err != nil {
+			logrus.Errorf("unable to store Gist file %q to cache", cacheFileName)
+		}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.Header().Set("Content-Length", fmt.Sprintf("%d", length))
+		w.Header().Set("Content-Length", strconv.Itoa(len(data)))
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(data)
+	}
 }

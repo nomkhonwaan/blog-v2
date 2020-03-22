@@ -11,6 +11,7 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/nomkhonwaan/myblog/internal/blob"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
+	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/image"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
@@ -139,17 +140,19 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 	r.Use(authMiddleware.Handler)
 
-	r.Route("/api/v2.1/storage", func(r chi.Router) {
-		r.Get("/{slug}", storage.DownloadHandlerFunc(bucket, cache, image.NewLanczosResizer(), fileRepository))
-		r.Delete("/delete/{slug}", storage.DeleteHandlerFunc(bucket, fileRepository))
-		r.Post("/upload", storage.UploadHandlerFunc(bucket, fileRepository))
+	r.Route("/api/v2.1", func(r chi.Router) {
+		r.Route("/github", func(r chi.Router) {
+			r.Get("/gist", github.GetGistHandlerFunc(cache, http.DefaultTransport))
+		})
+		r.Route("/storage", func(r chi.Router) {
+			r.Get("/{slug}", storage.DownloadHandlerFunc(bucket, cache, image.NewLanczosResizer(), fileRepository))
+			r.Delete("/delete/{slug}", storage.DeleteHandlerFunc(bucket, fileRepository))
+			r.Post("/upload", storage.UploadHandlerFunc(bucket, fileRepository))
+		})
 	})
 
 	//r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	//r.Handle("/graphql", graphql.Handler(schema))
-	//github.NewHandler(cache, http.DefaultTransport).
-	//	Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-	//r.PathPrefix("/api/v2.1/storage").Subrouter()
 
 	//sitemap.NewHandler(baseURL, cache, blogService).
 	//	Register(r.PathPrefix("/sitemap.xml").Subrouter())
