@@ -25,5 +25,6 @@ require (
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/negroni v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.0
+	gocloud.dev v0.19.0
 	google.golang.org/api v0.19.0
 )

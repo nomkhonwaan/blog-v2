@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/go-chi/chi"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/image"
@@ -64,12 +65,10 @@ func DeleteHandlerFunc(storage Storage, repository FileRepository) http.HandlerF
 func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, repository FileRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
-			vars          = mux.Vars(r)
-			slug          = Slug(vars["slug"])
+			body          io.Reader
+			resizedPath   string
+			slug          = Slug(chi.URLParam(r, "slug"))
 			width, height = getWidthAndHeight(r.URL.Query())
-
-			body        io.Reader
-			resizedPath string
 		)
 
 		file, err := repository.FindByID(r.Context(), slug.MustGetID())

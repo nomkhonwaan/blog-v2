@@ -5,10 +5,12 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
+	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/go-chi/chi"
+	"github.com/nomkhonwaan/myblog/internal/blob"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
-	"github.com/nomkhonwaan/myblog/pkg/aws"
-	"github.com/nomkhonwaan/myblog/pkg/gcloud"
 	"github.com/nomkhonwaan/myblog/pkg/image"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/server"
@@ -17,6 +19,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"gocloud.dev/blob/s3blob"
+	_ "gocloud.dev/blob/s3blob"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -33,52 +37,58 @@ const (
 
 var (
 	Cmd = &cobra.Command{
-		Use:   "serve",
-		Short: "Listen and serve HTTP server insecurely",
-		RunE:  runE,
+		Use:     "serve",
+		Short:   "Listen and serve HTTP server insecurely",
+		PreRunE: preRunE,
+		RunE:    runE,
 	}
 )
 
 func init() {
-	wd, _ := os.Getwd()
+	workingDirectory, _ := os.Getwd()
 
-	cobra.OnInitialize(initConfig)
+	Cmd.Flags().Bool("allow-cors", false, "")
+	Cmd.Flags().String("listen-address", "0.0.0.0:8080", "")
+	Cmd.Flags().String("cache-file-path", path.Join(workingDirectory, ".cache"), "")
+	Cmd.Flags().String("web-file-path", path.Join(workingDirectory, "dist", "web"), "")
+	Cmd.Flags().String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
+	Cmd.Flags().String("storage-driver", "s3", "")
+	Cmd.Flags().String("amazon-s3-region", "ap-southeast-1", "")
+	Cmd.Flags().String("amazon-s3-access-key", "", "")
+	Cmd.Flags().String("amazon-s3-secret-key", "", "")
+	Cmd.Flags().String("amazon-s3-bucket-name", "", "")
+	Cmd.Flags().String("auth0-audience", baseURL, "")
+	Cmd.Flags().String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
+	Cmd.Flags().String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
+	Cmd.Flags().String("facebook-app-access-token", "", "")
 
-	flags := Cmd.Flags()
-
-	flags.Bool("allow-cors", false, "")
-	flags.String("listen-address", "0.0.0.0:8080", "")
-	flags.String("cache-file-path", path.Join(wd, ".cache"), "")
-	flags.String("web-file-path", path.Join(wd, "dist", "web"), "")
-	flags.String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
-	flags.String("storage", "local-disk", "")
-	flags.String("amazon-s3-access-key", "", "")
-	flags.String("amazon-s3-secret-key", "", "")
-	flags.String("gcloud-credentials-file-path", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"), "")
-	flags.String("auth0-audience", baseURL, "")
-	flags.String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
-	flags.String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
-	flags.String("facebook-app-access-token", "", "")
-
-	_ = viper.BindPFlag("allow-cors", flags.Lookup("allow-cors"))
-	_ = viper.BindPFlag("listen-address", flags.Lookup("listen-address"))
-	_ = viper.BindPFlag("cache-file-path", flags.Lookup("cache-file-path"))
-	_ = viper.BindPFlag("web-file-path", flags.Lookup("web-file-path"))
-	_ = viper.BindPFlag("mongodb-uri", flags.Lookup("mongodb-uri"))
-	_ = viper.BindPFlag("storage", flags.Lookup("storage"))
-	_ = viper.BindPFlag("amazon-s3-access-key", flags.Lookup("amazon-s3-access-key"))
-	_ = viper.BindPFlag("amazon-s3-secret-key", flags.Lookup("amazon-s3-secret-key"))
-	_ = viper.BindPFlag("gcloud-credentials-file-path", flags.Lookup("gcloud-credentials-file-path"))
-	_ = viper.BindPFlag("auth0-audience", flags.Lookup("auth0-audience"))
-	_ = viper.BindPFlag("auth0-issuer", flags.Lookup("auth0-issuer"))
-	_ = viper.BindPFlag("auth0-jwks-uri", flags.Lookup("auth0-jwks-uri"))
-	_ = viper.BindPFlag("facebook-app-access-token", flags.Lookup("facebook-app-access-token"))
+	_ = viper.BindPFlag("allow-cors", Cmd.Flags().Lookup("allow-cors"))
+	_ = viper.BindPFlag("listen-address", Cmd.Flags().Lookup("listen-address"))
+	_ = viper.BindPFlag("cache-file-path", Cmd.Flags().Lookup("cache-file-path"))
+	_ = viper.BindPFlag("web-file-path", Cmd.Flags().Lookup("web-file-path"))
+	_ = viper.BindPFlag("mongodb-uri", Cmd.Flags().Lookup("mongodb-uri"))
+	_ = viper.BindPFlag("storage-driver", Cmd.Flags().Lookup("storage-driver"))
+	_ = viper.BindPFlag("amazon-s3-region", Cmd.Flags().Lookup("amazon-s3-region"))
+	_ = viper.BindPFlag("amazon-s3-access-key", Cmd.Flags().Lookup("amazon-s3-access-key"))
+	_ = viper.BindPFlag("amazon-s3-secret-key", Cmd.Flags().Lookup("amazon-s3-secret-key"))
+	_ = viper.BindPFlag("amazon-s3-bucket-name", Cmd.Flags().Lookup("amazon-s3-bucket-name"))
+	_ = viper.BindPFlag("auth0-audience", Cmd.Flags().Lookup("auth0-audience"))
+	_ = viper.BindPFlag("auth0-issuer", Cmd.Flags().Lookup("auth0-issuer"))
+	_ = viper.BindPFlag("auth0-jwks-uri", Cmd.Flags().Lookup("auth0-jwks-uri"))
+	_ = viper.BindPFlag("facebook-app-access-token", Cmd.Flags().Lookup("facebook-app-access-token"))
 
 }
 
-func initConfig() {
-	viper.AutomaticEnv()
-	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
+func preRunE(cmd *cobra.Command, _ []string) error {
+	switch viper.GetString("storage-driver") {
+	case "s3":
+		_ = cmd.MarkFlagRequired("amazon-s3-region")
+		_ = cmd.MarkFlagRequired("amazon-s3-access-key")
+		_ = cmd.MarkFlagRequired("amazon-s3-secret-key")
+		_ = cmd.MarkFlagRequired("amazon-s3-bucket-name")
+	}
+
+	return nil
 }
 
 func runE(_ *cobra.Command, _ []string) error {
@@ -100,10 +110,11 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 	defer cache.Close()
 
-	stg, err := initStorage()
+	bucket, err := newBlobStorage()
 	if err != nil {
 		return err
 	}
+	defer bucket.Close()
 
 	//ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
 	//fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, fileRepository, http.DefaultTransport)
@@ -129,9 +140,9 @@ func runE(_ *cobra.Command, _ []string) error {
 	r.Use(authMiddleware.Handler)
 
 	r.Route("/api/v2.1/storage", func(r chi.Router) {
-		r.Get("/{slug}", storage.DownloadHandlerFunc(stg, cache, image.NewLanczosResizer(), fileRepository))
-		r.Delete("/delete/{slug}", storage.DeleteHandlerFunc(stg, fileRepository))
-		r.Post("/upload", storage.UploadHandlerFunc(stg, fileRepository))
+		r.Get("/{slug}", storage.DownloadHandlerFunc(bucket, cache, image.NewLanczosResizer(), fileRepository))
+		r.Delete("/delete/{slug}", storage.DeleteHandlerFunc(bucket, fileRepository))
+		r.Post("/upload", storage.UploadHandlerFunc(bucket, fileRepository))
 	})
 
 	//r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
@@ -168,29 +179,23 @@ func newMongoDB(uri, dbName string) (mongo.Database, error) {
 	return client.Database(dbName), nil
 }
 
-func initStorage() (storage.Storage, error) {
-	storageBucket := "www-nomkhonwaan-com"
-
-	switch viper.GetString("storage") {
-	case "gcloud":
-		cloudStorage, err := gcloud.NewCloudStorage(
-			viper.GetString("gcloud-credentials-file-path"),
-			storageBucket,
-		)
-		if err != nil {
-			return nil, err
-		}
-		return cloudStorage, nil
+func newBlobStorage() (*blob.Bucket, error) {
+	switch viper.GetString("storage-driver") {
 	case "s3":
-		amazonS3, err := aws.NewS3(
-			viper.GetString("amazon-s3-access-key"),
-			viper.GetString("amazon-s3-secret-key"),
-			storageBucket,
-		)
+		sess, err := session.NewSessionWithOptions(session.Options{
+			Config: aws.Config{
+				Credentials: credentials.NewStaticCredentials(
+					viper.GetString("amazon-s3-access-key"),
+					viper.GetString("amazon-s3-secret-key"), ""),
+				Region: aws.String(viper.GetString("amazon-s3-region")),
+			},
+		})
 		if err != nil {
 			return nil, err
 		}
-		return amazonS3, nil
+
+		bucket, err := s3blob.OpenBucket(context.Background(), sess, viper.GetString("amazon-s3-bucket-name"), nil)
+		return &blob.Bucket{Bucket: bucket}, err
 	default:
 		return nil, errors.New("unsupported storage")
 	}
