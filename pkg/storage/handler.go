@@ -20,13 +20,6 @@ import (
 	"strconv"
 )
 
-//// Register does registering storage routes under the prefix "/api/v2.1/storage"
-//func (h Handler) Register(r *mux.Router) {
-//	r.Path("/{slug}").HandlerFunc(h.Download).Methods(http.MethodGet)
-//	r.Path("/delete/{slug}").HandlerFunc(h.Delete).Methods(http.MethodDelete)
-//	r.Path("/upload").HandlerFunc(h.Upload).Methods(http.MethodPost)
-//}
-
 // DeleteHandlerFunc handles deletion request
 func DeleteHandlerFunc(storage Storage, repository FileRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
