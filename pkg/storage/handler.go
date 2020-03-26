@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi"
-	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/image"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
@@ -28,11 +27,8 @@ func DeleteHandlerFunc(storage Storage, repository FileRepository) http.HandlerF
 			respondError(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
-
-		var (
-			vars = mux.Vars(r)
-			slug = Slug(vars["slug"])
-		)
+		
+		slug := Slug(chi.URLParam(r, "slug"))
 		file, err := repository.FindByID(r.Context(), slug.MustGetID())
 		if err != nil {
 			respondError(w, err.Error(), http.StatusNotFound)
