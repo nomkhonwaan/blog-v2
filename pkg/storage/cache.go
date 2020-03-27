@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -43,7 +44,7 @@ func (c DiskCache) deleteExpiredFiles() {
 		select {
 		case <-c.doneCh:
 			return
-		case <-time.After(time.Millisecond * 100):
+		case <-time.After(time.Millisecond * 1000):
 		default:
 			err := filepath.Walk(c.filePath, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
@@ -52,7 +53,7 @@ func (c DiskCache) deleteExpiredFiles() {
 				if !info.IsDir() {
 					if time.Since(info.ModTime()) > c.expirationDuration {
 						logrus.Infof("deleting expired cache file: %s", path)
-						return c.Delete(path)
+						return c.Delete(strings.Replace(path, c.filePath, "", 1))
 					}
 				}
 				return nil
