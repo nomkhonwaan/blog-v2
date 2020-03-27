@@ -11,17 +11,23 @@ import (
 	"github.com/go-chi/chi"
 	"github.com/nomkhonwaan/myblog/internal/blob"
 	"github.com/nomkhonwaan/myblog/pkg/auth"
+	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/image"
+	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
+	"github.com/nomkhonwaan/myblog/pkg/opengraph"
 	"github.com/nomkhonwaan/myblog/pkg/server"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
+	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gocloud.dev/blob/s3blob"
 	_ "gocloud.dev/blob/s3blob"
+	"html/template"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -30,10 +36,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-)
-
-const (
-	baseURL = "https://www.nomkhonwaan.com"
 )
 
 var (
@@ -50,23 +52,25 @@ func init() {
 
 	Cmd.Flags().Bool("allow-cors", false, "")
 	Cmd.Flags().String("listen-address", "0.0.0.0:8080", "")
+	Cmd.Flags().String("base-url", "https://www.nomkhonwaan.com", "")
 	Cmd.Flags().String("cache-file-path", path.Join(workingDirectory, ".cache"), "")
-	Cmd.Flags().String("web-file-path", path.Join(workingDirectory, "dist", "web"), "")
+	Cmd.Flags().String("static-file-path", path.Join(workingDirectory, "dist", "web"), "")
 	Cmd.Flags().String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
 	Cmd.Flags().String("storage-driver", "s3", "")
 	Cmd.Flags().String("amazon-s3-region", "ap-southeast-1", "")
 	Cmd.Flags().String("amazon-s3-access-key", "", "")
 	Cmd.Flags().String("amazon-s3-secret-key", "", "")
 	Cmd.Flags().String("amazon-s3-bucket-name", "", "")
-	Cmd.Flags().String("auth0-audience", baseURL, "")
+	Cmd.Flags().String("auth0-audience", "https://www.nomkhonwaan.com", "")
 	Cmd.Flags().String("auth0-issuer", "https://nomkhonwaan.auth0.com/", "")
 	Cmd.Flags().String("auth0-jwks-uri", "https://nomkhonwaan.auth0.com/.well-known/jwks.json", "")
 	Cmd.Flags().String("facebook-app-access-token", "", "")
 
 	_ = viper.BindPFlag("allow-cors", Cmd.Flags().Lookup("allow-cors"))
 	_ = viper.BindPFlag("listen-address", Cmd.Flags().Lookup("listen-address"))
+	_ = viper.BindPFlag("base-url", Cmd.Flags().Lookup("base-url"))
 	_ = viper.BindPFlag("cache-file-path", Cmd.Flags().Lookup("cache-file-path"))
-	_ = viper.BindPFlag("web-file-path", Cmd.Flags().Lookup("web-file-path"))
+	_ = viper.BindPFlag("static-file-path", Cmd.Flags().Lookup("static-file-path"))
 	_ = viper.BindPFlag("mongodb-uri", Cmd.Flags().Lookup("mongodb-uri"))
 	_ = viper.BindPFlag("storage-driver", Cmd.Flags().Lookup("storage-driver"))
 	_ = viper.BindPFlag("amazon-s3-region", Cmd.Flags().Lookup("amazon-s3-region"))
@@ -93,6 +97,10 @@ func preRunE(cmd *cobra.Command, _ []string) error {
 }
 
 func runE(_ *cobra.Command, _ []string) error {
+	var (
+		baseURL = viper.GetString("base-url")
+	)
+
 	db, err := newMongoDB(viper.GetString("mongodb-uri"), "nomkhonwaan_com")
 	if err != nil {
 		return err
@@ -101,7 +109,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	var (
 		fileRepository = storage.NewFileRepository(db)
 		//categoryRepository = blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
-		//postRepository     = blog.NewPostRepository(db, log.NewDefaultTimer())
+		postRepository = blog.NewPostRepository(db, log.NewDefaultTimer())
 		//tagRepository      = blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
 	)
 
@@ -117,11 +125,8 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 	defer bucket.Close()
 
-	//ogTemplate, _ := unzip(data.MustGzipAsset("data/facebook-opengraph-template.html"))
-	//fbClient, err := facebook.NewClient(baseURL, viper.GetString("facebook-app-access-token"), string(ogTemplate), blogService, fileRepository, http.DefaultTransport)
-	//if err != nil {
-	//	return err
-	//}
+	ogTmplData, _ := unzip(data.MustGzipAsset("data/opengraph-template.html"))
+	ogTmpl := template.Must(template.New("data/opengraph-template.html").Parse(string(ogTmplData)))
 
 	authMiddleware := auth.NewJWTMiddleware(
 		viper.GetString("auth0-audience"),
@@ -150,13 +155,13 @@ func runE(_ *cobra.Command, _ []string) error {
 			r.Post("/upload", storage.UploadHandlerFunc(bucket, fileRepository))
 		})
 	})
-
+	r.With(opengraph.ServeStaticSinglePageMiddleware(baseURL, ogTmpl, postRepository, fileRepository)).
+		Get("/*", web.ServeStaticHandlerFunc(viper.GetString("static-file-path")))
 	//r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
 	//r.Handle("/graphql", graphql.Handler(schema))
 
 	//sitemap.NewHandler(baseURL, cache, blogService).
 	//	Register(r.PathPrefix("/sitemap.xml").Subrouter())
-	//r.PathPrefix("/").Handler(fbClient.CrawlerHandler(web.NewSPAHandler(viper.GetString("web-`file-path"))))
 
 	s := server.InsecureServer{
 		Handler:         r,
@@ -235,13 +240,12 @@ func handleSignals() <-chan struct{} {
 	return stopCh
 }
 
-func unzip(compressed []byte) ([]byte, error) {
-	rdr, err := gzip.NewReader(bytes.NewBuffer(compressed))
+func unzip(data []byte) ([]byte, error) {
+	r, err := gzip.NewReader(bytes.NewBuffer(data))
 	if err != nil {
 		return nil, err
 	}
-	defer rdr.Close()
+	defer r.Close()
 
-	uncompressed, _ := ioutil.ReadAll(rdr)
-	return uncompressed, nil
+	return ioutil.ReadAll(r)
 }
