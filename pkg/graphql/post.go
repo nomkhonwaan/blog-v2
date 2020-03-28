@@ -3,10 +3,8 @@ package graphql
 import (
 	"context"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
-	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
-	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -17,7 +15,7 @@ func (s *Server) registerPost(schema *schemabuilder.Schema) {
 	obj.FieldFunc("tags", s.postTagsFieldFunc)
 	obj.FieldFunc("featuredImage", s.postFeaturedImageFieldFunc)
 	obj.FieldFunc("attachments", s.postAttachmentsFieldFunc)
-	obj.FieldFunc("engagement", s.postEngagementFieldFunc)
+	//obj.FieldFunc("engagement", s.postEngagementFieldFunc)
 }
 
 func (s *Server) postCategoriesFieldFunc(ctx context.Context, p blog.Post) ([]blog.Category, error) {
@@ -55,19 +53,19 @@ func (s *Server) postAttachmentsFieldFunc(ctx context.Context, p blog.Post) ([]s
 	return s.service.File().FindAllByIDs(ctx, ids)
 }
 
-func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) blog.Engagement {
-	engagement := blog.Engagement{}
-
-	// Get engagement data from Facebook Graph API
-	id := "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug
-	url, err := s.service.FBClient().GetURL(id)
-	if err != nil {
-		logrus.Errorf("an error has occurred while getting URL from Facebook Graph API: %s", err)
-	}
-	engagement.ShareCount += url.Engagement.ShareCount
-
-	// Get engagement data from Twitter Search API
-	// TODO: the Twitter client is not implement yet
-
-	return engagement
-}
+//func (s *Server) postEngagementFieldFunc(ctx context.Context, p blog.Post) blog.Engagement {
+//	engagement := blog.Engagement{}
+//
+//	// Get engagement data from Facebook Graph API
+//	id := "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug
+//	url, err := s.service.FBClient().GetURL(id)
+//	if err != nil {
+//		logrus.Errorf("an error has occurred while getting URLNode from Facebook Graph API: %s", err)
+//	}
+//	engagement.ShareCount += url.Engagement.ShareCount
+//
+//	// Get engagement data from Twitter Search API
+//	// TODO: the Twitter client is not implement yet
+//
+//	return engagement
+//}

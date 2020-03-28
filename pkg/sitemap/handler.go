@@ -60,7 +60,7 @@ func (s service) Generate() ([]byte, error) {
 	}
 
 	for i, p := range posts {
-		// update the base URL last modify with the latest published posts publishing time
+		// update the base URLNode last modify with the latest published posts publishing time
 		if i == 0 {
 			urlSet.URLs[0].LastModify = p.PublishedAt.Format(time.RFC3339)
 		}

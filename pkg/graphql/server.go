@@ -16,7 +16,7 @@ import (
 	"strings"
 )
 
-// Slug is a valid URL string composes with title and ID
+// Slug is a valid URLNode string composes with title and ID
 type Slug string
 
 // GetID returns an ID from the slug string

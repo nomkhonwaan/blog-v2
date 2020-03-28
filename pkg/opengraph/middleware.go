@@ -4,16 +4,15 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
+	"github.com/nomkhonwaan/myblog/pkg/timeutil"
 	"html/template"
 	"net/http"
 	"regexp"
 	"strings"
-	"time"
 )
 
 var (
-	singlePageRegExp       = regexp.MustCompile(`\d{4}/\d{1,2}/\d{1,2}/(.+)$`)
-	asiaBangkokTimeZone, _ = time.LoadLocation("Asia/Bangkok")
+	singlePageRegExp = regexp.MustCompile(`\d{4}/\d{1,2}/\d{1,2}/(.+)$`)
 )
 
 // ServeStaticSinglePageMiddleware provides a static HTML page for crawler bot on the single page
@@ -41,7 +40,7 @@ func ServeStaticSinglePageMiddleware(baseURL string, ogTmpl *template.Template, 
 								Description   string
 								FeaturedImage string
 							}{
-								URL:           baseURL + "/" + p.PublishedAt.In(asiaBangkokTimeZone).Format("2006/1/2") + "/" + p.Slug,
+								URL:           baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug,
 								Type:          "article",
 								Title:         p.Title,
 								Description:   strings.Split(p.Markdown, "\n")[0],

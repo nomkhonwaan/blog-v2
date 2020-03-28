@@ -51,8 +51,10 @@ func TestMongoPostRepository_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	col := mock_mongo.NewMockCollection(ctrl)
-	timer := mock_log.NewMockTimer(ctrl)
+	var (
+		col   = mock_mongo.NewMockCollection(ctrl)
+		timer = mock_log.NewMockTimer(ctrl)
+	)
 
 	t.Run("With successful creating a new record", func(t *testing.T) {
 		// Given

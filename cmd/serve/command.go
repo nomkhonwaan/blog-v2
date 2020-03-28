@@ -14,6 +14,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
 	"github.com/nomkhonwaan/myblog/pkg/github"
+	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/image"
 	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
@@ -21,6 +22,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/server"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
+	"github.com/samsarahq/thunder/graphql/introspection"
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -81,7 +83,6 @@ func init() {
 	_ = viper.BindPFlag("auth0-issuer", Cmd.Flags().Lookup("auth0-issuer"))
 	_ = viper.BindPFlag("auth0-jwks-uri", Cmd.Flags().Lookup("auth0-jwks-uri"))
 	_ = viper.BindPFlag("facebook-app-access-token", Cmd.Flags().Lookup("facebook-app-access-token"))
-
 }
 
 func preRunE(cmd *cobra.Command, _ []string) error {
@@ -107,9 +108,9 @@ func runE(_ *cobra.Command, _ []string) error {
 	}
 
 	var (
-		fileRepository = storage.NewFileRepository(db)
-		//categoryRepository = blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
-		postRepository = blog.NewPostRepository(db, log.NewDefaultTimer())
+		fileRepository     = storage.NewFileRepository(db)
+		categoryRepository = blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
+		postRepository     = blog.NewPostRepository(db, log.NewDefaultTimer())
 		//tagRepository      = blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
 	)
 
@@ -128,22 +129,23 @@ func runE(_ *cobra.Command, _ []string) error {
 	ogTmplData, _ := unzip(data.MustGzipAsset("data/opengraph-template.html"))
 	ogTmpl := template.Must(template.New("data/opengraph-template.html").Parse(string(ogTmplData)))
 
-	authMiddleware := auth.NewJWTMiddleware(
-		viper.GetString("auth0-audience"),
-		viper.GetString("auth0-issuer"),
-		viper.GetString("auth0-jwks-uri"),
-		http.DefaultTransport,
-	)
-
-	//schema := graphql.NewServer(blogService, fbClient, fileRepository).Schema()
-	//introspection.AddIntrospectionToSchema(schema)
+	schema, err := graphql.BuildSchema(categoryRepository)
+	if err != nil {
+		return err
+	}
+	introspection.AddIntrospectionToSchema(schema)
 
 	r := chi.NewRouter()
 
 	if viper.GetBool("allow-cors") {
 		r.Use(allowCORS)
 	}
-	r.Use(authMiddleware.Handler)
+	r.Use(auth.NewJWTMiddleware(
+		viper.GetString("auth0-audience"),
+		viper.GetString("auth0-issuer"),
+		viper.GetString("auth0-jwks-uri"),
+		http.DefaultTransport,
+	).Handler)
 
 	r.Route("/api/v2.1", func(r chi.Router) {
 		r.Route("/github", func(r chi.Router) {
@@ -157,8 +159,8 @@ func runE(_ *cobra.Command, _ []string) error {
 	})
 	r.With(opengraph.ServeStaticSinglePageMiddleware(baseURL, ogTmpl, postRepository, fileRepository)).
 		Get("/*", web.ServeStaticHandlerFunc(viper.GetString("static-file-path")))
-	//r.Handle("/graphiql", playground.Handler(data.MustGzipAsset("data/graphql-playground.html")))
-	//r.Handle("/graphql", graphql.Handler(schema))
+	r.Get("/graphiql", graphql.ServeGraphiqlHandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
+	r.Handle("/graphql", graphql.Handler(schema))
 
 	//sitemap.NewHandler(baseURL, cache, blogService).
 	//	Register(r.PathPrefix("/sitemap.xml").Subrouter())
