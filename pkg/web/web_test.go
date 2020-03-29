@@ -1,7 +1,6 @@
-package web_test
+package web
 
 import (
-	. "github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -11,31 +10,20 @@ import (
 	"testing"
 )
 
-func TestSPAHandler_ServeHTTP(t *testing.T) {
-	var (
-		staticFilesPath = os.TempDir()
-		h               = NewSPAHandler(staticFilesPath)
-	)
-
-	err := ioutil.WriteFile(filepath.Join(staticFilesPath, "index.html"), []byte("test"), 0644)
+func TestServeStaticHandlerFunc(t *testing.T) {
+	staticFilePath := os.TempDir()
+	err := ioutil.WriteFile(filepath.Join(staticFilePath, "index.html"), []byte("test"), 0644)
 	if err != nil {
 		panic(err)
 	}
-
-	defer func() {
-		_ = os.Remove(filepath.Join(staticFilesPath, "index.html"))
-	}()
-
-	newRequest := func(path string) *http.Request {
-		return httptest.NewRequest(http.MethodGet, path, nil)
-	}
+	defer func() { _ = os.Remove(filepath.Join(staticFilePath, "index.html")) }()
 
 	t.Run("When request to an index path (/)", func(t *testing.T) {
 		// Given
 		w := httptest.NewRecorder()
 
 		// When
-		h.ServeHTTP(w, newRequest("/"))
+		ServeStaticHandlerFunc(staticFilePath).ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/", nil))
 
 		// Then
 		assert.Equal(t, "test", w.Body.String())
@@ -46,7 +34,7 @@ func TestSPAHandler_ServeHTTP(t *testing.T) {
 		w := httptest.NewRecorder()
 
 		// When
-		h.ServeHTTP(w, newRequest("/2019/12/4/test-1"))
+		ServeStaticHandlerFunc(staticFilePath).ServeHTTP(w, httptest.NewRequest(http.MethodGet, "/2019/12/4/test-1", nil))
 
 		// Then
 		assert.Equal(t, "test", w.Body.String())

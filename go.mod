@@ -3,6 +3,7 @@ module github.com/nomkhonwaan/myblog
 go 1.14
 
 require (
+	bou.ke/monkey v1.0.2 // indirect
 	cloud.google.com/go/storage v1.6.0 // indirect
 	github.com/auth0/go-jwt-middleware v0.0.0-20190805220309-36081240882b
 	github.com/aws/aws-sdk-go v1.29.34
@@ -34,6 +35,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.6.2
 	github.com/stretchr/testify v1.5.1
+	github.com/tkuchiki/faketime v0.1.1
 	github.com/urfave/negroni v1.0.0 // indirect
 	go.mongodb.org/mongo-driver v1.3.1
 	gocloud.dev v0.19.0

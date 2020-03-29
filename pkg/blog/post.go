@@ -6,7 +6,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"go.mongodb.org/mongo-driver/bson"
@@ -86,14 +85,13 @@ type PostRepository interface {
 }
 
 // NewPostRepository returns a MongoPostRepository instance
-func NewPostRepository(db mongo.Database, timer log.Timer) MongoPostRepository {
-	return MongoPostRepository{col: mongo.NewCollection(db.Collection("posts")), timer: timer}
+func NewPostRepository(db mongo.Database) MongoPostRepository {
+	return MongoPostRepository{col: mongo.NewCollection(db.Collection("posts"))}
 }
 
 // MongoPostRepository implements PostRepository interface
 type MongoPostRepository struct {
-	col   mongo.Collection
-	timer log.Timer
+	col mongo.Collection
 }
 
 // Create inserts a new empty post which belongs to the author with "Draft" status
@@ -104,7 +102,7 @@ func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Po
 		Slug:      fmt.Sprintf("%s", id.Hex()),
 		Status:    StatusDraft,
 		AuthorID:  authorID,
-		CreatedAt: repo.timer.Now(),
+		CreatedAt: time.Now(),
 	}
 
 	doc, _ := bson.Marshal(post)
@@ -169,7 +167,7 @@ func (repo MongoPostRepository) FindByID(ctx context.Context, id interface{}) (P
 // Save does updating a single post
 func (repo MongoPostRepository) Save(ctx context.Context, id interface{}, q PostQuery) (Post, error) {
 	update := bson.M{"$set": bson.M{
-		"updatedAt": repo.timer.Now(),
+		"updatedAt": time.Now(),
 	}}
 
 	if title := q.Title(); title != nil {

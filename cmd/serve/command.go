@@ -17,7 +17,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/image"
-	"github.com/nomkhonwaan/myblog/pkg/log"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/opengraph"
 	"github.com/nomkhonwaan/myblog/pkg/server"
@@ -111,7 +110,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	var (
 		fileRepository     = storage.NewFileRepository(db)
 		categoryRepository = blog.NewCategoryRepository(db)
-		postRepository     = blog.NewPostRepository(db, log.NewDefaultTimer())
+		postRepository     = blog.NewPostRepository(db)
 		tagRepository      = blog.NewTagRepository(db)
 	)
 
@@ -133,7 +132,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	schema, err := graphql.BuildSchema(
 		graphql.BuildCategorySchema(categoryRepository),
 		graphql.BuildTagSchema(tagRepository),
-		graphql.BuildPostSchema(postRepository, log.DefaultTimer{}),
+		graphql.BuildPostSchema(postRepository),
 		graphql.BuildFileSchema(fileRepository),
 		graphql.BuildGraphAPISchema(baseURL, facebook.NewClient(
 			viper.GetString("facebook-app-access-token"), http.DefaultTransport)),

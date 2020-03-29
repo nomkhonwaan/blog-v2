@@ -1,4 +1,4 @@
-package blog_test
+package blog
 
 import (
 	"context"
@@ -6,12 +6,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang/mock/gomock"
-	. "github.com/nomkhonwaan/myblog/pkg/blog"
-	mock_log "github.com/nomkhonwaan/myblog/pkg/log/mock"
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/stretchr/testify/assert"
+	"github.com/tkuchiki/faketime"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mgo "go.mongodb.org/mongo-driver/mongo"
@@ -51,24 +50,26 @@ func TestMongoPostRepository_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	now := time.Date(2020, 3, 29, 18, 57, 0, 0, time.UTC)
+	f := faketime.NewFaketimeWithTime(now)
+	defer f.Undo()
+	f.Do()
+
 	var (
-		col   = mock_mongo.NewMockCollection(ctrl)
-		timer = mock_log.NewMockTimer(ctrl)
+		col = mock_mongo.NewMockCollection(ctrl)
 	)
+
+	repo := MongoPostRepository{col: col}
 
 	t.Run("With successful creating a new record", func(t *testing.T) {
 		// Given
 		ctx := context.Background()
-		now := time.Now()
 		authorID := "github|303589"
 
-		timer.EXPECT().Now().Return(now)
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
-		postRepo := NewPostRepository(col, timer)
-
 		// When
-		result, err := postRepo.Create(ctx, authorID)
+		result, err := repo.Create(ctx, authorID)
 
 		// Then
 		assert.Nil(t, err)
@@ -81,18 +82,14 @@ func TestMongoPostRepository_Create(t *testing.T) {
 	t.Run("When unable to create a new record on database", func(t *testing.T) {
 		// Given
 		ctx := context.Background()
-		now := time.Now()
 		authorID := "github|303589"
 
-		timer.EXPECT().Now().Return(now)
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("test unable to create a new record on database"))
-
-		postRepo := NewPostRepository(col, timer)
 
 		expected := Post{}
 
 		//result When
-		result, err := postRepo.Create(ctx, authorID)
+		result, err := repo.Create(ctx, authorID)
 
 		// Then
 		assert.EqualError(t, err, "test unable to create a new record on database")
@@ -105,11 +102,13 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	cur := mock_mongo.NewMockCursor(ctrl)
-	col := mock_mongo.NewMockCollection(ctrl)
+	var (
+		col = mock_mongo.NewMockCollection(ctrl)
+		cur = mock_mongo.NewMockCursor(ctrl)
+	)
 
 	ctx := context.Background()
-	repo := NewPostRepository(col, nil)
+	repo := MongoPostRepository{col: col}
 	authorizedID := "authorizedID"
 	published := StatusPublished
 	draft := StatusDraft
@@ -238,11 +237,13 @@ func TestMongoPostRepository_FindByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	singleResult := mock_mongo.NewMockSingleResult(ctrl)
-	col := mock_mongo.NewMockCollection(ctrl)
+	var (
+		col          = mock_mongo.NewMockCollection(ctrl)
+		singleResult = mock_mongo.NewMockSingleResult(ctrl)
+	)
 
 	ctx := context.Background()
-	repo := NewPostRepository(col, nil)
+	repo := MongoPostRepository{col: col}
 
 	tests := map[string]struct {
 		id  interface{}
@@ -281,14 +282,19 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	singleResult := mock_mongo.NewMockSingleResult(ctrl)
-	col := mock_mongo.NewMockCollection(ctrl)
-	timer := mock_log.NewMockTimer(ctrl)
+	now := time.Date(2020, 3, 29, 18, 57, 0, 0, time.UTC)
+	f := faketime.NewFaketimeWithTime(now)
+	defer f.Undo()
+	f.Do()
+
+	var (
+		col          = mock_mongo.NewMockCollection(ctrl)
+		singleResult = mock_mongo.NewMockSingleResult(ctrl)
+	)
 
 	ctx := context.Background()
-	now := time.Now()
+	repo := MongoPostRepository{col: col}
 	publishedAt := time.Now()
-	repo := NewPostRepository(col, timer)
 	slug := "test-update-post-slug"
 	published := StatusPublished
 	title := "Test update post title"
@@ -366,7 +372,6 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	// When
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
-			timer.EXPECT().Now().Return(now)
 			col.EXPECT().UpdateOne(ctx, bson.M{"_id": test.id.(primitive.ObjectID)}, test.update).Return(nil, test.err)
 
 			if test.err == nil {

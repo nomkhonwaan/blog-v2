@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
-	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
+	"github.com/nomkhonwaan/myblog/pkg/timeutil"
 	"github.com/sirupsen/logrus"
 	"io"
 	"net/http"
@@ -70,7 +70,7 @@ func (s service) Generate() ([]byte, error) {
 			lastModify = p.UpdatedAt
 		}
 
-		location, _ := url.Parse(s.baseURL + "/" + p.PublishedAt.In(facebook.DefaultTimeZone).Format("2006/1/2") + "/" + p.Slug)
+		location, _ := url.Parse(s.baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug)
 		urlSet.URLs = append(urlSet.URLs, URL{
 			Location:   location.String(),
 			LastModify: lastModify.Format(time.RFC3339),

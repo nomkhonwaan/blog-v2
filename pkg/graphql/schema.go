@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/facebook"
-	"github.com/nomkhonwaan/myblog/pkg/log"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/timeutil"
@@ -16,6 +15,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
+	"time"
 )
 
 // BuildSchema accepts build schema function(s) for applying to the schemabuilding.Schema object
@@ -33,6 +33,7 @@ func BuildCategorySchema(repository blog.CategoryRepository) func(*schemabuilder
 		q := s.Query()
 		q.FieldFunc("category", FindCategoryBySlugFieldFunc(repository))
 		q.FieldFunc("categories", FindAllCategoriesFieldFunc(repository))
+
 		p := s.Object("Post", blog.Post{})
 		p.FieldFunc("categories", FindAllCategoriesBelongedToPostFieldFunc(repository))
 	}
@@ -44,29 +45,33 @@ func BuildTagSchema(repository blog.TagRepository) func(*schemabuilder.Schema) {
 		q := s.Query()
 		q.FieldFunc("tag", FindTagBySlugFieldFunc(repository))
 		q.FieldFunc("tags", FindAllTagsFieldFunc(repository))
+
 		p := s.Object("Post", blog.Post{})
 		p.FieldFunc("tags", FindAllTagsBelongedToPostFieldFunc(repository))
 	}
 }
 
 // BuildPostSchema builds all post related schemas
-func BuildPostSchema(repository blog.PostRepository, timer log.Timer) func(*schemabuilder.Schema) {
+func BuildPostSchema(repository blog.PostRepository) func(*schemabuilder.Schema) {
 	return func(s *schemabuilder.Schema) {
 		q := s.Query()
 		q.FieldFunc("latestPublishedPosts", FindAllLatestPublishedPostsFieldFunc(repository))
 		q.FieldFunc("myPosts", FindAllMyPostsFieldFunc(repository))
 		q.FieldFunc("post", FindPostBySlugFieldFunc(repository))
+
 		m := s.Mutation()
 		m.FieldFunc("createPost", CreatePostFieldFunc(repository))
 		m.FieldFunc("updatePostTitle", UpdatePostTitleFieldFunc(repository))
-		m.FieldFunc("updatePostStatus", UpdatePostStatusFieldFunc(repository, timer))
+		m.FieldFunc("updatePostStatus", UpdatePostStatusFieldFunc(repository))
 		m.FieldFunc("updatePostContent", UpdatePostContentFieldFunc(repository))
 		m.FieldFunc("updatePostCategories", UpdatePostCategoriesFieldFunc(repository))
 		m.FieldFunc("updatePostTags", UpdatePostTagsFieldFunc(repository))
 		m.FieldFunc("updatePostFeaturedImage", UpdatePostFeaturedImageFieldFunc(repository))
 		m.FieldFunc("updatePostAttachments", UpdatePostAttachmentsFieldFunc(repository))
+
 		c := s.Object("Category", blog.Category{})
 		c.FieldFunc("latestPublishedPosts", FindAllLPPBelongedToCategoryFieldFunc(repository))
+
 		t := s.Object("Tag", blog.Tag{})
 		t.FieldFunc("latestPublishedPosts", FindAllLPPBelongedToTagFieldFunc(repository))
 	}
@@ -309,7 +314,7 @@ func UpdatePostTitleFieldFunc(repository blog.PostRepository) interface{} {
 //		updatePostStatus(slug: string!, status: Status!) { ... }
 //	}
 // ```
-func UpdatePostStatusFieldFunc(repository blog.PostRepository, timer log.Timer) interface{} {
+func UpdatePostStatusFieldFunc(repository blog.PostRepository) interface{} {
 	return func(ctx context.Context, args struct {
 		Slug   Slug
 		Status blog.Status
@@ -325,7 +330,7 @@ func UpdatePostStatusFieldFunc(repository blog.PostRepository, timer log.Timer) 
 			if p.AuthorID == authID.(string) {
 				qb := blog.NewPostQueryBuilder().WithStatus(args.Status)
 				if args.Status.IsPublished() && p.PublishedAt.IsZero() {
-					qb.WithPublishedAt(timer.Now())
+					qb.WithPublishedAt(time.Now())
 				}
 				return repository.Save(ctx, id, qb.Build())
 			}

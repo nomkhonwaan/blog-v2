@@ -1,4 +1,4 @@
-package storage_test
+package storage
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"github.com/golang/mock/gomock"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
-	. "github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/stretchr/testify/assert"
+	"github.com/tkuchiki/faketime"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	mgo "go.mongodb.org/mongo-driver/mongo"
@@ -41,17 +41,26 @@ func TestFile_MarshalJSON(t *testing.T) {
 }
 
 func TestMongoFileRepository_Create(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	now := time.Date(2020, 3, 29, 18, 57, 0, 0, time.UTC)
+	f := faketime.NewFaketimeWithTime(now)
+	defer f.Undo()
+	f.Do()
+
+	var (
+		col = mock_mongo.NewMockCollection(ctrl)
+	)
+
+	ctx := context.Background()
+	repo := MongoFileRepository{col: col}
+
 	t.Run("When insert into the collection successfully", func(t *testing.T) {
 		// Given
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		col := mock_mongo.NewMockCollection(ctrl)
-		ctx := context.Background()
 		id := primitive.NewObjectID()
 		path := "/path/to/the/file.txt"
 		fileName := "file.txt"
-
 		file := File{
 			ID:       id,
 			Path:     path,
@@ -60,29 +69,21 @@ func TestMongoFileRepository_Create(t *testing.T) {
 
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
-		fileRepo := NewFileRepository(col)
-
 		// When
-		result, err := fileRepo.Create(ctx, file)
+		result, err := repo.Create(ctx, file)
 
 		// Then
 		assert.Nil(t, err)
 		assert.Equal(t, id, result.ID)
 		assert.Equal(t, path, result.Path)
 		assert.Equal(t, fileName, result.FileName)
-		assert.True(t, time.Since(result.CreatedAt) < time.Minute)
+		assert.Equal(t, now, result.CreatedAt)
 	})
 
 	t.Run("With empty ID field", func(t *testing.T) {
 		// Given
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		col := mock_mongo.NewMockCollection(ctrl)
-		ctx := context.Background()
 		path := "/path/to/the/file.txt"
 		fileName := "file.txt"
-
 		file := File{
 			Path:     path,
 			FileName: fileName,
@@ -90,10 +91,8 @@ func TestMongoFileRepository_Create(t *testing.T) {
 
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
-		fileRepo := NewFileRepository(col)
-
 		// When
-		result, err := fileRepo.Create(ctx, file)
+		result, err := repo.Create(ctx, file)
 
 		// Then
 		assert.Nil(t, err)
@@ -102,14 +101,8 @@ func TestMongoFileRepository_Create(t *testing.T) {
 
 	t.Run("When insert into the collection un-successfully", func(t *testing.T) {
 		// Given
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-
-		col := mock_mongo.NewMockCollection(ctrl)
-		ctx := context.Background()
 		path := "/path/to/the/file.txt"
 		fileName := "file.txt"
-
 		file := File{
 			Path:     path,
 			FileName: fileName,
@@ -117,12 +110,10 @@ func TestMongoFileRepository_Create(t *testing.T) {
 
 		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("something went wrong"))
 
-		fileRepo := NewFileRepository(col)
-
 		expected := File{}
 
 		// When
-		result, err := fileRepo.Create(ctx, file)
+		result, err := repo.Create(ctx, file)
 
 		// Then
 		assert.EqualError(t, err, "something went wrong")
@@ -140,7 +131,7 @@ func TestMongoFileRepository_Delete(t *testing.T) {
 	)
 
 	ctx := context.Background()
-	repo := NewFileRepository(col)
+	repo := MongoFileRepository{col: col}
 	id := primitive.NewObjectID()
 
 	col.EXPECT().DeleteOne(ctx, bson.M{"_id": id}).Return(nil, nil)
@@ -161,11 +152,11 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 		cur = mock_mongo.NewMockCursor(ctrl)
 	)
 
-	repo := NewFileRepository(col)
+	ctx := context.Background()
+	repo := MongoFileRepository{col: col}
 
 	t.Run("With successful finding all files by list of IDs", func(t *testing.T) {
 		// Given
-		ctx := context.Background()
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
 		col.EXPECT().Find(ctx, bson.M{
@@ -185,7 +176,6 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 
 	t.Run("With empty list of IDs", func(t *testing.T) {
 		// Given
-		ctx := context.Background()
 		var ids []primitive.ObjectID
 
 		// When
@@ -197,7 +187,6 @@ func TestMongoFileRepository_FindAllByIDs(t *testing.T) {
 
 	t.Run("When unable to find all files by list of IDs", func(t *testing.T) {
 		// Given
-		ctx := context.Background()
 		ids := []primitive.ObjectID{primitive.NewObjectID()}
 
 		col.EXPECT().Find(gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all files by list of IDs"))
@@ -215,11 +204,13 @@ func TestMongoFileRepository_FindByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	singleResult := mock_mongo.NewMockSingleResult(ctrl)
-	col := mock_mongo.NewMockCollection(ctrl)
+	var (
+		col          = mock_mongo.NewMockCollection(ctrl)
+		singleResult = mock_mongo.NewMockSingleResult(ctrl)
+	)
 
 	ctx := context.Background()
-	repo := NewFileRepository(col)
+	repo := MongoFileRepository{col: col}
 
 	tests := map[string]struct {
 		id  interface{}
