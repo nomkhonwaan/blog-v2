@@ -43,8 +43,8 @@ type CategoryRepository interface {
 }
 
 // NewCategoryRepository returns a MongoCategoryRepository instance
-func NewCategoryRepository(col mongo.Collection) MongoCategoryRepository {
-	return MongoCategoryRepository{col}
+func NewCategoryRepository(db mongo.Database) MongoCategoryRepository {
+	return MongoCategoryRepository{col: mongo.NewCollection(db.Collection("categories"))}
 }
 
 // MongoCategoryRepository implements CategoryRepository interface

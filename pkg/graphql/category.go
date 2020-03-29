@@ -15,7 +15,7 @@ func (s *Server) registerCategory(schema *schemabuilder.Schema) {
 func (s *Server) categoryLatestPublishedPostsFieldFunc(ctx context.Context, cat blog.Category, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
 	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().
 		WithCategory(cat).
-		WithStatus(blog.Published).
+		WithStatus(blog.StatusPublished).
 		WithOffset(args.Offset).
 		WithLimit(args.Limit).
 		Build(),

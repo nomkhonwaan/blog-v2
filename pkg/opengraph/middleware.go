@@ -24,7 +24,7 @@ func ServeStaticSinglePageMiddleware(baseURL string, ogTmpl *template.Template, 
 					id := graphql.Slug(slug).MustGetID()
 					p, err := postRepository.FindByID(r.Context(), id)
 					if err == nil {
-						if p.Status == blog.Published {
+						if p.Status == blog.StatusPublished {
 							featuredImage := baseURL + "/assets/images/303589.webp"
 							if p.FeaturedImage.ID.IsZero() {
 								file, _ := fileRepository.FindByID(r.Context(), p.FeaturedImage.ID)

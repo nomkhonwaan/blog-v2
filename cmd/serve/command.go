@@ -109,9 +109,9 @@ func runE(_ *cobra.Command, _ []string) error {
 
 	var (
 		fileRepository     = storage.NewFileRepository(db)
-		categoryRepository = blog.NewCategoryRepository(mongo.NewCollection(db.Collection("categories")))
+		categoryRepository = blog.NewCategoryRepository(db)
 		postRepository     = blog.NewPostRepository(db, log.NewDefaultTimer())
-		//tagRepository      = blog.NewTagRepository(mongo.NewCollection(db.Collection("tags")))
+		tagRepository      = blog.NewTagRepository(db)
 	)
 
 	cache, err := storage.NewDiskCache(afero.NewOsFs(), viper.GetString("cache-file-path"))
@@ -129,7 +129,12 @@ func runE(_ *cobra.Command, _ []string) error {
 	ogTmplData, _ := unzip(data.MustGzipAsset("data/opengraph-template.html"))
 	ogTmpl := template.Must(template.New("data/opengraph-template.html").Parse(string(ogTmplData)))
 
-	schema, err := graphql.BuildSchema(categoryRepository)
+	schema, err := graphql.BuildSchema(
+		graphql.BuildCategorySchema(categoryRepository),
+		graphql.BuildTagSchema(tagRepository),
+		graphql.BuildPostSchema(postRepository),
+		graphql.BuildFileSchema(fileRepository),
+	)
 	if err != nil {
 		return err
 	}
@@ -160,7 +165,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	r.With(opengraph.ServeStaticSinglePageMiddleware(baseURL, ogTmpl, postRepository, fileRepository)).
 		Get("/*", web.ServeStaticHandlerFunc(viper.GetString("static-file-path")))
 	r.Get("/graphiql", graphql.ServeGraphiqlHandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
-	r.Handle("/graphql", graphql.Handler(schema))
+	r.Handle("/graphql", graphql.Handler(schema, graphql.VerifyAuthorityMiddleware))
 
 	//sitemap.NewHandler(baseURL, cache, blogService).
 	//	Register(r.PathPrefix("/sitemap.xml").Subrouter())

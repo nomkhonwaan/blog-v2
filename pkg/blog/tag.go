@@ -41,8 +41,8 @@ type TagRepository interface {
 }
 
 // NewTagRepository returns a MongoTagRepository instance
-func NewTagRepository(col mongo.Collection) MongoTagRepository {
-	return MongoTagRepository{col}
+func NewTagRepository(db mongo.Database) MongoTagRepository {
+	return MongoTagRepository{col: mongo.NewCollection(db.Collection("tags"))}
 }
 
 // MongoTagRepository implements TagRepository interface

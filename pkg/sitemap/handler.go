@@ -51,7 +51,7 @@ func (s service) Generate() ([]byte, error) {
 
 	// TODO: the limit number should be able to configure rather than fixed value
 	posts, err := s.Post().FindAll(context.Background(), blog.NewPostQueryBuilder().
-		WithStatus(blog.Published).
+		WithStatus(blog.StatusPublished).
 		WithLimit(9999).
 		Build(),
 	)

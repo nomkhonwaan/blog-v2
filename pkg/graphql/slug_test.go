@@ -1,7 +1,6 @@
-package graphql_test
+package graphql
 
 import (
-	. "github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"

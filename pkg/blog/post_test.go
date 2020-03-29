@@ -28,7 +28,7 @@ func TestPost_MarshalJSON(t *testing.T) {
 		ID:          id,
 		Title:       "Children of Dune",
 		Slug:        "children-of-dune-" + id.Hex(),
-		Status:      Draft,
+		Status:      StatusDraft,
 		Markdown:    "Integer tincidunt ante vel ipsum. Praesent blandit lacinia erat. Vestibulum sed magna at nunc commodo placerat. Praesent blandit. Nam nulla. Integer pede justo, lacinia eget, tincidunt eget, tempus vel, pede. Morbi porttitor lorem id ligula. Suspendisse ornare consequat lectus. In est risus, auctor sed, tristique in, tempus sit amet, sem.",
 		HTML:        "Nullam sit amet turpis elementum ligula vehicula consequat. Morbi a ipsum. Integer a nibh.",
 		PublishedAt: time.Time{},
@@ -74,7 +74,7 @@ func TestMongoPostRepository_Create(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, now, result.CreatedAt)
 		assert.Equal(t, fmt.Sprintf("%s", result.ID.Hex()), result.Slug)
-		assert.Equal(t, Draft, result.Status)
+		assert.Equal(t, StatusDraft, result.Status)
 		assert.Equal(t, authorID, result.AuthorID)
 	})
 
@@ -111,8 +111,8 @@ func TestMongoPostRepository_FindAll(t *testing.T) {
 	ctx := context.Background()
 	repo := NewPostRepository(col, nil)
 	authorizedID := "authorizedID"
-	published := Published
-	draft := Draft
+	published := StatusPublished
+	draft := StatusDraft
 	catID := primitive.NewObjectID()
 	tagID := primitive.NewObjectID()
 
@@ -290,7 +290,7 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	publishedAt := time.Now()
 	repo := NewPostRepository(col, timer)
 	slug := "test-update-post-slug"
-	published := Published
+	published := StatusPublished
 	title := "Test update post title"
 	markdown := "Test update post content"
 	html := "<p>Test update post content</p>"

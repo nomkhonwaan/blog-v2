@@ -102,7 +102,7 @@ func (repo MongoPostRepository) Create(ctx context.Context, authorID string) (Po
 	post := Post{
 		ID:        id,
 		Slug:      fmt.Sprintf("%s", id.Hex()),
-		Status:    Draft,
+		Status:    StatusDraft,
 		AuthorID:  authorID,
 		CreatedAt: repo.timer.Now(),
 	}

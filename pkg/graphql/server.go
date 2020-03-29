@@ -11,27 +11,8 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
-	"strings"
 )
-
-// Slug is a valid URLNode string composes with title and ID
-type Slug string
-
-// GetID returns an ID from the slug string
-func (s Slug) GetID() (interface{}, error) {
-	sl := strings.Split(string(s), "-")
-	return primitive.ObjectIDFromHex(sl[len(sl)-1])
-}
-
-// MustGetID always return ID from the slug string
-func (s Slug) MustGetID() interface{} {
-	if id, err := s.GetID(); err == nil {
-		return id
-	}
-	return primitive.NewObjectID()
-}
 
 // Service helps co-working between data-layer and control-layer
 type Service interface {

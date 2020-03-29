@@ -65,7 +65,7 @@ func (s *Server) findAllTagsQuery(ctx context.Context) ([]blog.Tag, error) {
 //	}
 // }
 func (s *Server) findLatestPublishedPostsQuery(ctx context.Context, args struct{ Offset, Limit int64 }) ([]blog.Post, error) {
-	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.Published).WithOffset(args.Offset).WithLimit(args.Limit).Build())
+	return s.service.Post().FindAll(ctx, blog.NewPostQueryBuilder().WithStatus(blog.StatusPublished).WithOffset(args.Offset).WithLimit(args.Limit).Build())
 }
 
 // query {
@@ -96,7 +96,7 @@ func (s *Server) findPostBySlugQuery(ctx context.Context, args struct {
 		return blog.Post{}, err
 	}
 
-	if p.Status == blog.Published {
+	if p.Status == blog.StatusPublished {
 		return p, nil
 	}
 
