@@ -133,7 +133,7 @@ func runE(_ *cobra.Command, _ []string) error {
 	schema, err := graphql.BuildSchema(
 		graphql.BuildCategorySchema(categoryRepository),
 		graphql.BuildTagSchema(tagRepository),
-		graphql.BuildPostSchema(postRepository),
+		graphql.BuildPostSchema(postRepository, log.DefaultTimer{}),
 		graphql.BuildFileSchema(fileRepository),
 		graphql.BuildGraphAPISchema(baseURL, facebook.NewClient(
 			viper.GetString("facebook-app-access-token"), http.DefaultTransport)),

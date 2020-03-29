@@ -8,12 +8,20 @@ import (
 	"net/http"
 )
 
-// AuthorizedUserIDProperty is a name of the property in the context where the authorized user ID stored
-const AuthorizedUserIDProperty = "authID"
+// AuthorizedID is a context.Context key where an authorized ID value stored
+const AuthorizedID = "authID"
 
 var (
 	protectedResources = map[string]bool{
-		"myPosts": true,
+		"myPosts":                 true,
+		"createPost":              true,
+		"updatePostTitle":         true,
+		"updatePostStatus":        true,
+		"updatePostContent":       true,
+		"updatePostCategories":    true,
+		"updatePostTags":          true,
+		"updatePostFeaturedImage": true,
+		"updatePostAttachments":   true,
 	}
 )
 
@@ -31,6 +39,6 @@ func VerifyAuthorityMiddleware(input *graphql.ComputationInput, next graphql.Mid
 		}
 	}
 
-	input.Ctx = context.WithValue(input.Ctx, AuthorizedUserIDProperty, authID)
+	input.Ctx = context.WithValue(input.Ctx, AuthorizedID, authID)
 	return next(input)
 }
