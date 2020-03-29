@@ -4,9 +4,12 @@ import (
 	"context"
 	"errors"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
+	"github.com/nomkhonwaan/myblog/pkg/timeutil"
 	"github.com/samsarahq/thunder/graphql"
 	"github.com/samsarahq/thunder/graphql/schemabuilder"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"net/http"
 )
@@ -61,6 +64,15 @@ func BuildFileSchema(repository storage.FileRepository) func(*schemabuilder.Sche
 	return func(s *schemabuilder.Schema) {
 		p := s.Object("Post", blog.Post{})
 		p.FieldFunc("featuredImage", FindFeaturedImageBelongedToPostFieldFunc(repository))
+		p.FieldFunc("attachments", FindAllAttachmentsBelongedToPostFieldFunc(repository))
+	}
+}
+
+// BuildGraphAPISchema builds all Facebook Graph API related schemas
+func BuildGraphAPISchema(baseURL string, c facebook.Client) func(*schemabuilder.Schema) {
+	return func(s *schemabuilder.Schema) {
+		p := s.Object("Post", blog.Post{})
+		p.FieldFunc("engagement", GetURLNodeShareCountFieldFunc(baseURL, c))
 	}
 }
 
@@ -249,5 +261,46 @@ func FindFeaturedImageBelongedToPostFieldFunc(repository storage.FileRepository)
 	return func(ctx context.Context, p blog.Post) storage.File {
 		file, _ := repository.FindByID(ctx, p.FeaturedImage.ID)
 		return file
+	}
+}
+
+// FindAllAttachmentsBelongedToPostFieldFunc handles the following query in the Post type
+// ```graphql
+//	{
+//		Post {
+//			...
+//			attachments { ... }
+//		}
+//	}
+// ```
+func FindAllAttachmentsBelongedToPostFieldFunc(repository storage.FileRepository) interface{} {
+	return func(ctx context.Context, p blog.Post) ([]storage.File, error) {
+		ids := make([]primitive.ObjectID, len(p.Attachments))
+		for i, f := range p.Attachments {
+			ids[i] = f.ID
+		}
+		return repository.FindAllByIDs(ctx, ids)
+	}
+}
+
+// GetURLNodeShareCountFieldFunc handles the following query in the Post type
+// ```graphql
+//	{
+//		Post {
+//			...
+//			engagement { ... }
+//		}
+//	}
+// ```
+func GetURLNodeShareCountFieldFunc(baseURL string, c facebook.Client) interface{} {
+	return func(ctx context.Context, p blog.Post) (engagement blog.Engagement) {
+		id := baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug
+		urlNode, err := c.GetURLNodeFields(id)
+		if err != nil {
+			logrus.Errorf("unable to retrieve URLNode on ID: %s", id)
+			return
+		}
+		engagement.ShareCount = urlNode.Engagement.ShareCount
+		return
 	}
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
+	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/image"
@@ -134,6 +135,8 @@ func runE(_ *cobra.Command, _ []string) error {
 		graphql.BuildTagSchema(tagRepository),
 		graphql.BuildPostSchema(postRepository),
 		graphql.BuildFileSchema(fileRepository),
+		graphql.BuildGraphAPISchema(baseURL, facebook.NewClient(
+			viper.GetString("facebook-app-access-token"), http.DefaultTransport)),
 	)
 	if err != nil {
 		return err
