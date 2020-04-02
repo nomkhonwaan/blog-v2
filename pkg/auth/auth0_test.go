@@ -128,7 +128,7 @@ func TestNewJWTMiddleware(t *testing.T) {
 		_, err := validationKeyGetter(token)
 
 		// Then
-		assert.EqualError(t, err, "Get https://nomkhonwaan.auth0.com/.well-known/jwks.json: test connection error")
+		assert.EqualError(t, err, "Get \"https://nomkhonwaan.auth0.com/.well-known/jwks.json\": test connection error")
 	})
 
 	t.Run("When unable to decode the JWKS body", func(t *testing.T) {
