@@ -23,32 +23,35 @@ func ServeStaticSinglePageMiddleware(baseURL string, ogTmpl *template.Template, 
 				if slug, yes := isSinglePage(r.URL.Path); yes {
 					id := graphql.Slug(slug).MustGetID()
 					p, err := postRepository.FindByID(r.Context(), id)
-					if err == nil {
-						if p.Status == blog.StatusPublished {
-							featuredImage := baseURL + "/assets/images/303589.webp"
-							if p.FeaturedImage.ID.IsZero() {
-								file, _ := fileRepository.FindByID(r.Context(), p.FeaturedImage.ID)
-								if file.Slug != "" {
-									featuredImage = baseURL + "/api/v2.1/storage/" + file.Slug
-								}
+					if err != nil {
+						http.Error(w, http.StatusText(http.StatusNotFound), http.StatusNotFound)
+						return
+					}
+
+					if p.Status == blog.StatusPublished {
+						featuredImage := baseURL + "/assets/images/303589.webp"
+						if p.FeaturedImage.ID.IsZero() {
+							file, _ := fileRepository.FindByID(r.Context(), p.FeaturedImage.ID)
+							if file.Slug != "" {
+								featuredImage = baseURL + "/api/v2.1/storage/" + file.Slug
 							}
-
-							_ = ogTmpl.Execute(w, struct {
-								URL           string
-								Type          string
-								Title         string
-								Description   string
-								FeaturedImage string
-							}{
-								URL:           baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug,
-								Type:          "article",
-								Title:         p.Title,
-								Description:   strings.Split(p.Markdown, "\n")[0],
-								FeaturedImage: featuredImage,
-							})
-
-							return
 						}
+
+						_ = ogTmpl.Execute(w, struct {
+							URL           string
+							Type          string
+							Title         string
+							Description   string
+							FeaturedImage string
+						}{
+							URL:           baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug,
+							Type:          "article",
+							Title:         p.Title,
+							Description:   strings.Split(p.Markdown, "\n")[0],
+							FeaturedImage: featuredImage,
+						})
+
+						return
 					}
 				}
 			}
