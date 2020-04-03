@@ -20,6 +20,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/opengraph"
 	"github.com/nomkhonwaan/myblog/pkg/server"
+	"github.com/nomkhonwaan/myblog/pkg/sitemap"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/nomkhonwaan/myblog/pkg/web"
 	"github.com/samsarahq/thunder/graphql/introspection"
@@ -168,9 +169,12 @@ func runE(_ *cobra.Command, _ []string) error {
 		Get("/*", web.ServeStaticHandlerFunc(viper.GetString("static-file-path")))
 	r.Get("/graphiql", graphql.ServeGraphiqlHandlerFunc(data.MustGzipAsset("data/graphql-playground.html")))
 	r.Handle("/graphql", graphql.Handler(schema, graphql.VerifyAuthorityMiddleware))
-
-	//sitemap.NewHandler(baseURL, cache, blogService).
-	//	Register(r.PathPrefix("/sitemap.xml").Subrouter())
+	r.Get("/sitemap.xml", sitemap.ServeSiteMapHandlerFunc(cache,
+		sitemap.GenerateFixedURLs(baseURL),
+		sitemap.GeneratePostURLs(baseURL, postRepository),
+		sitemap.GenerateCategoryURLs(baseURL, categoryRepository),
+		sitemap.GenerateTagURLs(baseURL, tagRepository),
+	))
 
 	s := server.InsecureServer{
 		Handler:         r,
