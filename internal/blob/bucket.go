@@ -10,7 +10,7 @@ import (
 type Bucket struct{ *blob.Bucket }
 
 // Download provides compatible Download method of the storage.Storage interface
-func (b *Bucket) Download(ctx context.Context, path string) (io.Reader, error) {
+func (b *Bucket) Download(ctx context.Context, path string) (io.ReadCloser, error) {
 	return b.Bucket.NewReader(ctx, path, nil)
 }
 

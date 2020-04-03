@@ -49,4 +49,5 @@ require (
 	google.golang.org/grpc v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.55.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
+	rsc.io/sampler v1.99.99 // indirect
 )
