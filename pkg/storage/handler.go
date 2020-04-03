@@ -27,7 +27,7 @@ func DeleteHandlerFunc(storage Storage, repository FileRepository) http.HandlerF
 			respondError(w, http.StatusText(http.StatusUnauthorized), http.StatusUnauthorized)
 			return
 		}
-		
+
 		slug := Slug(chi.URLParam(r, "slug"))
 		file, err := repository.FindByID(r.Context(), slug.MustGetID())
 		if err != nil {
@@ -127,10 +127,13 @@ func downloadOriginalFile(ctx context.Context, storage Storage, cache Cache, pat
 		}
 	}
 
-	body, err = storage.Download(ctx, path)
+	originalFileBody, err := storage.Download(ctx, path)
 	if err != nil {
 		return nil, err
 	}
+	defer originalFileBody.Close()
+
+	body = originalFileBody
 
 	var buf bytes.Buffer
 	rdr := io.TeeReader(body, &buf)
