@@ -2,13 +2,6 @@ package sitemap
 
 import "encoding/xml"
 
-// NewURLSet returns a new `<urlset>` tag
-func NewURLSet() URLSet {
-	return URLSet{
-		URLs: make([]URL, 0),
-	}
-}
-
 // URLSet encapsulates the file and references the current protocol standard
 type URLSet struct {
 	XMLName xml.Name `xml:"http://www.sitemaps.org/schemas/sitemap/0.9 urlset"`
@@ -61,5 +54,5 @@ type URL struct {
 	//
 	// Also, please note that assigning a high priority to all of the URLs on your site is not likely to help you.
 	// Since the priority is relative, it is only used to select between URLs on your site.
-	Priority string `xml:"priority,omitempty"`
+	Priority float64 `xml:"priority,omitempty"`
 }
