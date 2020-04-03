@@ -1,11 +1,10 @@
-package blog_test
+package blog
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/golang/mock/gomock"
-	. "github.com/nomkhonwaan/myblog/pkg/blog"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,9 +35,11 @@ func TestMongoTagRepository_FindAll(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		cur = mock_mongo.NewMockCursor(ctrl)
 		col = mock_mongo.NewMockCollection(ctrl)
+		cur = mock_mongo.NewMockCursor(ctrl)
 	)
+
+	repo := MongoTagRepository{col: col}
 
 	t.Run("With successful finding all tags", func(t *testing.T) {
 		// Given
@@ -48,8 +49,6 @@ func TestMongoTagRepository_FindAll(t *testing.T) {
 		col.EXPECT().Find(ctx, bson.D{}, opts).Return(cur, nil)
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
-
-		repo := NewTagRepository(col)
 
 		// When
 		_, err := repo.FindAll(ctx)
@@ -61,8 +60,6 @@ func TestMongoTagRepository_FindAll(t *testing.T) {
 	t.Run("When an error has occurred while finding all tags", func(t *testing.T) {
 		// Given
 		col.EXPECT().Find(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("test find all tags error"))
-
-		repo := NewTagRepository(col)
 
 		// When
 		_, err := repo.FindAll(context.Background())
@@ -77,9 +74,11 @@ func TestMongoTagRepository_FindAllByIDs(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		cur = mock_mongo.NewMockCursor(ctrl)
 		col = mock_mongo.NewMockCollection(ctrl)
+		cur = mock_mongo.NewMockCursor(ctrl)
 	)
+
+	repo := MongoTagRepository{col: col}
 
 	t.Run("With successful finding all tags by IDs", func(t *testing.T) {
 		// Given
@@ -91,8 +90,6 @@ func TestMongoTagRepository_FindAllByIDs(t *testing.T) {
 		col.EXPECT().Find(ctx, filter, opts).Return(cur, nil)
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
-
-		repo := NewTagRepository(col)
 
 		// When
 		_, err := repo.FindAllByIDs(ctx, ids)
@@ -107,8 +104,6 @@ func TestMongoTagRepository_FindAllByIDs(t *testing.T) {
 
 		col.EXPECT().Find(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all tags by list of IDs"))
 
-		repo := NewTagRepository(col)
-
 		// When
 		_, err := repo.FindAllByIDs(context.Background(), ids)
 
@@ -122,11 +117,13 @@ func TestMongoTagRepository_FindByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	singleResult := mock_mongo.NewMockSingleResult(ctrl)
-	col := mock_mongo.NewMockCollection(ctrl)
+	var (
+		singleResult = mock_mongo.NewMockSingleResult(ctrl)
+		col          = mock_mongo.NewMockCollection(ctrl)
+	)
 
 	ctx := context.Background()
-	repo := NewTagRepository(col)
+	repo := MongoTagRepository{col: col}
 
 	tests := map[string]struct {
 		id  interface{}

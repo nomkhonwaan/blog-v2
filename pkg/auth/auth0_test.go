@@ -111,7 +111,7 @@ func TestNewJWTMiddleware(t *testing.T) {
 
 	t.Run("When unable to connect to the JWKS URI", func(t *testing.T) {
 		// Given
-		transport.EXPECT().RoundTrip(gomock.Any()).Return(nil, errors.New("test unable to connect to the JWKS URI"))
+		transport.EXPECT().RoundTrip(gomock.Any()).Return(nil, errors.New("test connection error"))
 
 		mw := NewJWTMiddleware(audience, issuer, jwksURI, transport)
 		validationKeyGetter := mw.Options.ValidationKeyGetter
@@ -128,7 +128,7 @@ func TestNewJWTMiddleware(t *testing.T) {
 		_, err := validationKeyGetter(token)
 
 		// Then
-		assert.EqualError(t, err, "test unable to connect to the JWKS URI")
+		assert.EqualError(t, err, "Get \"https://nomkhonwaan.auth0.com/.well-known/jwks.json\": test connection error")
 	})
 
 	t.Run("When unable to decode the JWKS body", func(t *testing.T) {

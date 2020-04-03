@@ -9,19 +9,16 @@ func (s Status) String() string {
 
 // IsPublished returns "true" if status is Published
 func (s Status) IsPublished() bool {
-	return s == Published
+	return s == StatusPublished
 }
 
 // IsDraft returns "true" if status is Draft
 func (s Status) IsDraft() bool {
-	return s == Draft
+	return s == StatusDraft
 }
 
-// Published indicates that post is public, accessible to everyone
-const Published Status = "PUBLISHED"
+// StatusPublished indicates that post is public, accessible to everyone
+const StatusPublished Status = "PUBLISHED"
 
-// Draft indicates that the post is private, can only be accessed by the author
-const Draft Status = "DRAFT"
-
-// PendingReview indicates that the post has been submitted to check and wait for approval from the system administrator
-const PendingReview Status = "PENDING_REVIEW"
+// StatusDraft indicates that the post is private, can only be accessed by the author
+const StatusDraft Status = "DRAFT"

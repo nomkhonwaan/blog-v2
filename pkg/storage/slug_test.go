@@ -1,7 +1,6 @@
-package graphql_test
+package storage
 
 import (
-	. "github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"testing"
@@ -10,7 +9,7 @@ import (
 func TestSlug_GetID(t *testing.T) {
 	// Given
 	id := primitive.NewObjectID()
-	slug := Slug(id.Hex())
+	slug := Slug("test-featured-image-" + id.Hex() + ".jpg")
 
 	// When
 	result, err := slug.GetID()
@@ -24,7 +23,7 @@ func TestSlug_MustGetID(t *testing.T) {
 	t.Run("With valid ObjectID string", func(t *testing.T) {
 		// Given
 		id := primitive.NewObjectID()
-		slug := Slug(id.Hex())
+		slug := Slug("test-featured-image-" + id.Hex() + ".jpg")
 
 		// When
 		result := slug.MustGetID()
@@ -35,7 +34,7 @@ func TestSlug_MustGetID(t *testing.T) {
 
 	t.Run("With invalid ObjectID string", func(t *testing.T) {
 		// Given
-		slug := Slug("invalid-object-id")
+		slug := Slug("test-featured-image-invalid-object-id.jpg")
 
 		// When
 		result := slug.MustGetID()

@@ -10,31 +10,19 @@ import (
 	"net/http"
 )
 
-// The name of the property in the request where the user information from the JWT will be stored.
-// Default value: "user"
+// UserProperty is a name of the property in the request where the user information stored
 const UserProperty = "user"
 
-// GetAuthorizedUserID returns an authorized user ID (which is generated from the authentication server)
+// GetAuthorizedUserID returns a user ID which generated from the auth server
 func GetAuthorizedUserID(ctx context.Context) interface{} {
-	if ctx.Value(UserProperty) == nil {
-		return nil
+	if claims := ctx.Value(UserProperty); claims != nil {
+		return claims.(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
 	}
-
-	return ctx.Value(UserProperty).(*jwt.Token).Claims.(jwt.MapClaims)["sub"]
+	return nil
 }
 
-// JWTMiddleware is a wrapped struct to the `jwtmiddleware.JWTMiddleware` for testing purpose
-type JWTMiddleware struct {
-	// The original JWTMiddleware
-	*jwtmiddleware.JWTMiddleware
-
-	// An HTTP client for retrieving JSON Web Key Set (JWKS)
-	transport http.RoundTripper
-}
-
-// NewJWTMiddleware creates new JWT middleware function from the given configuration.
-// The JWT middleware will looking for an access_token in the incoming request header (Authorization: Bearer),
-// then call to Auth0 service for checking the access_token.
+// NewJWTMiddleware returns a new jwtmiddleware.JWTMiddleware instance.
+// This middleware uses to looking for the "access_token" in the request header and call to the auth server for validating it.
 func NewJWTMiddleware(audience, issuer, jwksURI string, transport http.RoundTripper) *jwtmiddleware.JWTMiddleware {
 	return jwtmiddleware.New(jwtmiddleware.Options{
 		ValidationKeyGetter: func(token *jwt.Token) (interface{}, error) {
@@ -46,7 +34,7 @@ func NewJWTMiddleware(audience, issuer, jwksURI string, transport http.RoundTrip
 				return nil, errors.New("invalid issuer")
 			}
 
-			cert, err := getPEMCertificate(token, jwksURI, transport)
+			cert, err := getPEMCertificate(token, jwksURI, &http.Client{Transport: transport})
 			if err != nil {
 				return nil, err
 			}
@@ -60,9 +48,9 @@ func NewJWTMiddleware(audience, issuer, jwksURI string, transport http.RoundTrip
 	})
 }
 
-func getPEMCertificate(token *jwt.Token, jwksURI string, transport http.RoundTripper) (string, error) {
+func getPEMCertificate(token *jwt.Token, jwksURI string, c *http.Client) (string, error) {
 	req, _ := http.NewRequest(http.MethodGet, jwksURI, nil)
-	res, err := transport.RoundTrip(req)
+	res, err := c.Do(req)
 	if err != nil {
 		return "", err
 	}

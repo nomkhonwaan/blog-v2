@@ -17,10 +17,9 @@ var (
 
 func main() {
 	cmd := &cobra.Command{
-		Short:   "Personal blog website written in Go with Angular 2+",
 		Version: fmt.Sprintf("%s %s\n", version, revision),
 	}
-	cmd.AddCommand(serve.Command)
+	cmd.AddCommand(serve.Cmd)
 
 	if err := cmd.Execute(); err != nil {
 		logrus.Fatalf("myblog: %s", err)

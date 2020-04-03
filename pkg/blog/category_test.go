@@ -1,11 +1,10 @@
-package blog_test
+package blog
 
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"github.com/golang/mock/gomock"
-	. "github.com/nomkhonwaan/myblog/pkg/blog"
 	mock_mongo "github.com/nomkhonwaan/myblog/pkg/mongo/mock"
 	"github.com/stretchr/testify/assert"
 	"go.mongodb.org/mongo-driver/bson"
@@ -36,9 +35,11 @@ func TestMongoCategoryRepository_FindAll(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		cur = mock_mongo.NewMockCursor(ctrl)
 		col = mock_mongo.NewMockCollection(ctrl)
+		cur = mock_mongo.NewMockCursor(ctrl)
 	)
+
+	repo := MongoCategoryRepository{col: col}
 
 	t.Run("With successful finding all categories", func(t *testing.T) {
 		// Given
@@ -48,8 +49,6 @@ func TestMongoCategoryRepository_FindAll(t *testing.T) {
 		col.EXPECT().Find(ctx, bson.D{}, opts).Return(cur, nil)
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
-
-		repo := NewCategoryRepository(col)
 
 		// When
 		_, err := repo.FindAll(ctx)
@@ -65,8 +64,6 @@ func TestMongoCategoryRepository_FindAll(t *testing.T) {
 
 		col.EXPECT().Find(ctx, bson.D{}, opts).Return(nil, errors.New("test find all categories error"))
 
-		repo := NewCategoryRepository(col)
-
 		// When
 		_, err := repo.FindAll(ctx)
 
@@ -80,9 +77,11 @@ func TestMongoCategoryRepository_FindAllByIDs(t *testing.T) {
 	defer ctrl.Finish()
 
 	var (
-		cur = mock_mongo.NewMockCursor(ctrl)
 		col = mock_mongo.NewMockCollection(ctrl)
+		cur = mock_mongo.NewMockCursor(ctrl)
 	)
+
+	repo := MongoCategoryRepository{col: col}
 
 	t.Run("With successful finding all categories by IDs", func(t *testing.T) {
 		// Given
@@ -94,8 +93,6 @@ func TestMongoCategoryRepository_FindAllByIDs(t *testing.T) {
 		col.EXPECT().Find(ctx, filter, opts).Return(cur, nil)
 		cur.EXPECT().Close(ctx).Return(nil)
 		cur.EXPECT().Decode(gomock.Any()).Return(nil)
-
-		repo := NewCategoryRepository(col)
 
 		// When
 		_, err := repo.FindAllByIDs(ctx, ids)
@@ -110,8 +107,6 @@ func TestMongoCategoryRepository_FindAllByIDs(t *testing.T) {
 
 		col.EXPECT().Find(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to find all categories by list of IDs"))
 
-		repo := NewCategoryRepository(col)
-
 		// When
 		_, err := repo.FindAllByIDs(context.Background(), ids)
 
@@ -125,11 +120,13 @@ func TestMongoCategoryRepository_FindByID(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	singleResult := mock_mongo.NewMockSingleResult(ctrl)
-	col := mock_mongo.NewMockCollection(ctrl)
+	var (
+		col          = mock_mongo.NewMockCollection(ctrl)
+		singleResult = mock_mongo.NewMockSingleResult(ctrl)
+	)
 
 	ctx := context.Background()
-	repo := NewCategoryRepository(col)
+	repo := MongoCategoryRepository{col: col}
 
 	tests := map[string]struct {
 		id  interface{}
