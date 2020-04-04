@@ -1,188 +1,163 @@
-package github_test
+package github
 
-//import (
-//	"bytes"
-//	"errors"
-//	"github.com/golang/mock/gomock"
-//	"github.com/gorilla/mux"
-//	. "github.com/nomkhonwaan/myblog/pkg/github"
-//	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
-//	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
-//	"github.com/stretchr/testify/assert"
-//	"io"
-//	"io/ioutil"
-//	"net/http"
-//	"net/http/httptest"
-//	"net/url"
-//	"testing"
-//)
-//
-//func TestHandler_Register(t *testing.T) {
-//	ctrl := gomock.NewController(t)
-//	defer ctrl.Finish()
-//
-//	var (
-//		cacheService = mock_storage.NewMockCache(ctrl)
-//		transport    = mock_http.NewMockRoundTripper(ctrl)
-//
-//		r = mux.NewRouter()
-//	)
-//
-//	newGistRequest := func(src string) *http.Request {
-//		req := httptest.NewRequest(http.MethodGet, "/api/v2.1/github/gist", nil)
-//		u := req.URL.Query()
-//		u.Set("src", src)
-//		req.URL.RawQuery = u.Encode()
-//		return req
-//	}
-//
-//	NewHandler(cacheService, transport).Register(r.PathPrefix("/api/v2.1/github").Subrouter())
-//
-//	t.Run("With successful retrieving Gist content", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
-//
-//		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
-//		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
-//			assert.Equal(t, "gist.github.com", r.URL.Host)
-//			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
-//			assert.Equal(t, "test.txt", r.URL.Query().Get("file"))
-//
-//			return &http.Response{
-//				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
-//			}, nil
-//		})
-//		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").DoAndReturn(func(body io.Reader, path string) error {
-//			data, _ := ioutil.ReadAll(body)
-//			assert.Equal(t, `{"foo":"bar"}`, string(data))
-//
-//			return nil
-//		})
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//		assert.Equal(t, `{"foo":"bar"}`, w.Body.String())
-//	})
-//
-//	t.Run("When cache file available", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
-//
-//		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
-//		cacheService.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(bytes.NewBufferString(`{"foo":"bar"}`), nil)
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//		assert.Equal(t, `{"foo":"bar"}`, w.Body.String())
-//	})
-//
-//	t.Run("When cache file available but unable to retrieve file content", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
-//
-//		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
-//		cacheService.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(nil, errors.New("test unable to retrieve file content"))
-//		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
-//			assert.Equal(t, "gist.github.com", r.URL.Host)
-//			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
-//			assert.Equal(t, "test.txt", r.URL.Query().Get("file"))
-//
-//			return &http.Response{
-//				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
-//			}, nil
-//		})
-//		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").DoAndReturn(func(body io.Reader, path string) error {
-//			data, _ := ioutil.ReadAll(body)
-//			assert.Equal(t, `{"foo":"bar"}`, string(data))
-//
-//			return nil
-//		})
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//		assert.Equal(t, `{"foo":"bar"}`, w.Body.String())
-//	})
-//
-//	t.Run("When client try to send different Gist host name to the API", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := "https://gist.github.malicious.localtest.me/nomkhonwaan/gist-id.js?file=test.txt"
-//
-//		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
-//		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
-//			assert.Equal(t, "gist.github.com", r.URL.Host)
-//			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
-//			assert.Equal(t, "test.txt", r.URL.Query().Get("file"))
-//
-//			return &http.Response{
-//				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
-//			}, nil
-//		})
-//		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(nil)
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//	})
-//
-//	t.Run("With empty `src`", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := ""
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//		assert.Equal(t, "400 Bad Request", w.Result().Status)
-//	})
-//
-//	t.Run("When unable to retrieve Gist content", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
-//
-//		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(false)
-//		transport.EXPECT().RoundTrip(gomock.Any()).Return(nil, errors.New("test unable to retrieve Gist content"))
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//		assert.Equal(t, "test unable to retrieve Gist content\n", w.Body.String())
-//	})
-//
-//	t.Run("When unable to store cache file", func(t *testing.T) {
-//		// Given
-//		w := httptest.NewRecorder()
-//		src := "https://gist.github.com/nomkhonwaan/gist-id.js?file=test.txt"
-//
-//		cacheService.EXPECT().Exist(url.QueryEscape(src) + ".json").Return(true)
-//		cacheService.EXPECT().Retrieve(url.QueryEscape(src)+".json").Return(nil, errors.New("test unable to retrieve file content"))
-//		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
-//			assert.Equal(t, "gist.github.com", r.URL.Host)
-//			assert.Equal(t, "/nomkhonwaan/gist-id.json", r.URL.Path)
-//			assert.Equal(t, "test.txt", r.URL.Query().Get("file"))
-//
-//			return &http.Response{
-//				Body: ioutil.NopCloser(bytes.NewBufferString(`{"foo":"bar"}`)),
-//			}, nil
-//		})
-//		cacheService.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(errors.New("test unable to store cache file"))
-//
-//		// When
-//		r.ServeHTTP(w, newGistRequest(src))
-//
-//		// Then
-//	})
-//}
+import (
+	"bytes"
+	"errors"
+	"github.com/golang/mock/gomock"
+	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
+	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
+	"github.com/stretchr/testify/assert"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"testing"
+)
+
+func TestGetGistHandlerFunc(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	var (
+		cache     = mock_storage.NewMockCache(ctrl)
+		transport = mock_http.NewMockRoundTripper(ctrl)
+	)
+
+	newGettingGistRequest := func(src string) *http.Request {
+		req := httptest.NewRequest(http.MethodGet, "/api/v2.1/github/gist", nil)
+		q := req.URL.Query()
+		q.Set("src", src)
+		req.URL.RawQuery = q.Encode()
+		return req
+	}
+
+	t.Run("With successful getting GitHub Gist from the given URL", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		src := "https://gist.github.com/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
+
+		cache.EXPECT().Exists(url.QueryEscape(src) + ".json").Return(false)
+		transport.EXPECT().RoundTrip(gomock.Any()).DoAndReturn(func(r *http.Request) (*http.Response, error) {
+			assert.Equal(t, "gist.github.com", r.URL.Host)
+			assert.Equal(t, "/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.json", r.URL.Path)
+			assert.Equal(t, "fasthttp.go", r.URL.Query().Get("file"))
+
+			return &http.Response{
+				Body: ioutil.NopCloser(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`)),
+			}, nil
+		})
+		cache.EXPECT().Store(gomock.Any(), url.QueryEscape(src)+".json").Return(nil)
+
+		expected := `{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(src))
+
+		// Then
+		assert.Equal(t, expected, w.Body.String())
+	})
+
+	t.Run("With existing Gist file on cache", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		src := "https://gist.github.com/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
+
+		cache.EXPECT().Exists(gomock.Any()).Return(true)
+		cache.EXPECT().Retrieve(gomock.Any()).Return(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`), nil)
+
+		expected := `{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(src))
+
+		// Then
+		assert.Equal(t, expected, w.Body.String())
+	})
+
+	t.Run("When unable to retrieve Gist file from cache", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		src := "https://gist.github.com/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
+
+		cache.EXPECT().Exists(gomock.Any()).Return(true)
+		cache.EXPECT().Retrieve(gomock.Any()).Return(nil, errors.New("test unable to retrieve Gist file from cache"))
+		transport.EXPECT().RoundTrip(gomock.Any()).Return(&http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`)),
+		}, nil)
+		cache.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
+
+		expected := `{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(src))
+
+		// Then
+		assert.Equal(t, expected, w.Body.String())
+	})
+
+	t.Run("When src host is not gist.github.com", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		src := "https://gist.github.malicious.localtest.me/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
+
+		cache.EXPECT().Exists(gomock.Any()).Return(false)
+		transport.EXPECT().RoundTrip(gomock.Any()).Return(&http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`)),
+		}, nil)
+		cache.EXPECT().Store(gomock.Any(), gomock.Any()).Return(nil)
+
+		expected := `{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(src))
+
+		// Then
+		assert.Equal(t, expected, w.Body.String())
+	})
+
+	t.Run("When unable to fetch GitHub Gist", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		src := "https://gist.github.malicious.localtest.me/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
+
+		cache.EXPECT().Exists(gomock.Any()).Return(false)
+		transport.EXPECT().RoundTrip(gomock.Any()).Return(nil, errors.New("test unable to fetch GitHub Gist"))
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(src))
+
+		// Then
+		assert.Equal(t, "Get https://gist.github.com/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.json?file=fasthttp.go: test unable to fetch GitHub Gist\n", w.Body.String())
+	})
+
+	t.Run("When src is empty", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(""))
+
+		// Then
+		assert.Equal(t, "src value is empty\n", w.Body.String())
+	})
+
+	t.Run("When unable to store Gist file to cache", func(t *testing.T) {
+		// Given
+		w := httptest.NewRecorder()
+		src := "https://gist.github.com/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
+
+		cache.EXPECT().Exists(gomock.Any()).Return(false)
+		transport.EXPECT().RoundTrip(gomock.Any()).Return(&http.Response{
+			Body: ioutil.NopCloser(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`)),
+		}, nil)
+		cache.EXPECT().Store(gomock.Any(), gomock.Any()).Return(errors.New("test unable to store Gist file to cache"))
+
+		expected := `{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`
+
+		// When
+		GetGistHandlerFunc(cache, transport).ServeHTTP(w, newGettingGistRequest(src))
+
+		// Then
+		assert.Equal(t, expected, w.Body.String())
+	})
+}
