@@ -57,7 +57,7 @@ func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, re
 			body          io.Reader
 			resizedPath   string
 			slug          = Slug(chi.URLParam(r, "slug"))
-			width, height = getWidthAndHeight(r.URL.Query())
+			width, height = getWidthAndHeightFromQuery(r.URL.Query())
 		)
 
 		file, err := repository.FindByID(r.Context(), slug.MustGetID())
@@ -210,7 +210,7 @@ func respondError(w http.ResponseWriter, message string, code int) {
 	_, _ = w.Write(val)
 }
 
-func getWidthAndHeight(values url.Values) (int, int) {
+func getWidthAndHeightFromQuery(values url.Values) (int, int) {
 	w, _ := strconv.Atoi(values.Get("width"))
 	h, _ := strconv.Atoi(values.Get("height"))
 	return w, h
