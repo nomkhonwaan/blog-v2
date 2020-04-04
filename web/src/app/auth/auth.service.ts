@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { WebAuth } from 'auth0-js';
@@ -21,7 +21,7 @@ export class AuthService {
     private localStorage: LocalStorageService,
     private router: Router,
     private store: Store<AppState>,
-    private webAuth: WebAuth,
+    @Inject(WebAuth) private webAuth: WebAuth,
   ) {
     this.accessToken = this.localStorage.get('accessToken');
     this.idToken = this.localStorage.get('idToken');
