@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/afero"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"testing"
 )
 
@@ -74,13 +76,28 @@ func TestDiskCache_Retrieve(t *testing.T) {
 }
 
 func TestDiskCache_Store(t *testing.T) {
-	// Given
-	c, _ := NewDiskCache(afero.NewMemMapFs(), ".cache")
+	workingDirectory, _ := os.Getwd()
+	fs := afero.NewMemMapFs()
+	c, _ := NewDiskCache(fs, filepath.Join(workingDirectory, ".cache"))
 
-	// When
-	err := c.Store(bytes.NewReader([]byte("test")), "test")
+	t.Run("With successful storing cache file", func(t *testing.T) {
+		// Given
 
-	// Then
-	assert.Nil(t, err)
-	assert.True(t, c.Exists("test"))
+		// When
+		err := c.Store(bytes.NewReader([]byte("test")), "test")
+
+		// Then
+		assert.Nil(t, err)
+		assert.True(t, c.Exists("test"))
+	})
+
+	t.Run("When unable to make all directories", func(t *testing.T) {
+		//// Given
+		//
+		//// When
+		//err := c.Store(bytes.NewReader([]byte("test")), "test")
+		//
+		//// Then
+		//assert.EqualError(t, err, "")
+	})
 }

@@ -20,6 +20,7 @@ require (
 	github.com/graphql-go/graphql v0.7.9 // indirect
 	github.com/klauspost/compress v1.10.3 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
+	github.com/magiconair/properties v1.8.1
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1

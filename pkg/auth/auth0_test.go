@@ -8,8 +8,8 @@ import (
 	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/golang/mock/gomock"
+	mock_http "github.com/nomkhonwaan/myblog/internal/http/mock"
 	. "github.com/nomkhonwaan/myblog/pkg/auth"
-	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
 	"net/http"
@@ -20,10 +20,9 @@ func TestNewJWTMiddleware(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	var (
-		audience = "https://api.nomkhonwaan.com"
-		issuer   = "https://nomkhonwaan.auth0.com"
-		jwksURI  = "https://nomkhonwaan.auth0.com/.well-known/jwks.json"
-
+		audience  = "https://api.nomkhonwaan.com"
+		issuer    = "https://nomkhonwaan.auth0.com"
+		jwksURI   = "https://nomkhonwaan.auth0.com/.well-known/jwks.json"
 		transport = mock_http.NewMockRoundTripper(ctrl)
 	)
 

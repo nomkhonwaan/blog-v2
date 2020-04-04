@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/golang/mock/gomock"
-	mock_http "github.com/nomkhonwaan/myblog/pkg/http/mock"
+	mock_http "github.com/nomkhonwaan/myblog/internal/http/mock"
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/stretchr/testify/assert"
 	"io/ioutil"
