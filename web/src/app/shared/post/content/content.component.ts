@@ -28,7 +28,7 @@ export class PostContentComponent extends AbstractPostComponent implements OnIni
   /**
    * For escaping XSS protection while rendering HTML with Angular
    */
-  @ViewChild('content', { static: false })
+  @ViewChild('content')
   private content: ElementRef;
 
   constructor(
