@@ -34,13 +34,10 @@
   }
 
   ::ng-deep ._section-title {
+    font-size: 1.8rem;
     margin: 3.2rem !important;
     margin-bottom: 2.4rem !important;
   }
-}
-
-.sidebar ::ng-deep ._section-title {
-  font-size: 1.8rem;
 }
 
 .open-sidebar {
