@@ -1,6 +1,7 @@
 package opengraph
 
 import (
+	"bytes"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
@@ -29,28 +30,12 @@ func ServeStaticSinglePageMiddleware(baseURL string, ogTmpl *template.Template, 
 					}
 
 					if p.Status == blog.StatusPublished {
-						featuredImage := baseURL + "/assets/images/303589.webp"
-						if p.FeaturedImage.ID.IsZero() {
-							file, _ := fileRepository.FindByID(r.Context(), p.FeaturedImage.ID)
-							if file.Slug != "" {
-								featuredImage = baseURL + "/api/v2.1/storage/" + file.Slug
-							}
+						var f storage.File
+						if !p.FeaturedImage.ID.IsZero() {
+							f, _ = fileRepository.FindByID(r.Context(), p.FeaturedImage.ID)
 						}
 
-						_ = ogTmpl.Execute(w, struct {
-							URL           string
-							Type          string
-							Title         string
-							Description   string
-							FeaturedImage string
-						}{
-							URL:           baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug,
-							Type:          "article",
-							Title:         p.Title,
-							Description:   strings.Split(p.Markdown, "\n")[0],
-							FeaturedImage: featuredImage,
-						})
-
+						_, _ = w.Write(renderStaticSinglePage(baseURL, ogTmpl, p, f))
 						return
 					}
 				}
@@ -59,6 +44,30 @@ func ServeStaticSinglePageMiddleware(baseURL string, ogTmpl *template.Template, 
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+func renderStaticSinglePage(baseURL string, tmpl *template.Template, p blog.Post, f storage.File) []byte {
+	featuredImage := baseURL + "/assets/images/303589.webp"
+	if f.Slug != "" {
+		featuredImage = baseURL + "/api/v2.1/storage/" + f.Slug
+	}
+
+	buf := bytes.Buffer{}
+	_ = tmpl.Execute(&buf, struct {
+		URL           string
+		Type          string
+		Title         string
+		Description   string
+		FeaturedImage string
+	}{
+		URL:           baseURL + "/" + p.PublishedAt.In(timeutil.TimeZoneAsiaBangkok).Format("2006/1/2") + "/" + p.Slug,
+		Type:          "article",
+		Title:         p.Title,
+		Description:   strings.Split(p.Markdown, "\n")[0],
+		FeaturedImage: featuredImage,
+	})
+
+	return buf.Bytes()
 }
 
 func isFacebookCrawler(userAgent string) bool {
