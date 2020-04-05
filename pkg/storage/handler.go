@@ -81,7 +81,6 @@ func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, re
 					// resized image already on the cache storage,
 					// clear `resizedPath` for preventing resize function
 					resizedPath = ""
-					defer body.Close()
 				}
 			}
 		}
@@ -92,26 +91,24 @@ func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, re
 				http.Error(w, err.Error(), http.StatusNotFound)
 				return
 			}
-			defer body.Close()
 		}
 
 		if resizedPath != "" {
-			var buf bytes.Buffer
-			rdr := io.TeeReader(body, &buf)
-			resizedImageBody, err := resizer.Resize(rdr, width, height)
+			resizedBody, err := resizer.Resize(body, width, height)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
 				return
 			}
 
-			buf.Reset()
-			rdr = io.TeeReader(resizedImageBody, &buf)
+			var buf bytes.Buffer
+			rdr := io.TeeReader(resizedBody, &buf)
 			if err = cache.Store(rdr, resizedPath); err != nil {
 				logrus.Errorf("unable to store file on %s: %s", path, err)
 			}
 			body = ioutil.NopCloser(&buf)
 		}
 
+		defer body.Close()
 		length, _ := io.Copy(w, body)
 
 		w.Header().Set("Content-Type", mimeType)
