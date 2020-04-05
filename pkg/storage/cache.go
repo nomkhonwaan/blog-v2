@@ -15,7 +15,7 @@ import (
 // Cache uses to storing or retrieving files from hidden or inaccessible place
 type Cache interface {
 	Exists(path string) bool
-	Retrieve(path string) (io.Reader, error)
+	Retrieve(path string) (io.ReadCloser, error)
 	Store(body io.Reader, path string) error
 }
 
@@ -82,7 +82,7 @@ func (c DiskCache) Delete(path string) error {
 }
 
 // Retrieve returns a single file content from the given path
-func (c DiskCache) Retrieve(path string) (io.Reader, error) {
+func (c DiskCache) Retrieve(path string) (io.ReadCloser, error) {
 	return c.fs.Open(filepath.Join(c.filePath, path))
 }
 

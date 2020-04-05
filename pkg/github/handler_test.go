@@ -63,7 +63,7 @@ func TestGetGistHandlerFunc(t *testing.T) {
 		src := "https://gist.github.com/nomkhonwaan/b7526527067b1069d73d3b991be8b93c.js?file=fasthttp.go"
 
 		cache.EXPECT().Exists(gomock.Any()).Return(true)
-		cache.EXPECT().Retrieve(gomock.Any()).Return(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`), nil)
+		cache.EXPECT().Retrieve(gomock.Any()).Return(ioutil.NopCloser(bytes.NewBufferString(`{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`)), nil)
 
 		expected := `{"div": "<div id=\"gist101439575\" class=\"gist\"></div>", "stylesheet": "https://github.githubassets.com/assets/gist-embed-31007ea0d3bd9f80540adfbc55afc7bd.css"}`
 

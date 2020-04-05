@@ -26,6 +26,7 @@ func ServeSiteMapHandlerFunc(cache storage.Cache, genURLsFunc ...func() ([]URL, 
 		if cache.Exists("sitemap.xml") {
 			body, err := cache.Retrieve(cacheFilePath)
 			if err == nil {
+				defer body.Close()
 				_, _ = io.Copy(w, body)
 				return
 			}

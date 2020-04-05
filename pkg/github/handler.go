@@ -27,6 +27,7 @@ func GetGistHandlerFunc(cache storage.Cache, transport http.RoundTripper) http.H
 		if cache.Exists(cacheFileName) {
 			body, err := cache.Retrieve(cacheFileName)
 			if err == nil {
+				defer body.Close()
 				length, _ := io.Copy(w, body)
 				w.Header().Set("Content-Length", strconv.Itoa(int(length)))
 				return
