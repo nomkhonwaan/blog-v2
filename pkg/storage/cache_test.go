@@ -45,6 +45,7 @@ func TestDiskCache_Delete(t *testing.T) {
 	fs.EXPECT().Remove(filepath.Join(".cache", "test")).Return(nil)
 
 	c, _ := NewDiskCache(fs, ".cache")
+	defer c.Close()
 
 	// When
 	err := c.Delete("test")
@@ -66,6 +67,7 @@ func TestDiskCache_Exists(t *testing.T) {
 	fs.EXPECT().Stat(filepath.Join(".cache", "test")).Return(nil, nil)
 
 	c, _ := NewDiskCache(fs, ".cache")
+	defer c.Close()
 
 	// When
 	result := c.Exists("test")
@@ -86,6 +88,7 @@ func TestDiskCache_Retrieve(t *testing.T) {
 	fs.EXPECT().MkdirAll(".cache", gomock.Any()).Return(nil)
 
 	c, _ := NewDiskCache(fs, ".cache")
+	defer c.Close()
 
 	t.Run("With successful retrieving cache file", func(t *testing.T) {
 		// Given
@@ -122,6 +125,7 @@ func TestDiskCache_Store(t *testing.T) {
 	fs.EXPECT().MkdirAll(".cache", gomock.Any()).Return(nil)
 
 	c, _ := NewDiskCache(fs, ".cache")
+	defer c.Close()
 
 	t.Run("With successful storing cache file", func(t *testing.T) {
 		// Given

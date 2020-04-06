@@ -44,16 +44,15 @@ func TestMongoFileRepository_Create(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
+	var (
+		col = mock_mongo.NewMockCollection(ctrl)
+	)
+
 	now := time.Date(2020, 3, 29, 18, 57, 0, 0, time.UTC)
 	f := faketime.NewFaketimeWithTime(now)
 	defer f.Undo()
 	f.Do()
 
-	var (
-		col = mock_mongo.NewMockCollection(ctrl)
-	)
-
-	ctx := context.Background()
 	repo := MongoFileRepository{col: col}
 
 	t.Run("When insert into the collection successfully", func(t *testing.T) {
@@ -67,10 +66,10 @@ func TestMongoFileRepository_Create(t *testing.T) {
 			FileName: fileName,
 		}
 
-		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
+		col.EXPECT().InsertOne(gomock.Any(), gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
 		// When
-		result, err := repo.Create(ctx, file)
+		result, err := repo.Create(context.Background(), file)
 
 		// Then
 		assert.Nil(t, err)
@@ -89,10 +88,10 @@ func TestMongoFileRepository_Create(t *testing.T) {
 			FileName: fileName,
 		}
 
-		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
+		col.EXPECT().InsertOne(gomock.Any(), gomock.Any()).Return(&mgo.InsertOneResult{}, nil)
 
 		// When
-		result, err := repo.Create(ctx, file)
+		result, err := repo.Create(context.Background(), file)
 
 		// Then
 		assert.Nil(t, err)
@@ -108,12 +107,12 @@ func TestMongoFileRepository_Create(t *testing.T) {
 			FileName: fileName,
 		}
 
-		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("something went wrong"))
+		col.EXPECT().InsertOne(gomock.Any(), gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("something went wrong"))
 
 		expected := File{}
 
 		// When
-		result, err := repo.Create(ctx, file)
+		result, err := repo.Create(context.Background(), file)
 
 		// Then
 		assert.EqualError(t, err, "something went wrong")
