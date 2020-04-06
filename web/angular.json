@@ -129,5 +129,8 @@
       }
     }
   },
-  "defaultProject": "web"
+  "defaultProject": "web",
+  "cli": {
+    "analytics": "29c89481-e1ad-4e5b-b621-1f84dc73607b"
+  }
 }

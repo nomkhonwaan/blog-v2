@@ -10,6 +10,7 @@ import (
 	mock_storage "github.com/nomkhonwaan/myblog/pkg/storage/mock"
 	"github.com/nomkhonwaan/myblog/pkg/timeutil"
 	"github.com/stretchr/testify/assert"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -45,7 +46,7 @@ func TestServeSiteMapHandlerFunc(t *testing.T) {
 		expected := `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`
 
 		cache.EXPECT().Exists("sitemap.xml").Return(true)
-		cache.EXPECT().Retrieve("sitemap.xml").Return(bytes.NewBufferString(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`), nil)
+		cache.EXPECT().Retrieve("sitemap.xml").Return(ioutil.NopCloser(bytes.NewBufferString(`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>`)), nil)
 
 		// When
 		ServeSiteMapHandlerFunc(cache).ServeHTTP(w, httptest.NewRequest(http.MethodGet, "http://localhost/sitemap.xml", nil))

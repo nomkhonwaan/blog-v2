@@ -161,7 +161,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		})
 		r.Route("/storage", func(r chi.Router) {
 			r.Get("/{slug}", storage.DownloadHandlerFunc(bucket, cache, image.NewLanczosResizer(), fileRepository))
-			r.Delete("/delete/{slug}", storage.DeleteHandlerFunc(bucket, fileRepository))
+			r.Delete("/{slug}/delete", storage.DeleteHandlerFunc(bucket, fileRepository))
 			r.Post("/upload", storage.UploadHandlerFunc(bucket, fileRepository))
 		})
 	})

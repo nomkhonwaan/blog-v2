@@ -18,7 +18,7 @@ export class ApiService {
    * @param slug string
    */
   deleteFile(slug: string): Observable<any> {
-    return this.http.delete<any>(`${environment.url}/api/v2.1/storage/delete/${slug}`);
+    return this.http.delete<any>(`${environment.url}/api/v2.1/storage/${slug}/delete`);
   }
 
   /**

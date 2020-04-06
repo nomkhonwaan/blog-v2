@@ -48,10 +48,10 @@ func (mr *MockCacheMockRecorder) Exists(arg0 interface{}) *gomock.Call {
 }
 
 // Retrieve mocks base method
-func (m *MockCache) Retrieve(arg0 string) (io.Reader, error) {
+func (m *MockCache) Retrieve(arg0 string) (io.ReadCloser, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Retrieve", arg0)
-	ret0, _ := ret[0].(io.Reader)
+	ret0, _ := ret[0].(io.ReadCloser)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

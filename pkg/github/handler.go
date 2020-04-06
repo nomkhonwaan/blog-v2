@@ -2,6 +2,7 @@ package github
 
 import (
 	"bytes"
+	"errors"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
 	"github.com/sirupsen/logrus"
 	"io"
@@ -15,11 +16,18 @@ import (
 // GetGistHandlerFunc handles GitHub Gist downloading request
 func GetGistHandlerFunc(cache storage.Cache, transport http.RoundTripper) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		cacheFileName := url.QueryEscape(r.URL.Query().Get("src")) + ".json"
+		src := r.URL.Query().Get("src")
+		if src == "" {
+			http.Error(w, errors.New("src value is empty").Error(), http.StatusBadRequest)
+			return
+		}
+
+		cacheFileName := url.QueryEscape(src) + ".json"
 
 		if cache.Exists(cacheFileName) {
 			body, err := cache.Retrieve(cacheFileName)
 			if err == nil {
+				defer body.Close()
 				length, _ := io.Copy(w, body)
 				w.Header().Set("Content-Length", strconv.Itoa(int(length)))
 				return
@@ -29,18 +37,13 @@ func GetGistHandlerFunc(cache storage.Cache, transport http.RoundTripper) http.H
 
 		var (
 			c    = &http.Client{Transport: transport}
-			u, _ = url.Parse(r.URL.Query().Get("src"))
+			u, _ = url.Parse(src)
 		)
 
 		u.Host = "gist.github.com"
 		u.Path = strings.Replace(u.Path, ".js", ".json", 1)
 
-		req, err := http.NewRequest(http.MethodGet, u.String(), nil)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
+		req, _ := http.NewRequest(http.MethodGet, u.String(), nil)
 		res, err := c.Do(req)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)

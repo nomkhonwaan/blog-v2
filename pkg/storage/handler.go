@@ -12,6 +12,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"io"
+	"io/ioutil"
 	"mime"
 	"net/http"
 	"net/url"
@@ -54,10 +55,10 @@ func DeleteHandlerFunc(storage Storage, repository FileRepository) http.HandlerF
 func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, repository FileRepository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var (
-			body          io.Reader
+			body          io.ReadCloser
 			resizedPath   string
 			slug          = Slug(chi.URLParam(r, "slug"))
-			width, height = getWidthAndHeight(r.URL.Query())
+			width, height = getWidthAndHeightFromQuery(r.URL.Query())
 		)
 
 		file, err := repository.FindByID(r.Context(), slug.MustGetID())
@@ -93,23 +94,21 @@ func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, re
 		}
 
 		if resizedPath != "" {
-			var buf bytes.Buffer
-			rdr := io.TeeReader(body, &buf)
-			body, err = resizer.Resize(rdr, width, height)
+			resizedBody, err := resizer.Resize(body, width, height)
 			if err != nil {
-				logrus.Errorf("unable to resize image: %s", err)
-			}
-			if body == nil {
-				body = &buf
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 
-			rdr = io.TeeReader(body, &buf)
+			var buf bytes.Buffer
+			rdr := io.TeeReader(resizedBody, &buf)
 			if err = cache.Store(rdr, resizedPath); err != nil {
 				logrus.Errorf("unable to store file on %s: %s", path, err)
 			}
-			body = &buf
+			body = ioutil.NopCloser(&buf)
 		}
 
+		defer body.Close()
 		length, _ := io.Copy(w, body)
 
 		w.Header().Set("Content-Type", mimeType)
@@ -117,9 +116,9 @@ func DownloadHandlerFunc(storage Storage, cache Cache, resizer image.Resizer, re
 	}
 }
 
-func downloadOriginalFile(ctx context.Context, storage Storage, cache Cache, path string) (body io.Reader, err error) {
+func downloadOriginalFile(ctx context.Context, storage Storage, cache Cache, path string) (io.ReadCloser, error) {
 	if cache.Exists(path) {
-		body, err = cache.Retrieve(path)
+		body, err := cache.Retrieve(path)
 		if err != nil {
 			logrus.Errorf("unable to retrieve file from %s: %s", path, err)
 		} else {
@@ -127,22 +126,19 @@ func downloadOriginalFile(ctx context.Context, storage Storage, cache Cache, pat
 		}
 	}
 
-	originalFileBody, err := storage.Download(ctx, path)
+	body, err := storage.Download(ctx, path)
 	if err != nil {
 		return nil, err
 	}
-	defer originalFileBody.Close()
-
-	body = originalFileBody
+	defer body.Close()
 
 	var buf bytes.Buffer
 	rdr := io.TeeReader(body, &buf)
 	if err = cache.Store(rdr, path); err != nil {
 		logrus.Errorf("unable to store file on %s: %s", path, err)
 	}
-	body = &buf
 
-	return body, nil
+	return ioutil.NopCloser(&buf), nil
 }
 
 // UpdateHandlerFunc handles uploading request
@@ -210,7 +206,7 @@ func respondError(w http.ResponseWriter, message string, code int) {
 	_, _ = w.Write(val)
 }
 
-func getWidthAndHeight(values url.Values) (int, int) {
+func getWidthAndHeightFromQuery(values url.Values) (int, int) {
 	w, _ := strconv.Atoi(values.Get("width"))
 	h, _ := strconv.Atoi(values.Get("height"))
 	return w, h
