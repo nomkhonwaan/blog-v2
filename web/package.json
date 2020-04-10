@@ -32,7 +32,7 @@
     "apollo-client": "^2.6.8",
     "apollo-link": "^1.2.11",
     "apollo-link-context": "^1.0.19",
-    "auth0-js": "^9.13.1",
+    "auth0-js": "^9.13.2",
     "bootstrap": "^4.4.1",
     "fslightbox": "^3.1.0",
     "graphql": "^14.6.0",
