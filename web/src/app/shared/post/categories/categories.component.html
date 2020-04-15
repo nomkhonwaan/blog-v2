@@ -1,0 +1,5 @@
+<ul class="_list-unstyled">
+  <li *ngFor="let cat of categories" class="category-item">
+    <a [routerLink]="['/', 'category', cat.slug]">{{cat.name}}</a>
+  </li>
+</ul>

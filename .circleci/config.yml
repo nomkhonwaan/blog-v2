@@ -1,0 +1,135 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1.0.5
+
+jobs:
+  install:
+    docker:
+      - image: circleci/golang:1.13
+    environment:
+      GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          key: go-{{ checksum "go.sum" }}
+      - run: make install
+      - save_cache:
+          key: go-{{ checksum "go.sum" }}
+          paths:
+            - /go/pkg/mod
+  install_web:
+    docker:
+      - image: circleci/node:12.13.0
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          key: nodejs-{{ checksum "./web/package-lock.json" }}
+      - run: sudo apt install gettext
+      - run: make install-web
+      - save_cache:
+          key: nodejs-{{ checksum "./web/package-lock.json" }}
+          paths:
+            - ./web/node_modules
+  build:
+    docker:
+      - image: circleci/golang:1.13
+    environment:
+      CGO_ENABLED: "0"
+      GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-{{ checksum "go.sum" }}
+      - run: make build
+      - persist_to_workspace:
+          root: .
+          paths:
+            - bin
+  build_web:
+    docker:
+      - image: circleci/node:12.13.0
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - nodejs-{{ checksum "./web/package-lock.json" }}
+      - run: sudo apt install gettext
+      - run: make build-web
+      - persist_to_workspace:
+          root: .
+          paths:
+            - web
+  test:
+    docker:
+      - image: circleci/golang:1.13
+    environment:
+      GO111MODULE: "on"
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - go-{{ checksum "go.sum" }}
+      - run: make test
+      - codecov/upload:
+          file: ./coverage.out
+  build_docker_image:
+    machine:
+      image: ubuntu-1604:201903-01
+    working_directory: ~/repo
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - run: make build-docker-all-in-one-ci
+      - run: docker login -u ${DOCKER_USERNAME} -p ${DOCKER_PASSWORD}
+      - run: docker push nomkhonwaan/myblog-all-in-one:latest
+  deploy_to_docker_deploy_webhook:
+    machine:
+      image: ubuntu-1604:201903-01
+    steps:
+      - run: |
+          curl \
+            -H 'Content-Type: application/json' \
+            -d '{"repository": {"repo_name": "nomkhonwaan/myblog-all-in-one"}, "push_data": {"tag": "latest"}}' \
+            ${DOCKER_DEPLOY_WEBHOOK_URL}
+
+workflows:
+  version: 2
+  build_test_and_deploy:
+    jobs:
+      - install
+      - install_web
+      - test:
+          requires:
+            - install
+      - build:
+          requires:
+            - test
+      - build_web:
+          requires:
+            - install_web
+      - build_docker_image:
+          requires:
+            - test
+            - build
+            - build_web
+      - hold:
+          type: approval
+          filters:
+            branches:
+              only: master
+      - deploy_to_docker_deploy_webhook:
+          requires:
+            - build_docker_image
+            - hold
+          filters:
+            branches:
+              only:
+                - master

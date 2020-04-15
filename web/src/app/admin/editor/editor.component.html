@@ -1,0 +1,51 @@
+<div *ngIf="post" class="editor" [@slideInOut]="hasSidebarExpanded">
+  <aside class="sidebar">
+    <header>
+      <app-button ariaLabel="Go back" [icon]="icons.faArrowLeft" [style.margin-right]="'-1.6rem'" (click)="goBack()">
+      </app-button>
+
+      <app-button [style.margin-right]="'3.2rem'" (click)="goBack()">
+        {{'Back' | uppercase}}
+      </app-button>
+    </header>
+
+    <app-post-status-editor [post]="post" (changing)="onChanging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChangingErrors($event)"></app-post-status-editor>
+
+    <app-post-archives-editor class="categories-editor" type="categories" [post]="post" (changing)="onChanging($event)"></app-post-archives-editor>
+
+    <app-post-archives-editor class="tags-editor" type="tags" [post]="post" (changing)="onChanging($event)"></app-post-archives-editor>
+
+    <app-post-attachments-editor [post]="post" [selectedAttachment]="selectedAttachment" (changing)="onChanging($event)"
+      (changeSuccess)="onChangingSuccess($event)" (changeErrors)="onChangingErrors($event)"
+      (selectAttachment)="onSelectingAttachment($event)">
+    </app-post-attachments-editor>
+  </aside>
+
+  <div class="navbar">
+    <app-button class="open-sidebar" ariaLabel="Open sidebar" [icon]="icons.faBars" (click)="toggleSidebar()">
+    </app-button>
+
+    <app-post-title class="preview" [post]="post">
+      <app-button>{{'Preview' | uppercase}}</app-button>
+    </app-post-title>
+
+    <app-user-navbar [userInfo]="userInfo" [style.margin]="'0 3.2rem 0 auto'"></app-user-navbar>
+  </div>
+
+  <div class="article">
+    <app-post-attachment-viewer [post]="post" [attachment]="selectedAttachment" (changing)="onChanging($event)"
+      (changeSuccess)="onChangingSuccess($event)" (closed)="selectedAttachment = null">
+    </app-post-attachment-viewer>
+
+    <app-post-title-editor [post]="post" (changing)="onChanging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChangingErrors($event)"></app-post-title-editor>
+
+    <app-post-markdown-editor [post]="post" (changing)="onChanging($event)" (changeSuccess)="onChangingSuccess($event)"
+      (changeErrors)="onChangingErrors($event)"></app-post-markdown-editor>
+  </div>
+</div>
+
+<div *ngIf="isFetching" class="saving-status">
+  <fa-icon class="icon" [icon]="icons.faSpinnerThird" [spin]="true"></fa-icon>Saving...
+</div>

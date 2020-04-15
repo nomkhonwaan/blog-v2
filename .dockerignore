@@ -1,0 +1,4 @@
+.circleci
+build
+vendor
+web/node_modules

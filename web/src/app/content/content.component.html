@@ -1,0 +1,94 @@
+<div class="sidebar">
+
+  <header class="sidebar-header _flex _flex-horizontal-align-right _flex-vertical-align-middle">
+    <app-button (click)="toggleSidebar()" [style.margin-right]="'-1.6rem'">
+      {{'Close' | uppercase}}
+    </app-button>
+
+    <app-button ariaLabel="Close sidebar" [icon]="icons.faTimes" (click)="toggleSidebar()"></app-button>
+  </header>
+
+  <nav class="sidebar-menu">
+    <ul class="_list-unstyled">
+      <li (click)="toggleSidebar()" class="menu-item"> <a [routerLink]="['']">Home</a></li>
+      <li *ngIf="!isLoggedIn()" class="menu-item"><a (click)="login()">Login / Register</a></li>
+      <li *ngFor="let cat of categories" class="menu-item" (click)="toggleSidebar()">
+        <a [routerLink]="['/category', cat.slug]">{{cat.name}}</a>
+      </li>
+    </ul>
+  </nav>
+
+</div>
+
+<app-dialog [state]="hasSidebarExpanded ? 'show' : 'hide'"></app-dialog>
+
+<div class="navbar _flex _flex-vertical-align-middle">
+  <app-button ariaLabel="Open sidebar" [icon]="icons.faBars" (click)="toggleSidebar()"></app-button>
+
+  <app-user-navbar *ngIf="isLoggedIn()" [userInfo]="userInfo" [style.margin]="'0 3.2rem 0 auto'"></app-user-navbar>
+</div>
+
+<main class="main">
+  <!-- <div *ngIf="isFetching;else main" appLottie class="loading _flex _flex-horizontal-align-center" [data]="lottie.data">
+  </div>
+
+  <ng-template #main>
+    <router-outlet></router-outlet>
+  </ng-template> -->
+
+  <router-outlet></router-outlet>
+</main>
+
+<div class="pre-footer"></div>
+
+<footer class="footer">
+
+  <div class="footer-inner _wide _flex">
+
+    <div class="footer-column">
+      <div class="creative-commons">
+        <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License"
+            style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png"
+            class="lazyload" /></a><br />This work is
+        licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/4.0/">Creative Commons
+          Attribution-ShareAlike 4.0 International License</a>.
+      </div>
+
+      <div class="copyright">&copy; 2011 - 2020</div>
+
+      <div class="social-networks">
+        <a href="https://github.com/nomkhonwaan" aria-label="Checkout my GitHub projects">
+          <fa-icon [icon]="icons.faGithubSquare"></fa-icon>
+        </a>
+
+        <a href="https://medium.com/@nomkhonwaan" aria-label="Find more my previous publication on Medium">
+          <fa-icon [icon]="icons.faMedium"></fa-icon>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-column _flex _flex-direction-column _flex-horizontal-align-center">
+      <img src="../assets/images/appenginegopher.svg" alt="Made with love by Gopher for Developers" />
+
+      <div class="editorial">Made with <fa-icon class="love" [icon]="icons.faHeart"></fa-icon> by
+        <strong>Gopher</strong> for <strong>Developers</strong></div>
+
+      <div class="version-and-revision var">{{version | slice:0:6}} · {{revision | slice:0:7}}</div>
+    </div>
+
+    <div class="footer-column">
+      <div class="footer-title">{{'Links' | uppercase}}</div>
+
+      <ul class="_list-unstyled">
+        <li class="link-item"><a [routerLink]="['/rss']">RSS</a></li>
+        <li class="link-item"><a [routerLink]="['/about']">About</a></li>
+        <li class="link-item"><a href="/graphiql">Graphiql</a></li>
+        <li class="link-item"><a
+            href="https://github.com/nomkhonwaan/myblog/blob/master/CONTRIBUTING.md">Contribution</a></li>
+        <li class="link-item"><a [routerLink]="['/terms']">Terms of Use</a></li>
+      </ul>
+    </div>
+
+  </div>
+
+</footer>

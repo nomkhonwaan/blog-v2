@@ -1,0 +1,16 @@
+.input {
+  border: none;
+  background: #fff;
+  font: normal 300 1.6rem Pridi, sans-serif;
+  min-height: calc(100% - 8.9rem - 3.2rem);
+  /*                      title    margin-bottom */
+  margin-top: 3.2rem;
+  outline: none;
+  overflow-y: hidden;
+  padding: 3.2rem;
+  width: 100%;
+}
+
+.input::placeholder {
+  font: italic 400 1.6rem Lato, sans-serif;
+}

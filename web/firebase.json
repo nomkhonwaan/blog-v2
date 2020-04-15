@@ -1,0 +1,21 @@
+{
+  "hosting": {
+    "public": "dist/web",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "headers": [],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      },
+      {
+        "source": "**/!(*.js|*.css|*.json|*.svg|*.png|*.jpg|*.jpeg)",
+        "function": "serve"
+      }
+    ]
+  }
+}
