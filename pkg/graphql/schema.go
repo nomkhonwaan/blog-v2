@@ -19,7 +19,7 @@ import (
 )
 
 // BuildSchema accepts build schema function(s) for applying to the schemabuilding.Schema object
-func BuildSchema(buildSchemaFunc ...func(object *schemabuilder.Schema)) (*graphql.Schema, error) {
+func BuildSchema(buildSchemaFunc ...func(*schemabuilder.Schema)) (*graphql.Schema, error) {
 	s := schemabuilder.NewSchema()
 	for _, f := range buildSchemaFunc {
 		f(s)
