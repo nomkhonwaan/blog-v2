@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
+	"github.com/nomkhonwaan/myblog/pkg/discussion"
 	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	slugify "github.com/nomkhonwaan/myblog/pkg/slug"
 	"github.com/nomkhonwaan/myblog/pkg/storage"
@@ -91,6 +92,14 @@ func BuildGraphAPISchema(baseURL string, c facebook.Client) func(*schemabuilder.
 	return func(s *schemabuilder.Schema) {
 		p := s.Object("Post", blog.Post{})
 		p.FieldFunc("engagement", GetURLNodeShareCountFieldFunc(baseURL, c))
+	}
+}
+
+// BuildCommentSchema builds all comment related schemas
+func BuildCommentSchema(repository discussion.CommentRepository) func(*schemabuilder.Schema) {
+	return func(s *schemabuilder.Schema) {
+		p := s.Object("Post", blog.Post{})
+		p.FieldFunc("comments", FindAllCommentsBelongedToPostFieldFunc(repository))
 	}
 }
 
@@ -556,5 +565,20 @@ func GetURLNodeShareCountFieldFunc(baseURL string, c facebook.Client) interface{
 		}
 		engagement.ShareCount = urlNode.Engagement.ShareCount
 		return
+	}
+}
+
+// FindAllCommentsBelongedToPostFieldFunc handles the following query in the Post type
+// ```graphql
+//	{
+//		Post {
+//			...
+//			comments(offset: int!, limit: int!) { ... }
+//		}
+//	}
+// ```
+func FindAllCommentsBelongedToPostFieldFunc(repository discussion.CommentRepository) interface{} {
+	return func(ctx context.Context, p blog.Post, args struct{ Offset, Limit int64 }) ([]discussion.Comment, error) {
+		return nil, nil
 	}
 }

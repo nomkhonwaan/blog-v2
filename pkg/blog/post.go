@@ -54,6 +54,9 @@ type Post struct {
 	// List of attachments are belonging to the post
 	Attachments []mongo.DBRef `bson:"attachments" json:"-" graphql:"-"`
 
+	// List of comments are belonging to the post
+	Comments []mongo.DBRef `bson:"comments" json:"-" graphql:"-"`
+
 	// A social network engagement of the post
 	Engagement Engagement `bson:"-" json:"engagement" graphql:"engagement"`
 
@@ -236,7 +239,7 @@ func NewPostQueryBuilder() *PostQueryBuilder {
 	return &PostQueryBuilder{postQuery: PostQuery{offset: 0, limit: 5}}
 }
 
-// PostQueryBuilder a post object specific query builder
+// PostQueryBuilder is a post object specific query builder
 type PostQueryBuilder struct {
 	postQuery PostQuery
 }
