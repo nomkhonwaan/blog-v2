@@ -81,15 +81,14 @@ func TestMongoPostRepository_Create(t *testing.T) {
 
 	t.Run("When unable to create a new record on database", func(t *testing.T) {
 		// Given
-		ctx := context.Background()
 		authorID := "github|303589"
 
-		col.EXPECT().InsertOne(ctx, gomock.Any()).Return(&mgo.InsertOneResult{}, errors.New("test unable to create a new record on database"))
+		col.EXPECT().InsertOne(gomock.Any(), gomock.Any()).Return(nil, errors.New("test unable to create a new record on database"))
 
 		expected := Post{}
 
-		//result When
-		result, err := repo.Create(ctx, authorID)
+		// When
+		result, err := repo.Create(context.Background(), authorID)
 
 		// Then
 		assert.EqualError(t, err, "test unable to create a new record on database")
@@ -382,7 +381,7 @@ func TestMongoPostRepository_Save(t *testing.T) {
 				assert.Nil(t, err)
 			} else {
 				_, err := repo.Save(ctx, test.id, test.q)
-				assert.EqualError(t, err, test.err.Error())
+				assert.Equal(t, err, test.err)
 			}
 		})
 	}
