@@ -44,7 +44,6 @@ func (c DiskCache) deleteExpiredFiles() {
 		select {
 		case <-c.doneCh:
 			return
-		case <-time.After(time.Hour * 24):
 		default:
 			err := filepath.Walk(c.filePath, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
@@ -61,6 +60,8 @@ func (c DiskCache) deleteExpiredFiles() {
 			if err != nil {
 				logrus.Errorf("deleteExpiredFiles: %s", err)
 			}
+
+			<-time.After(time.Hour * 24)
 		}
 	}
 }
