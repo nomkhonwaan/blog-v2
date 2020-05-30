@@ -150,7 +150,9 @@ func TestMongoCommentRepository_Save(t *testing.T) {
 
 	ctx := context.Background()
 	repo := MongoCommentRepository{col: col}
-	//createdAt := time.Now()
+	text := "Test update comment content"
+	parent := Comment{ID: primitive.NewObjectID()}
+	child := Comment{ID: primitive.NewObjectID()}
 
 	tests := map[string]struct {
 		q      CommentQuery
@@ -162,6 +164,27 @@ func TestMongoCommentRepository_Save(t *testing.T) {
 			q:      NewCommentQueryBuilder().Build(),
 			id:     primitive.NewObjectID(),
 			update: bson.M{"$set": bson.M{"updatedAt": now}},
+		},
+		"When updating comment's content": {
+			q:      NewCommentQueryBuilder().WithText(text).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"text": &text, "updatedAt": now}},
+		},
+		"When updating comment's parent": {
+			q:      NewCommentQueryBuilder().WithParent(parent).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"parent": mongo.DBRef{Ref: "comments", ID: parent.ID}, "updatedAt": now}},
+		},
+		"When updating comment's children": {
+			q:      NewCommentQueryBuilder().WithChildren([]Comment{child}).Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"children": bson.A{mongo.DBRef{Ref: "comments", ID: child.ID}}, "updatedAt": now}},
+		},
+		"When an error has occurred while updating the comment": {
+			q:      NewCommentQueryBuilder().Build(),
+			id:     primitive.NewObjectID(),
+			update: bson.M{"$set": bson.M{"updatedAt": now}},
+			err:    errors.New("something went wrong"),
 		},
 	}
 

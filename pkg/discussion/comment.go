@@ -27,7 +27,7 @@ type Comment struct {
 	Text string `bson:"text" json:"text" graphql:"text"`
 
 	// List of children (that reply to this comment) are belonging to the comment
-	Comments []mongo.DBRef `bson:"children" json:"-" graphql:"-"`
+	Children []mongo.DBRef `bson:"children" json:"-" graphql:"-"`
 
 	// Date-time that the comment was added
 	CreatedAt time.Time `bson:"createdAt" json:"createdAt" graphql:"createdAt"`
