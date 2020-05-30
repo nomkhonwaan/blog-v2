@@ -299,10 +299,10 @@ func TestMongoPostRepository_Save(t *testing.T) {
 	title := "Test update post title"
 	markdown := "Test update post content"
 	html := "<p>Test update post content</p>"
-	catID := primitive.NewObjectID()
-	tagID := primitive.NewObjectID()
-	featuredImageID := primitive.NewObjectID()
-	attachmentID := primitive.NewObjectID()
+	category := Category{ID: primitive.NewObjectID()}
+	tag := Tag{ID: primitive.NewObjectID()}
+	featuredImage := storage.File{ID: primitive.NewObjectID()}
+	attachment := storage.File{ID: primitive.NewObjectID()}
 
 	tests := map[string]struct {
 		q      PostQuery
@@ -341,24 +341,24 @@ func TestMongoPostRepository_Save(t *testing.T) {
 			update: bson.M{"$set": bson.M{"publishedAt": &publishedAt, "updatedAt": now}},
 		},
 		"When updating post's categories": {
-			q:      NewPostQueryBuilder().WithCategories([]Category{{ID: catID, Name: "Web Development", Slug: "web-development-" + catID.Hex()}}).Build(),
+			q:      NewPostQueryBuilder().WithCategories([]Category{category}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"categories": bson.A{mongo.DBRef{Ref: "categories", ID: catID}}, "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"categories": bson.A{mongo.DBRef{Ref: "categories", ID: category.ID}}, "updatedAt": now}},
 		},
 		"When updating post's tags": {
-			q:      NewPostQueryBuilder().WithTags([]Tag{{ID: tagID, Name: "Blog", Slug: "blog-" + tagID.Hex()}}).Build(),
+			q:      NewPostQueryBuilder().WithTags([]Tag{tag}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"tags": bson.A{mongo.DBRef{Ref: "tags", ID: tagID}}, "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"tags": bson.A{mongo.DBRef{Ref: "tags", ID: tag.ID}}, "updatedAt": now}},
 		},
 		"When updating post's featured image": {
-			q:      NewPostQueryBuilder().WithFeaturedImage(storage.File{ID: featuredImageID, Slug: fmt.Sprintf("test-featured-image-%s.jpg", featuredImageID.Hex())}).Build(),
+			q:      NewPostQueryBuilder().WithFeaturedImage(featuredImage).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"featuredImage": mongo.DBRef{Ref: "files", ID: featuredImageID}, "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"featuredImage": mongo.DBRef{Ref: "files", ID: featuredImage.ID}, "updatedAt": now}},
 		},
 		"When updating post's attachments": {
-			q:      NewPostQueryBuilder().WithAttachments([]storage.File{{ID: attachmentID}}).Build(),
+			q:      NewPostQueryBuilder().WithAttachments([]storage.File{attachment}).Build(),
 			id:     primitive.NewObjectID(),
-			update: bson.M{"$set": bson.M{"attachments": bson.A{mongo.DBRef{Ref: "files", ID: attachmentID}}, "updatedAt": now}},
+			update: bson.M{"$set": bson.M{"attachments": bson.A{mongo.DBRef{Ref: "files", ID: attachment.ID}}, "updatedAt": now}},
 		},
 		"When an error has occurred while updating the post": {
 			q:      NewPostQueryBuilder().Build(),
