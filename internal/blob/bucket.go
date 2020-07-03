@@ -20,6 +20,7 @@ func (b *Bucket) Upload(ctx context.Context, body io.Reader, path string) error 
 	if err != nil {
 		return err
 	}
+	defer w.Close()
 
 	_, err = io.Copy(w, body)
 	return err
