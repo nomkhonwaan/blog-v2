@@ -6,7 +6,7 @@ orbs:
 jobs:
   install:
     docker:
-      - image: circleci/golang:1.13
+      - image: circleci/golang:1.15
     environment:
       GO111MODULE: "on"
     working_directory: ~/repo
@@ -21,7 +21,7 @@ jobs:
             - /go/pkg/mod
   install_web:
     docker:
-      - image: circleci/node:12.13.0
+      - image: circleci/node:12.18.0
     working_directory: ~/repo
     steps:
       - checkout
