@@ -1,4 +1,4 @@
-package serve
+package app
 
 import (
 	"bytes"
@@ -42,6 +42,7 @@ import (
 )
 
 var (
+	// Cmd is a root command of "serve" for serving HTTP server with options.
 	Cmd = &cobra.Command{
 		Use:     "serve",
 		Short:   "Listen and serve HTTP server insecurely",

@@ -55,7 +55,7 @@ bindata:
 
 .PHONY: build
 build:
-	$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '-X $(PKG)/cmd/myblog.Version=$(VERSION) -X $(PKG)/cmd/myblog.Revision=$(REVISION) $(LDFLAGS)' -o $(BINDIR)/myblog main.go
+	$(GO) build $(GOFLAGS) -tags '$(TAGS)' -ldflags '-X main.Version=$(VERSION) -X main.Revision=$(REVISION) $(LDFLAGS)' -o $(BINDIR)/myblog-server cmd/myblog-server/main.go
 
 .PHONY: build-web
 build-web:
