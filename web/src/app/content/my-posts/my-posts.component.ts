@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
-import { faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faSpinnerThird, IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
