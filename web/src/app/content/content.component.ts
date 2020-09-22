@@ -2,7 +2,7 @@ import { Component, HostBinding, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { faHeart, IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid';
 import { faGithubSquare, faMedium, IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
-import { faBars, faSearch, faTimes, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faBars, faSearch, faTimes, IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 import { select, Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';

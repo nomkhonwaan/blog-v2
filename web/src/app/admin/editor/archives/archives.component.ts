@@ -1,5 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { faSearch, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faSearch, IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 import { ApolloQueryResult } from 'apollo-client';
 import gql from 'graphql-tag';
 import { map } from 'rxjs/operators';

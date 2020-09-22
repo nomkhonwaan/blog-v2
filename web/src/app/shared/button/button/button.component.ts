@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { IconDefinition as SolidIconDefinition } from '@fortawesome/fontawesome-free-solid';
 import { IconDefinition as BrandIconDefinition } from '@fortawesome/free-brands-svg-icons';
-import { IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 
 @Component({
   selector: 'app-button',

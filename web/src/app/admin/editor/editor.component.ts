@@ -2,7 +2,7 @@ import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { faArrowLeft, faBars, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faArrowLeft, faBars, faSpinnerThird, IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 import { select, Store } from '@ngrx/store';
 import { Apollo } from 'apollo-angular';
 import { ApolloQueryResult } from 'apollo-client';

@@ -23,7 +23,7 @@ interface AppState {
   };
 
   /**
-   * Ad admin component
+   * An admin component
    */
   admin: {
     editor: {

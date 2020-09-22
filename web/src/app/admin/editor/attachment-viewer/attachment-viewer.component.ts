@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { faSpinnerThird, faTrash, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faSpinnerThird, faTrash, IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 import update from 'immutability-helper';
 import { finalize } from 'rxjs/operators';
 import { AbstractPostEditorComponent } from '../abstract-post-editor.component';

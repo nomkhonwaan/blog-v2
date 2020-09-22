@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { faImage, faSpinnerThird, IconDefinition } from '@fortawesome/pro-light-svg-icons';
+import { faImage, faSpinnerThird, IconDefinition } from '@nomkhonwaan/pro-light-svg-icons';
 import { forkJoin, Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
 import { AbstractPostEditorComponent } from '../abstract-post-editor.component';
