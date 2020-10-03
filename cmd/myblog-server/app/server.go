@@ -15,8 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	env "myblog/pkg/env"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -106,11 +104,14 @@ func preRunE(cmd *cobra.Command, _ []string) error {
 }
 
 func runE(_ *cobra.Command, _ []string) error {
+	var (
+		baseURL = viper.GetString("base-url")
+	)
 	err := env.Parse()
 	if err != nil {
 		return err
 	}
-	db, err = newMongoDB(mongoURI, dbName)
+	db, err := newMongoDB(*mongoURI, *dbName)
 	if err != nil {
 		return err
 	}
