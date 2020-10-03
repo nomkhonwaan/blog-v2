@@ -5,6 +5,18 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"html/template"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/signal"
+	"path"
+	"strings"
+	"syscall"
+	"time"
+
+	env "myblog/pkg/env"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -13,6 +25,7 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/auth"
 	"github.com/nomkhonwaan/myblog/pkg/blog"
 	"github.com/nomkhonwaan/myblog/pkg/data"
+	"github.com/nomkhonwaan/myblog/pkg/env"
 	"github.com/nomkhonwaan/myblog/pkg/facebook"
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
@@ -30,15 +43,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gocloud.dev/blob/s3blob"
 	_ "gocloud.dev/blob/s3blob"
-	"html/template"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"os/signal"
-	"path"
-	"strings"
-	"syscall"
-	"time"
 )
 
 var (
@@ -49,6 +53,8 @@ var (
 		PreRunE: preRunE,
 		RunE:    runE,
 	}
+	dbName   = env.String("DbName", false, "nomkhonwaan_com", "DbName in MongoDB")
+	mongoURI = env.String("MongoURI", false, "mongodb://127.0.0.1:27017/mongodb-uri", "MongoURI for MongoDB URI")
 )
 
 func init() {
@@ -100,11 +106,11 @@ func preRunE(cmd *cobra.Command, _ []string) error {
 }
 
 func runE(_ *cobra.Command, _ []string) error {
-	var (
-		baseURL = viper.GetString("base-url")
-	)
-
-	db, err := newMongoDB(viper.GetString("mongodb-uri"), "nomkhonwaan_com")
+	err := env.Parse()
+	if err != nil {
+		return err
+	}
+	db, err = newMongoDB(mongoURI, dbName)
 	if err != nil {
 		return err
 	}
