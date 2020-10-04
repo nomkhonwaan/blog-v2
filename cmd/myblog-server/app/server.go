@@ -5,6 +5,16 @@ import (
 	"compress/gzip"
 	"context"
 	"errors"
+	"html/template"
+	"io/ioutil"
+	"net/http"
+	"os"
+	"os/signal"
+	"path"
+	"strings"
+	"syscall"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -28,17 +38,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 	"gocloud.dev/blob/s3blob"
 	_ "gocloud.dev/blob/s3blob"
-	"html/template"
-	"io/ioutil"
-	"net/http"
-	"os"
-	"os/signal"
-	"path"
-	"strings"
-	"syscall"
-	"time"
 )
 
 var (
@@ -60,6 +62,7 @@ func init() {
 	Cmd.Flags().String("cache-file-path", path.Join(workingDirectory, ".cache"), "")
 	Cmd.Flags().String("static-file-path", path.Join(workingDirectory, "dist", "web"), "")
 	Cmd.Flags().String("mongodb-uri", "mongodb://localhost/nomkhonwaan_com", "")
+	Cmd.Flags().String("db-name", "nomkhonwaan_com", "")
 	Cmd.Flags().String("storage-driver", "s3", "")
 	Cmd.Flags().String("amazon-s3-region", "ap-southeast-1", "")
 	Cmd.Flags().String("amazon-s3-access-key", "", "")
@@ -76,6 +79,7 @@ func init() {
 	_ = viper.BindPFlag("cache-file-path", Cmd.Flags().Lookup("cache-file-path"))
 	_ = viper.BindPFlag("static-file-path", Cmd.Flags().Lookup("static-file-path"))
 	_ = viper.BindPFlag("mongodb-uri", Cmd.Flags().Lookup("mongodb-uri"))
+	_ = viper.BindPFlag("db-name", Cmd.Flags().Lookup("db-name"))
 	_ = viper.BindPFlag("storage-driver", Cmd.Flags().Lookup("storage-driver"))
 	_ = viper.BindPFlag("amazon-s3-region", Cmd.Flags().Lookup("amazon-s3-region"))
 	_ = viper.BindPFlag("amazon-s3-access-key", Cmd.Flags().Lookup("amazon-s3-access-key"))
@@ -103,8 +107,8 @@ func runE(_ *cobra.Command, _ []string) error {
 	var (
 		baseURL = viper.GetString("base-url")
 	)
-
-	db, err := newMongoDB(viper.GetString("mongodb-uri"), "nomkhonwaan_com")
+	dbName := viper.GetString("db-name")
+	db, err := newMongoDB(viper.GetString("mongodb-uri"), dbName)
 	if err != nil {
 		return err
 	}
@@ -198,6 +202,15 @@ func newMongoDB(uri, dbName string) (mongo.Database, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	if dbName == "" {
+		connString, err := connstring.Parse(uri)
+		if err != nil {
+			return nil, err
+		}
+		dbName = connString.Database
+	}
+
 	return client.Database(dbName), nil
 }
 
