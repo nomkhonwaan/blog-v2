@@ -16,14 +16,14 @@ import { environment } from 'src/environments/environment';
 export class MyPostsComponent implements OnInit {
 
   /**
-   * List of posts
+   * All loaded posts
    */
   posts: Array<Post> = [];
 
   /**
-   * An original list of posts
+   * List of posts that return from the service when reached the bottom of the page
    */
-  actualPosts: Array<Post> = [];
+  newQueriedPosts: Array<Post> = [];
 
   /**
    * List of FontAwesome icons
@@ -77,13 +77,13 @@ export class MyPostsComponent implements OnInit {
       map((result: ApolloQueryResult<{ myPosts: Array<Post> }>): Array<Post> => result.data.myPosts),
       finalize((): void => this.changeDetectorRef.markForCheck()),
     ).subscribe((posts: Array<Post>): void => {
-      this.actualPosts = posts;
+      this.newQueriedPosts = posts;
       this.posts = this.posts.concat(posts.slice(0, this.itemsPerPage));
     });
   }
 
   onScroll(): void {
-    if (this.actualPosts.length > this.itemsPerPage) {
+    if (this.newQueriedPosts.length > this.itemsPerPage) {
       this.offset += this.itemsPerPage;
       this.renderMyPosts(this.offset, this.itemsPerPage + 1);
     }
