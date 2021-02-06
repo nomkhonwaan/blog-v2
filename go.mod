@@ -13,7 +13,7 @@ require (
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/mock v1.4.4
-	github.com/google/wire v0.4.0 // indirect
+	github.com/google/wire v0.5.0 // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/graphql-go/graphql v0.7.9 // indirect
