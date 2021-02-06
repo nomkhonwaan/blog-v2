@@ -27,7 +27,6 @@ import (
 	"github.com/nomkhonwaan/myblog/pkg/github"
 	"github.com/nomkhonwaan/myblog/pkg/graphql"
 	"github.com/nomkhonwaan/myblog/pkg/image"
-	"github.com/nomkhonwaan/myblog/pkg/mongo"
 	"github.com/nomkhonwaan/myblog/pkg/opengraph"
 	"github.com/nomkhonwaan/myblog/pkg/server"
 	"github.com/nomkhonwaan/myblog/pkg/sitemap"
@@ -37,8 +36,6 @@ import (
 	"github.com/spf13/afero"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"go.mongodb.org/mongo-driver/mongo/options"
-	"go.mongodb.org/mongo-driver/x/mongo/driver/connstring"
 	"gocloud.dev/blob/s3blob"
 	_ "gocloud.dev/blob/s3blob"
 )
@@ -108,7 +105,7 @@ func runE(_ *cobra.Command, _ []string) error {
 		baseURL = viper.GetString("base-url")
 	)
 	dbName := viper.GetString("db-name")
-	db, err := newMongoDB(viper.GetString("mongodb-uri"), dbName)
+	db, err := provideMongoDB(viper.GetString("mongodb-uri"), dbName)
 	if err != nil {
 		return err
 	}
@@ -195,23 +192,6 @@ func runE(_ *cobra.Command, _ []string) error {
 	<-stopCh
 
 	return nil
-}
-
-func newMongoDB(uri, dbName string) (mongo.Database, error) {
-	client, err := mongo.Connect(context.Background(), options.Client().ApplyURI(uri))
-	if err != nil {
-		return nil, err
-	}
-
-	if dbName == "" {
-		connString, err := connstring.Parse(uri)
-		if err != nil {
-			return nil, err
-		}
-		dbName = connString.Database
-	}
-
-	return client.Database(dbName), nil
 }
 
 func newBlobStorage() (*blob.Bucket, error) {
